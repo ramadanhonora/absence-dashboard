@@ -725,8 +725,11 @@
                 for (let i = 1; i <= 6; i++) {
                     const lec = lectures[i];
                     if (lec && lec.students.length > 0) {
-                        // 3. MOBILE OPTIMIZATION: Reduced padding
-                        html += `<td style="vertical-align:top; padding:10px;"><div style="color:#c33; font-weight:500;">${lec.students.map(s => `• ${s}`).join('<br>')}</div></td>`;
+                        html += `<td style="vertical-align:top; padding:10px;">
+                            <div style="color:#c33; font-weight:500; text-align:right; direction:rtl;"> 
+                                ${lec.students.map(s => `• ${s}`).join('<br>')}
+                            </div>
+                        </td>`;
                     } else {
                         html += `<td style="text-align:center; color:#999; padding:10px;">-</td>`;
                     }
@@ -1233,3 +1236,4 @@
 </body>
 
 </html>
+
