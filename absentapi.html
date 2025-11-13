@@ -1227,8 +1227,9 @@
             console.log('🚀 Dashboard initializing...');
             fetchData();
             // 3. MOBILE OPTIMIZATION: Reduce refresh rate on mobile to save battery/data, or keep it quick as this is a dashboard. Keeping it quick (60s) for real-time feel.
-            setInterval(fetchData, 60000); 
+            setInterval(fetchData, 300000); 
         });
     </script>
 </body>
+
 </html>
