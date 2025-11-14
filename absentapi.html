@@ -430,6 +430,21 @@
             <h2 style="color: #667eea; margin-bottom: 10px;">📈 Visual Analytics & Insights</h2>
             <p style="color: #666; margin-bottom: 20px;">Data-driven insights across classes, subjects, and time periods</p>
             
+            <div class="filter-section">
+                <h3 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Policy Risk Configuration</h3>
+                <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Configure the rules for calculating a student's expulsion risk based on days missed.</p>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="lecturesPerDay">Lectures to Count as 1 Day Missed:</label>
+                        <input type="number" id="lecturesPerDay" value="3" min="1" onchange="loadAnalytics()" title="If a student misses this many lectures in one day, it counts as one full day missed." style="min-width: 250px;">
+                    </div>
+                    <div class="filter-group">
+                        <label for="expulsionDays">Days Missed Threshold for Dismissal:</label>
+                        <input type="number" id="expulsionDays" value="21" min="1" onchange="loadAnalytics()" title="If a student accumulates this many calculated 'days missed', they are flagged for dismissal." style="min-width: 250px;">
+                    </div>
+                    <div></div>
+                </div>
+            </div>
             <div id="analyticsContent"><div style="text-align:center; padding:50px; color:#667eea; font-size:1.2em;">⏳ Loading analytics...</div></div>
         </div>
     </div>
@@ -497,6 +512,61 @@
             const label = sev === 'high' ? 'HIGH RISK' : sev === 'medium' ? 'AT RISK' : 'GOOD';
             return `<span class="badge badge-${sev}">${label}</span>`;
         }
+
+        // --- NEW FUNCTIONS FOR ANALYTICS TAB ---
+
+        function getPolicyThresholds() {
+            // Reads the values from the input boxes, using defaults (3 and 21) if inputs are invalid/empty
+            const lecturesInput = parseInt(document.getElementById('lecturesPerDay')?.value);
+            const daysInput = parseInt(document.getElementById('expulsionDays')?.value);
+
+            return {
+                lecturesPerDay: (lecturesInput > 0) ? lecturesInput : 3, 
+                expulsionDays: (daysInput > 0) ? daysInput : 21 
+            };
+        }
+
+        function calculateExpulsionRisk() {
+            const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
+            
+            // Step 1: Group lectures missed by Student and by Date
+            const studentDailyLectures = {};
+
+            allData.forEach(entry => {
+                entry.absences.forEach(name => {
+                    if (!studentDailyLectures[name]) {
+                        studentDailyLectures[name] = {};
+                    }
+                    // Accumulate total lectures missed for this student on this date
+                    studentDailyLectures[name][entry.date] = (studentDailyLectures[name][entry.date] || 0) + entry.lectureCount;
+                });
+            });
+
+            // Step 2: Apply the "Day Missed" rule and calculate total risk
+            const studentRiskSummary = {};
+
+            for (const name in studentDailyLectures) {
+                let totalDaysMissed = 0;
+                
+                for (const date in studentDailyLectures[name]) {
+                    const lecturesMissed = studentDailyLectures[name][date];
+                    
+                    // Rule: If daily lectures >= threshold (e.g., 3), count 1 full day missed.
+                    if (lecturesMissed >= lecturesPerDay) {
+                        totalDaysMissed += 1;
+                    }
+                }
+
+                studentRiskSummary[name] = {
+                    totalDaysMissed: totalDaysMissed,
+                    isExpelled: totalDaysMissed >= expulsionDays,
+                };
+            }
+            
+            return studentRiskSummary;
+        }
+
+        // --- END NEW FUNCTIONS ---
 
         function parseData(json) {
             if (!json?.values || json.values.length < 2) return [];
@@ -1146,61 +1216,162 @@
             document.getElementById('studentModal').style.display = 'none';
         }
 
-        function loadAnalytics() {
-            const byClass = {};
-            classes.forEach(c => byClass[c] = 0);
-            
-            allData.forEach(row => {
-                if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
-                    byClass[row.classGroup] += row.absences.length * row.lectureCount;
-                }
-            });
-
-            const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
-            allData.forEach(row => {
-                const match = String(row.lecture).match(/\d+/); 
-                const lec = match ? parseInt(match[0]) : 0;
-                
-                if (lec >= 1 && lec <= 6) {
-                    byLecture[lec] += row.absences.length * row.lectureCount;
-                }
-            });
-
-            const bySubject = {};
-            allData.forEach(row => {
-                if (row.subject) {
-                    bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
-                }
-            });
-
-            let html = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">';
-            
-            // 4. VISUAL IMPROVEMENTS: Analytics Table 1 (Absences by Class)
-            html += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-            Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
-                html += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-            });
-            html += '</tbody></table></div></div>';
-
-            // 4. VISUAL IMPROVEMENTS: Analytics Table 2 (Absences by Lecture Time)
-            html += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-            Object.entries(byLecture).forEach(([lec, count]) => {
-                html += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-            });
-            html += '</tbody></table></div></div>';
-
-            // 4. VISUAL IMPROVEMENTS: Analytics Table 3 (Absences by Subject)
-            html += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
-            const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
-            Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
-                const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
-                html += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
-            });
-            html += '</tbody></table></div></div>';
-
-            html += '</div>';
-            document.getElementById('analyticsContent').innerHTML = html;
+function loadAnalytics() {
+    const riskSummary = calculateExpulsionRisk();
+    const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
+    
+    // Group students by class
+    const studentsByClass = {};
+    
+    Object.entries(riskSummary).forEach(([name, data]) => {
+        // Find the student's class from allData
+        let studentClass = 'Unknown';
+        for (const row of allData) {
+            if (row.absences.includes(name)) {
+                studentClass = row.classGroup || 'Unknown';
+                break;
+            }
         }
+        
+        if (!studentsByClass[studentClass]) {
+            studentsByClass[studentClass] = [];
+        }
+        
+        studentsByClass[studentClass].push({ name, ...data });
+    });
+    
+    // Sort classes alphabetically
+    const sortedClasses = Object.keys(studentsByClass).sort();
+    
+    let html = `
+        <div class="chart-container" style="margin-top: 20px;">
+            <h3 style="color:#ff4444; margin-bottom:15px; font-size:1.5em;">⚠️ Expulsion Risk Report</h3>
+            <p style="color:#666; margin-bottom:20px;">
+                Tracking students with <strong>${lecturesPerDay}</strong> or more lectures missed in a day counting as 1 day missed, 
+                with a dismissal threshold of <strong>${expulsionDays}</strong> total days.
+            </p>
+    `;
+    
+    // Create a table for each class
+    sortedClasses.forEach(className => {
+        const students = studentsByClass[className];
+        
+        // Sort students within class by days missed (highest first)
+        students.sort((a, b) => b.totalDaysMissed - a.totalDaysMissed);
+        
+        html += `
+            <div style="margin-bottom: 30px;">
+                <h4 style="color:#667eea; margin-bottom:15px; font-size:1.3em;">🏫 Class ${className}</h4>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th style="text-align:center;">Total Days Missed</th>
+                                <th style="text-align:center;">Days Remaining</th>
+                                <th style="text-align:center;">Risk Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+        
+        students.forEach(student => {
+            const isExpelled = student.totalDaysMissed >= expulsionDays;
+            const riskPercent = student.totalDaysMissed / expulsionDays;
+            
+            let rowClass = 'row-low';
+            let statusText = 'LOW RISK';
+            let statusColor = '#4CAF50';
+            
+            if (isExpelled) {
+                rowClass = 'row-high';
+                statusText = 'DISMISSED';
+                statusColor = '#ff4444';
+            } else if (riskPercent >= 0.75) {
+                rowClass = 'row-medium';
+                statusText = 'HIGH RISK';
+                statusColor = '#ff8800';
+            }
+            
+            const daysRemaining = Math.max(0, expulsionDays - student.totalDaysMissed);
+
+            html += `
+                <tr class="${rowClass}">
+                    <td><span class="clickable" onclick="showStudentProfile('${student.name.replace(/'/g, "\\'")}')">${student.name}</span></td>
+                    <td style="text-align:center; font-weight:bold;">${student.totalDaysMissed}</td>
+                    <td style="text-align:center;">${daysRemaining}</td>
+                    <td style="text-align:center; font-weight:bold; color: ${statusColor};">${statusText}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    // --- Original Analytics Tables (Appended Below Risk Report) ---
+    
+    const byClass = {};
+    classes.forEach(c => byClass[c] = 0);
+    
+    allData.forEach(row => {
+        if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
+            byClass[row.classGroup] += row.absences.length * row.lectureCount;
+        }
+    });
+
+    const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+    allData.forEach(row => {
+        const match = String(row.lecture).match(/\d+/); 
+        const lec = match ? parseInt(match[0]) : 0;
+        
+        if (lec >= 1 && lec <= 6) {
+            byLecture[lec] += row.absences.length * row.lectureCount;
+        }
+    });
+
+    const bySubject = {};
+    allData.forEach(row => {
+        if (row.subject) {
+            bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
+        }
+    });
+
+    let oldAnalyticsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top: 30px;">';
+    
+    // Absences by Class
+    oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+    Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
+        oldAnalyticsHtml += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+    });
+    oldAnalyticsHtml += '</tbody></table></div></div>';
+
+    // Absences by Lecture Time
+    oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+    Object.entries(byLecture).forEach(([lec, count]) => {
+        oldAnalyticsHtml += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+    });
+    oldAnalyticsHtml += '</tbody></table></div></div>';
+
+    // Absences by Subject
+    oldAnalyticsHtml += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
+    const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
+    Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
+        const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
+        oldAnalyticsHtml += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
+    });
+    oldAnalyticsHtml += '</tbody></table></div></div>';
+
+    oldAnalyticsHtml += '</div>';
+
+    document.getElementById('analyticsContent').innerHTML = html + oldAnalyticsHtml;
+}
 
         function showTab(tabName) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -1225,15 +1396,59 @@
                 closeModal();
             }
         }
+        
+        // 1. New function to manage the timed refresh logic
+        function scheduleDataFetch() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            // Define the refresh window: 8 AM (inclusive) to 2 PM (exclusive)
+            const START_HOUR = 8; // 8:00 AM
+            const END_HOUR = 14;  // 2:00 PM (14:00)
 
+            let intervalMs;
+            
+            if (currentHour >= START_HOUR && currentHour < END_HOUR) {
+                // If we are INSIDE the 8 AM to 2 PM window:
+                // Refresh every 5 minutes (300,000 ms)
+                intervalMs = 300000;
+                console.log(`⏰ Inside window. Refreshing data in ${intervalMs / 60000} minutes...`);
+                // We call fetchData() here to run the 5-minute refresh cycle.
+                fetchData(); 
+                
+            } else {
+                // If we are OUTSIDE the window:
+                // Calculate time until next 8 AM (to wait the longest possible time)
+                
+                // Set the date for the next 8 AM
+                const nextStart = new Date(now);
+                if (currentHour >= END_HOUR) {
+                    // If after 2 PM, schedule for tomorrow
+                    nextStart.setDate(now.getDate() + 1);
+                }
+                nextStart.setHours(START_HOUR, 0, 1, 0); // Set to 8:00:01 AM
+                
+                // Calculate the wait time until 8 AM
+                intervalMs = nextStart.getTime() - now.getTime();
+                
+                console.log(`😴 Outside window. Next refresh check scheduled for 8 AM (in ${Math.round(intervalMs / 3600000)} hours)...`);
+            }
+
+            // Use setTimeout to schedule the next execution, whether it's 5 minutes or many hours
+            setTimeout(scheduleDataFetch, intervalMs);
+        }
+
+        // STARTUP CODE (Corrected document.addEventListener)
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Dashboard initializing...');
-            fetchData();
-            // 3. MOBILE OPTIMIZATION: Reduce refresh rate on mobile to save battery/data, or keep it quick as this is a dashboard. Keeping it quick (60s) for real-time feel.
-            setInterval(fetchData, 300000); 
+            
+            // 1. ALWAYS fetch data immediately on page load to show current status
+            fetchData(); 
+            
+            // 2. Start the time-based refresh loop
+            scheduleDataFetch(); 
         });
+
     </script>
 </body>
-
 </html>
-
