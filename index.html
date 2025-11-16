@@ -476,7 +476,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         // NOTE: The submission features (1 & 2) cannot be implemented as the backend code (form and submission logic) is missing.
         // I have focused on enhancing the client-side dashboard, filtering, and mobile experience.
         
@@ -488,6 +488,22 @@
         let classes = [];
         let weeks = [];
         let months = [];
+
+        // --- NEW HELPER FUNCTION TO TRUNCATE NAMES ---
+        /**
+         * Takes a full name string, splits it by space, and returns only the first three parts joined by a space.
+         * @param {string} fullName The full name to process.
+         * @returns {string} The first three names.
+         */
+        function getThreeNames(fullName) {
+            if (!fullName) return '';
+            // Split the name by space and filter out any empty strings from extra spaces
+            const names = fullName.trim().split(/\s+/).filter(Boolean);
+            // Return only the first 3 names, or fewer if the name is shorter
+            return names.slice(0, 3).join(' ');
+        }
+        // ---------------------------------------------
+
 
         function normalizeDate(dateStr) {
             if (!dateStr) return '';
@@ -551,6 +567,7 @@
 
             allData.forEach(entry => {
                 entry.absences.forEach(name => {
+                    // NOTE: 'name' here is already the full name from parseData/getThreeNames
                     if (!studentDailyLectures[name]) {
                         studentDailyLectures[name] = {};
                     }
@@ -611,6 +628,10 @@
                     }
                 }
                 
+                // *** MODIFICATION START: Truncate names right after parsing ***
+                const processedAbsences = absences.map(getThreeNames);
+                // *** MODIFICATION END ***
+                
                 if (date && classGroup) {
                     data.push({
                         date: date,
@@ -619,11 +640,16 @@
                         lecture: lecture,
                         lectureCount: getLectureCount(lecture),
                         classGroup: classGroup,
-                        absences: absences
+                        absences: processedAbsences // Use the truncated names
                     });
                 }
             });
             
+            // Deduplicate 'absences' array within each entry since multiple full names might truncate to the same 3 names.
+            data.forEach(entry => {
+                entry.absences = [...new Set(entry.absences)];
+            });
+
             console.log(`✅ Parsed ${data.length} records`);
             return data;
         }
@@ -719,7 +745,7 @@
                 totalAbs += count;
                 
                 row.absences.forEach(name => {
-                    const key = name.toLowerCase();
+                    const key = name.toLowerCase(); // Key is the 3-name string
                     students[key] = (students[key] || 0) + row.lectureCount;
                 });
             });
@@ -780,6 +806,7 @@
                         if (!byClass[row.classGroup][num]) {
                             byClass[row.classGroup][num] = { subject: row.subject, teacher: row.teacher, students: [] };
                         }
+                        // Students array contains the 3-name string
                         row.absences.forEach(s => {
                             if (!byClass[row.classGroup][num].students.includes(s)) {
                                 byClass[row.classGroup][num].students.push(s);
@@ -812,6 +839,7 @@
                 for (let i = 1; i <= 6; i++) {
                     const lec = lectures[i];
                     if (lec && lec.students.length > 0) {
+                        // Display the 3-name string
                         html += `<td style="vertical-align:top; padding:10px;">
                             <div style="color:#c33; font-weight:500; text-align:right; direction:rtl;"> 
                                 ${lec.students.map(s => `• ${s}`).join('<br>')}
@@ -870,7 +898,7 @@
             const subjects = new Set();
             
             allData.filter(r => r.classGroup === cls).forEach(row => {
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (!summary[name]) summary[name] = { total: 0, subjects: {} };
                     summary[name].total += row.lectureCount;
                     summary[name].subjects[row.subject] = (summary[name].subjects[row.subject] || 0) + row.lectureCount;
@@ -893,14 +921,14 @@
             const subArr = Array.from(subjects).sort();
             
             let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:10px;">🏫 Class ${cls} - Absence Summary</h3>
-                        <p style="color:#666; margin-bottom:20px;">Click on any student name to view their detailed profile</p>
+                        <p style="color: #666; margin-bottom: 20px;">Click on any student name to view their detailed profile</p>
                         <div style="overflow-x:auto;"><table><thead><tr><th>Student Name</th>`;
             subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
             html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
             
             sorted.forEach(([name, data]) => {
                 const sev = getSeverity(data.total);
-                // 5. STUDENT PROFILES: Clickable student name implementation
+                // 5. STUDENT PROFILES: Clickable student name implementation (uses the 3-name string)
                 html += `<tr class="row-${sev}"><td class="clickable" onclick="showStudentProfile('${name.replace(/'/g, "\\'")}')">${name}</td>`;
                 
                 subArr.forEach(sub => {
@@ -955,7 +983,7 @@
                 if (!row.classGroup) return;
                 if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
                 
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (!byClass[row.classGroup][name]) {
                         byClass[row.classGroup][name] = { total: 0, subjects: {} };
                     }
@@ -985,7 +1013,7 @@
                 
                 sorted.forEach(([name, data]) => {
                     const sev = getSeverity(data.total);
-                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
+                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`; // Display the 3-name string
                     
                     subArr.forEach(sub => {
                         const count = data.subjects[sub] || 0;
@@ -1040,7 +1068,7 @@
                 if (!row.classGroup) return;
                 if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
                 
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (!byClass[row.classGroup][name]) {
                         byClass[row.classGroup][name] = { total: 0, subjects: {} };
                     }
@@ -1070,7 +1098,7 @@
                 
                 sorted.forEach(([name, data]) => {
                     const sev = getSeverity(data.total);
-                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
+                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`; // Display the 3-name string
                     
                     subArr.forEach(sub => {
                         const count = data.subjects[sub] || 0;
@@ -1088,6 +1116,7 @@
         }
 
         function searchStudent() {
+            // NOTE: The student search query must now match the 3-name format or part of it.
             const query = document.getElementById('studentSearch').value.toLowerCase().trim();
             
             if (!query) {
@@ -1097,8 +1126,9 @@
 
             const details = {};
             
+            // Loop through all data to find students whose 3-name string contains the query
             allData.forEach(row => {
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (name.toLowerCase().includes(query)) {
                         if (!details[name]) details[name] = { class: row.classGroup, total: 0, log: [] };
                         details[name].total += row.lectureCount;
@@ -1122,7 +1152,7 @@
             }
             
             let html = '';
-            Object.entries(details).forEach(([name, data]) => {
+            Object.entries(details).forEach(([name, data]) => { // 'name' is the 3-name string
                 data.log.sort((a, b) => new Date(b.date) - new Date(a.date));
                 const subjects = [...new Set(data.log.map(a => a.subject))];
                 const sev = getSeverity(data.total);
@@ -1166,6 +1196,7 @@
 
         // 5. STUDENT PROFILES: Detailed Profile View
         function showStudentProfile(name) {
+            // 'name' is the 3-name string passed from the clickable roster/search result
             const details = { class: '', total: 0, log: [] };
             
             allData.forEach(row => {
@@ -1189,8 +1220,7 @@
             const sev = getSeverity(details.total);
             
             let html = `<div class="student-profile-header">
-                <h2>👤 ${name}</h2>
-                <div style="margin-top:10px;">${getBadge(details.total)}</div>
+                <h2>👤 ${name}</h2> <div style="margin-top:10px;">${getBadge(details.total)}</div>
             </div>
             
             <div class="profile-stats">
@@ -1244,7 +1274,7 @@
             // Group students by class
             const studentsByClass = {};
             
-            Object.entries(riskSummary).forEach(([name, data]) => {
+            Object.entries(riskSummary).forEach(([name, data]) => { // 'name' is the 3-name string
                 // Find the student's class from allData
                 let studentClass = 'Unknown';
                 for (const row of allData) {
@@ -1463,7 +1493,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Dashboard initializing...');
             
-            // 1. ALWAYS fetch data immediately on page load to show current status
+            // 1. ALWAYS fetch data immediately on page load to show currentstatus
             fetchData(); 
             
             // 2. Start the time-based refresh loop
@@ -1473,4 +1503,5 @@
     </script>
 </body>
 </html>
+
 
