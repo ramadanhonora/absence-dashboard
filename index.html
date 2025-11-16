@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +20,7 @@
         
         .header {
             background: white;
-            padding: 30px;
+            padding: 0px;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             margin-bottom: 30px;
@@ -32,22 +33,22 @@
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            gap: 5px;
             margin-bottom: 30px;
         }
-                    /* ADD THIS CSS to the <style> section */
+        /* ADD THIS CSS to the <style> section */
             .header-main-content {
                 display: flex;          /* Enable horizontal alignment for its children */
                 align-items: center;    /* Vertically center the logo with the text */
                 gap: 25px;              /* Adds space between the logo and the titles */
-                margin-bottom: 20px;    
+                margin-bottom: 5px;    
             }
-            
+
             .header-titles {
                 /* Ensures the titles are stacked on the left side of the text block */
                 text-align: left; 
             }
-        .stat-card {
+                    .stat-card {
             background: white;
             padding: 25px;
             border-radius: 15px;
@@ -321,7 +322,7 @@
             
             <div class="header-main-content">
                 
-                <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 190px;">
+                <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 140px;">
                 
                 <div class="header-titles">
                     <h1 style="color: #667eea; font-size: 2.5em; margin: 0;">Akre Computer Institute</h1>
@@ -480,10 +481,7 @@
         // I have focused on enhancing the client-side dashboard, filtering, and mobile experience.
         
         // ** IMPORTANT: Replace with your actual credentials **
-        const SHEET_ID = '1O9-62ZZ4YhV6abCnTgqQ2JsLiYLawnu3Ivhi3yDH2ic';
-        const SHEET_NAME = 'Form Responses 2';
-        const API_KEY = 'AIzaSyDPGpXfYFfg-rzvD2cbUKsPbOoAlWWF2rY';
-        const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A1:Z1000?key=${API_KEY}`;
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
         const SCHOOL_START = '9/21/2025';
 
         let allData = [];
@@ -613,7 +611,7 @@
                     }
                 }
                 
-                if (date && absences.length > 0) {
+                if (date && classGroup) {
                     data.push({
                         date: date,
                         teacher: teacher,
@@ -764,17 +762,15 @@
             const filterDate = normalizeDate(val);
             const filtered = allData.filter(r => r.date === filterDate);
             
-            if (filtered.length === 0) {
-                document.getElementById('dailyContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
-                    <p style="font-size:3em;">📭</p>
-                    <p>No absences recorded for <strong>${filterDate}</strong></p>
-                </div>`;
-                return;
-            }
-            
+            // Initialize all classes with empty lecture data
             const byClass = {};
+            classes.forEach(cls => {
+                byClass[cls] = {};
+            });
+            
+            // Fill in the absence data for classes that have records
             filtered.forEach(row => {
-                if (!row.classGroup) return; // Skip records with no class
+                if (!row.classGroup) return;
                 if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
                 
                 const nums = String(row.lecture).match(/\d+/g) || ['1'];
@@ -796,18 +792,20 @@
             let html = '';
             Object.keys(byClass).sort().forEach(cls => {
                 const lectures = byClass[cls];
+                
                 html += `<div class="chart-container">
                     <h3 style="color:#667eea; font-size:1.4em;">🏫 Class ${cls}</h3>
-                    <p style="color:#666; margin:10px 0;">📅 ${filterDate}</p>
-                    <div style="overflow-x:auto;">
-                        <table><thead><tr>`;
+                    <p style="color:#666; margin:10px 0;">📅 ${filterDate}</p>`;
+                
+                html += `<div style="overflow-x:auto;">
+                    <table><thead><tr>`;
                 
                 for (let i = 1; i <= 6; i++) html += `<th style="text-align:center;">Lec ${i}</th>`;
                 html += `</tr></thead><tbody><tr style="background:#f8f9fa;">`;
                 
                 for (let i = 1; i <= 6; i++) {
                     const lec = lectures[i];
-                    html += `<td style="text-align:center; font-weight:bold; padding:14px;">${lec ? lec.subject : '-'}</td>`;
+                    html += `<td style="text-align:center; font-weight:bold; padding:14px;">${lec ? lec.subject : ''}</td>`;
                 }
                 html += `</tr><tr>`;
                 
@@ -819,17 +817,21 @@
                                 ${lec.students.map(s => `• ${s}`).join('<br>')}
                             </div>
                         </td>`;
+                    } else if (lec) {
+                        html += `<td style="text-align:center; color:#4CAF50; padding:10px; font-weight:600;">none</td>`;
                     } else {
-                        html += `<td style="text-align:center; color:#999; padding:10px;">-</td>`;
+                        html += `<td style="text-align:center; color:#999; padding:10px;"></td>`;
                     }
                 }
                 html += `</tr><tr style="background:#f8f9fa;">`;
                 
                 for (let i = 1; i <= 6; i++) {
                     const lec = lectures[i];
-                    html += `<td style="text-align:center; font-style:italic; color:#666; padding:10px; font-size:0.9em;">${lec ? lec.teacher : '-'}</td>`;
+                    html += `<td style="text-align:center; font-style:italic; color:#666; padding:10px; font-size:0.9em;">${lec ? lec.teacher : ''}</td>`;
                 }
-                html += `</tr></tbody></table></div></div>`;
+                html += `</tr></tbody></table></div>`;
+                
+                html += `</div>`;
             });
             
             document.getElementById('dailyContent').innerHTML = html;
@@ -1235,162 +1237,162 @@
             document.getElementById('studentModal').style.display = 'none';
         }
 
-function loadAnalytics() {
-    const riskSummary = calculateExpulsionRisk();
-    const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
-    
-    // Group students by class
-    const studentsByClass = {};
-    
-    Object.entries(riskSummary).forEach(([name, data]) => {
-        // Find the student's class from allData
-        let studentClass = 'Unknown';
-        for (const row of allData) {
-            if (row.absences.includes(name)) {
-                studentClass = row.classGroup || 'Unknown';
-                break;
-            }
-        }
-        
-        if (!studentsByClass[studentClass]) {
-            studentsByClass[studentClass] = [];
-        }
-        
-        studentsByClass[studentClass].push({ name, ...data });
-    });
-    
-    // Sort classes alphabetically
-    const sortedClasses = Object.keys(studentsByClass).sort();
-    
-    let html = `
-        <div class="chart-container" style="margin-top: 20px;">
-            <h3 style="color:#ff4444; margin-bottom:15px; font-size:1.5em;">⚠️ Expulsion Risk Report</h3>
-            <p style="color:#666; margin-bottom:20px;">
-                Tracking students with <strong>${lecturesPerDay}</strong> or more lectures missed in a day counting as 1 day missed, 
-                with a dismissal threshold of <strong>${expulsionDays}</strong> total days.
-            </p>
-    `;
-    
-    // Create a table for each class
-    sortedClasses.forEach(className => {
-        const students = studentsByClass[className];
-        
-        // Sort students within class by days missed (highest first)
-        students.sort((a, b) => b.totalDaysMissed - a.totalDaysMissed);
-        
-        html += `
-            <div style="margin-bottom: 30px;">
-                <h4 style="color:#667eea; margin-bottom:15px; font-size:1.3em;">🏫 Class ${className}</h4>
-                <div style="overflow-x:auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student Name</th>
-                                <th style="text-align:center;">Total Days Missed</th>
-                                <th style="text-align:center;">Days Remaining</th>
-                                <th style="text-align:center;">Risk Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-        `;
-        
-        students.forEach(student => {
-            const isExpelled = student.totalDaysMissed >= expulsionDays;
-            const riskPercent = student.totalDaysMissed / expulsionDays;
+        function loadAnalytics() {
+            const riskSummary = calculateExpulsionRisk();
+            const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
             
-            let rowClass = 'row-low';
-            let statusText = 'LOW RISK';
-            let statusColor = '#4CAF50';
+            // Group students by class
+            const studentsByClass = {};
             
-            if (isExpelled) {
-                rowClass = 'row-high';
-                statusText = 'DISMISSED';
-                statusColor = '#ff4444';
-            } else if (riskPercent >= 0.75) {
-                rowClass = 'row-medium';
-                statusText = 'HIGH RISK';
-                statusColor = '#ff8800';
-            }
+            Object.entries(riskSummary).forEach(([name, data]) => {
+                // Find the student's class from allData
+                let studentClass = 'Unknown';
+                for (const row of allData) {
+                    if (row.absences.includes(name)) {
+                        studentClass = row.classGroup || 'Unknown';
+                        break;
+                    }
+                }
+                
+                if (!studentsByClass[studentClass]) {
+                    studentsByClass[studentClass] = [];
+                }
+                
+                studentsByClass[studentClass].push({ name, ...data });
+            });
             
-            const daysRemaining = Math.max(0, expulsionDays - student.totalDaysMissed);
-
-            html += `
-                <tr class="${rowClass}">
-                    <td><span class="clickable" onclick="showStudentProfile('${student.name.replace(/'/g, "\\'")}')">${student.name}</span></td>
-                    <td style="text-align:center; font-weight:bold;">${student.totalDaysMissed}</td>
-                    <td style="text-align:center;">${daysRemaining}</td>
-                    <td style="text-align:center; font-weight:bold; color: ${statusColor};">${statusText}</td>
-                </tr>
+            // Sort classes alphabetically
+            const sortedClasses = Object.keys(studentsByClass).sort();
+            
+            let html = `
+                <div class="chart-container" style="margin-top: 20px;">
+                    <h3 style="color:#ff4444; margin-bottom:15px; font-size:1.5em;">⚠️ Expulsion Risk Report</h3>
+                    <p style="color:#666; margin-bottom:20px;">
+                        Tracking students with <strong>${lecturesPerDay}</strong> or more lectures missed in a day counting as 1 day missed, 
+                        with a dismissal threshold of <strong>${expulsionDays}</strong> total days.
+                    </p>
             `;
-        });
-        
-        html += `
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += `</div>`;
-    
-    // --- Original Analytics Tables (Appended Below Risk Report) ---
-    
-    const byClass = {};
-    classes.forEach(c => byClass[c] = 0);
-    
-    allData.forEach(row => {
-        if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
-            byClass[row.classGroup] += row.absences.length * row.lectureCount;
+            
+            // Create a table for each class
+            sortedClasses.forEach(className => {
+                const students = studentsByClass[className];
+                
+                // Sort students within class by days missed (highest first)
+                students.sort((a, b) => b.totalDaysMissed - a.totalDaysMissed);
+                
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <h4 style="color:#667eea; margin-bottom:15px; font-size:1.3em;">🏫 Class ${className}</h4>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th style="text-align:center;">Total Days Missed</th>
+                                        <th style="text-align:center;">Days Remaining</th>
+                                        <th style="text-align:center;">Risk Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+                
+                students.forEach(student => {
+                    const isExpelled = student.totalDaysMissed >= expulsionDays;
+                    const riskPercent = student.totalDaysMissed / expulsionDays;
+                    
+                    let rowClass = 'row-low';
+                    let statusText = 'LOW RISK';
+                    let statusColor = '#4CAF50';
+                    
+                    if (isExpelled) {
+                        rowClass = 'row-high';
+                        statusText = 'DISMISSED';
+                        statusColor = '#ff4444';
+                    } else if (riskPercent >= 0.75) {
+                        rowClass = 'row-medium';
+                        statusText = 'HIGH RISK';
+                        statusColor = '#ff8800';
+                    }
+                    
+                    const daysRemaining = Math.max(0, expulsionDays - student.totalDaysMissed);
+
+                    html += `
+                        <tr class="${rowClass}">
+                            <td><span class="clickable" onclick="showStudentProfile('${student.name.replace(/'/g, "\\'")}')">${student.name}</span></td>
+                            <td style="text-align:center; font-weight:bold;">${student.totalDaysMissed}</td>
+                            <td style="text-align:center;">${daysRemaining}</td>
+                            <td style="text-align:center; font-weight:bold; color: ${statusColor};">${statusText}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            
+            // --- Original Analytics Tables (Appended Below Risk Report) ---
+            
+            const byClass = {};
+            classes.forEach(c => byClass[c] = 0);
+            
+            allData.forEach(row => {
+                if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
+                    byClass[row.classGroup] += row.absences.length * row.lectureCount;
+                }
+            });
+
+            const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+            allData.forEach(row => {
+                const match = String(row.lecture).match(/\d+/); 
+                const lec = match ? parseInt(match[0]) : 0;
+                
+                if (lec >= 1 && lec <= 6) {
+                    byLecture[lec] += row.absences.length * row.lectureCount;
+                }
+            });
+
+            const bySubject = {};
+            allData.forEach(row => {
+                if (row.subject) {
+                    bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
+                }
+            });
+
+            let oldAnalyticsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top: 30px;">';
+            
+            // Absences by Class
+            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+            Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
+                oldAnalyticsHtml += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            // Absences by Lecture Time
+            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+            Object.entries(byLecture).forEach(([lec, count]) => {
+                oldAnalyticsHtml += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            // Absences by Subject
+            oldAnalyticsHtml += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
+            const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
+            Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
+                const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
+                oldAnalyticsHtml += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            oldAnalyticsHtml += '</div>';
+
+            document.getElementById('analyticsContent').innerHTML = html + oldAnalyticsHtml;
         }
-    });
-
-    const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
-    allData.forEach(row => {
-        const match = String(row.lecture).match(/\d+/); 
-        const lec = match ? parseInt(match[0]) : 0;
-        
-        if (lec >= 1 && lec <= 6) {
-            byLecture[lec] += row.absences.length * row.lectureCount;
-        }
-    });
-
-    const bySubject = {};
-    allData.forEach(row => {
-        if (row.subject) {
-            bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
-        }
-    });
-
-    let oldAnalyticsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top: 30px;">';
-    
-    // Absences by Class
-    oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-    Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
-        oldAnalyticsHtml += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-    });
-    oldAnalyticsHtml += '</tbody></table></div></div>';
-
-    // Absences by Lecture Time
-    oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-    Object.entries(byLecture).forEach(([lec, count]) => {
-        oldAnalyticsHtml += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-    });
-    oldAnalyticsHtml += '</tbody></table></div></div>';
-
-    // Absences by Subject
-    oldAnalyticsHtml += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
-    const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
-    Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
-        const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
-        oldAnalyticsHtml += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
-    });
-    oldAnalyticsHtml += '</tbody></table></div></div>';
-
-    oldAnalyticsHtml += '</div>';
-
-    document.getElementById('analyticsContent').innerHTML = html + oldAnalyticsHtml;
-}
 
         function showTab(tabName) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
