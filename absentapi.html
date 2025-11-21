@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhanced Absence Dashboard</title>
-    <style>
+  <style>
         /* BASE & LAYOUT */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -307,11 +308,118 @@
             }
         }
         
+        /* PRINT STYLES - FIXED FOR CLEAR TEXT */
         @media print {
-            body { background: white !important; padding: 0; }
-            .tabs, .stats-grid, .filter-section, .header p, .btn, .btn-secondary, .btn-success { display: none !important; }
-            .header { box-shadow: none; }
-            table { page-break-inside: avoid; }
+            body { 
+                background: white !important; 
+                padding: 0;
+                color: #000 !important;
+            }
+            
+            .tabs, .stats-grid, .filter-section, .header p, .btn, .btn-secondary, .btn-success { 
+                display: none !important; 
+            }
+            
+            .header { 
+                box-shadow: none;
+                border: 2px solid #000 !important;
+                margin-bottom: 20px;
+            }
+            
+            .header h1, .header h2 {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Force all text to print in solid black */
+            .content-section h2, .content-section h3, .content-section h4,
+            .chart-container h3, .chart-container h4,
+            table, th, td, p, span, strong, div {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Make table headers print with black text and gray background */
+            th {
+                background: #d3d3d3 !important;
+                color: #000 !important;
+                border: 1px solid #000 !important;
+                font-weight: bold !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Ensure table cells have visible borders */
+            td {
+                border: 1px solid #000 !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Make sure all text is bold and visible */
+            strong, .number, .value {
+                font-weight: bold !important;
+                color: #000 !important;
+            }
+            
+            /* Remove colored backgrounds for printing, keep white */
+            .chart-container {
+                background: white !important;
+                border: 1px solid #000 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            /* Keep row backgrounds subtle but visible */
+            tr.row-high {
+                background: #f5f5f5 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            tr.row-medium {
+                background: #fafafa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            tr.row-low {
+                background: white !important;
+            }
+            
+            /* Ensure badges print clearly */
+            .badge {
+                border: 2px solid #000 !important;
+                color: #000 !important;
+                background: white !important;
+                padding: 3px 8px !important;
+                font-weight: bold !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Make clickable text print as regular text */
+            .clickable {
+                color: #000 !important;
+                text-decoration: none !important;
+                cursor: default;
+            }
+            
+            /* Avoid page breaks inside tables */
+            table { 
+                page-break-inside: avoid;
+                border: 1px solid #000 !important;
+            }
+            
+            /* Ensure page breaks happen at appropriate places */
+            .chart-container {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
         }
     </style>
 </head>
@@ -324,7 +432,7 @@
                 <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 140px;">
                 
                 <div class="header-titles">
-                    <h1 style="color: #667eea; font-size: 2.5em; margin: 0;">Akre Computer Institute</h1>
+                    <h1 style="color: #667eea; font-size: 2.5em; margin: 0;">Akre Computer Institute : پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
                     <h2 style="color: #764ba2; font-size: 1.5em; margin: 5px 0 0 0;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h2>
                 </div>
             </div>
@@ -474,22 +582,34 @@
             <div id="modalContent"></div>
         </div>
     </div>
-
-    <script>
+<script>
         // NOTE: The submission features (1 & 2) cannot be implemented as the backend code (form and submission logic) is missing.
         // I have focused on enhancing the client-side dashboard, filtering, and mobile experience.
         
         // ** IMPORTANT: Replace with your actual credentials **
-        const SHEET_ID = '1O9-62ZZ4YhV6abCnTgqQ2JsLiYLawnu3Ivhi3yDH2ic';
-        const SHEET_NAME = 'Form Responses 2';
-        const API_KEY = 'AIzaSyDPGpXfYFfg-rzvD2cbUKsPbOoAlWWF2rY';
-        const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A1:Z1000?key=${API_KEY}`;
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
         const SCHOOL_START = '9/21/2025';
 
         let allData = [];
         let classes = [];
         let weeks = [];
         let months = [];
+
+        // --- NEW HELPER FUNCTION TO TRUNCATE NAMES ---
+        /**
+         * Takes a full name string, splits it by space, and returns only the first three parts joined by a space.
+         * @param {string} fullName The full name to process.
+         * @returns {string} The first three names.
+         */
+        function getThreeNames(fullName) {
+            if (!fullName) return '';
+            // Split the name by space and filter out any empty strings from extra spaces
+            const names = fullName.trim().split(/\s+/).filter(Boolean);
+            // Return only the first 3 names, or fewer if the name is shorter
+            return names.slice(0, 3).join(' ');
+        }
+        // ---------------------------------------------
+
 
         function normalizeDate(dateStr) {
             if (!dateStr) return '';
@@ -553,6 +673,7 @@
 
             allData.forEach(entry => {
                 entry.absences.forEach(name => {
+                    // NOTE: 'name' here is already the full name from parseData/getThreeNames
                     if (!studentDailyLectures[name]) {
                         studentDailyLectures[name] = {};
                     }
@@ -613,7 +734,11 @@
                     }
                 }
                 
-                if (date && absences.length > 0) {
+                // *** MODIFICATION START: Truncate names right after parsing ***
+                const processedAbsences = absences.map(getThreeNames);
+                // *** MODIFICATION END ***
+                
+                if (date && classGroup) {
                     data.push({
                         date: date,
                         teacher: teacher,
@@ -621,11 +746,16 @@
                         lecture: lecture,
                         lectureCount: getLectureCount(lecture),
                         classGroup: classGroup,
-                        absences: absences
+                        absences: processedAbsences // Use the truncated names
                     });
                 }
             });
             
+            // Deduplicate 'absences' array within each entry since multiple full names might truncate to the same 3 names.
+            data.forEach(entry => {
+                entry.absences = [...new Set(entry.absences)];
+            });
+
             console.log(`✅ Parsed ${data.length} records`);
             return data;
         }
@@ -721,7 +851,7 @@
                 totalAbs += count;
                 
                 row.absences.forEach(name => {
-                    const key = name.toLowerCase();
+                    const key = name.toLowerCase(); // Key is the 3-name string
                     students[key] = (students[key] || 0) + row.lectureCount;
                 });
             });
@@ -741,6 +871,9 @@
 
         function setToday() {
             const now = new Date();
+            const dayOfWeek = now.getDay();
+            
+            // If today is Friday (5) or Saturday (6), show message but still allow selection
             document.getElementById('dailyDate').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
             filterDaily();
         }
@@ -761,20 +894,39 @@
             const val = document.getElementById('dailyDate').value;
             if (!val) return;
             
-            const filterDate = normalizeDate(val);
-            const filtered = allData.filter(r => r.date === filterDate);
+            // Check if selected date is a weekend (Friday=5 or Saturday=6)
+            const selectedDate = new Date(val);
+            const dayOfWeek = selectedDate.getDay();
             
-            if (filtered.length === 0) {
-                document.getElementById('dailyContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
-                    <p style="font-size:3em;">📭</p>
-                    <p>No absences recorded for <strong>${filterDate}</strong></p>
-                </div>`;
+            if (dayOfWeek === 5 || dayOfWeek === 6) {
+                const dayName = dayOfWeek === 5 ? 'Friday' : 'Saturday';
+                document.getElementById('dailyContent').innerHTML = `
+                    <div style="text-align:center; padding:80px 20px;">
+                        <div style="font-size:5em; margin-bottom:20px;">🏖️</div>
+                        <h2 style="color:#667eea; font-size:2em; margin-bottom:15px;">Weekend - No School</h2>
+                        <p style="color:#666; font-size:1.2em; margin-bottom:10px;">
+                            <strong>${dayName}, ${formatDate(selectedDate)}</strong>
+                        </p>
+                        <p style="color:#999; font-size:1em;">
+                            The institute is closed on weekends. Please select a weekday to view the daily report.
+                        </p>
+                    </div>
+                `;
                 return;
             }
             
+            const filterDate = normalizeDate(val);
+            const filtered = allData.filter(r => r.date === filterDate);
+            
+            // Initialize all classes with empty lecture data
             const byClass = {};
+            classes.forEach(cls => {
+                byClass[cls] = {};
+            });
+            
+            // Fill in the absence data for classes that have records
             filtered.forEach(row => {
-                if (!row.classGroup) return; // Skip records with no class
+                if (!row.classGroup) return;
                 if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
                 
                 const nums = String(row.lecture).match(/\d+/g) || ['1'];
@@ -784,6 +936,7 @@
                         if (!byClass[row.classGroup][num]) {
                             byClass[row.classGroup][num] = { subject: row.subject, teacher: row.teacher, students: [] };
                         }
+                        // Students array contains the 3-name string
                         row.absences.forEach(s => {
                             if (!byClass[row.classGroup][num].students.includes(s)) {
                                 byClass[row.classGroup][num].students.push(s);
@@ -796,40 +949,47 @@
             let html = '';
             Object.keys(byClass).sort().forEach(cls => {
                 const lectures = byClass[cls];
+                
                 html += `<div class="chart-container">
                     <h3 style="color:#667eea; font-size:1.4em;">🏫 Class ${cls}</h3>
-                    <p style="color:#666; margin:10px 0;">📅 ${filterDate}</p>
-                    <div style="overflow-x:auto;">
-                        <table><thead><tr>`;
+                    <p style="color:#666; margin:10px 0;">📅 ${filterDate}</p>`;
+                
+                html += `<div style="overflow-x:auto;">
+                    <table><thead><tr>`;
                 
                 for (let i = 1; i <= 6; i++) html += `<th style="text-align:center;">Lec ${i}</th>`;
                 html += `</tr></thead><tbody><tr style="background:#f8f9fa;">`;
                 
                 for (let i = 1; i <= 6; i++) {
                     const lec = lectures[i];
-                    html += `<td style="text-align:center; font-weight:bold; padding:14px;">${lec ? lec.subject : '-'}</td>`;
+                    html += `<td style="text-align:center; font-weight:bold; padding:14px;">${lec ? lec.subject : ''}</td>`;
                 }
                 html += `</tr><tr>`;
                 
                 for (let i = 1; i <= 6; i++) {
                     const lec = lectures[i];
                     if (lec && lec.students.length > 0) {
+                        // Display the 3-name string
                         html += `<td style="vertical-align:top; padding:10px;">
                             <div style="color:#c33; font-weight:500; text-align:right; direction:rtl;"> 
                                 ${lec.students.map(s => `• ${s}`).join('<br>')}
                             </div>
                         </td>`;
+                    } else if (lec) {
+                        html += `<td style="text-align:center; color:#4CAF50; padding:10px; font-weight:600;">none</td>`;
                     } else {
-                        html += `<td style="text-align:center; color:#999; padding:10px;">-</td>`;
+                        html += `<td style="text-align:center; color:#999; padding:10px;"></td>`;
                     }
                 }
                 html += `</tr><tr style="background:#f8f9fa;">`;
                 
                 for (let i = 1; i <= 6; i++) {
                     const lec = lectures[i];
-                    html += `<td style="text-align:center; font-style:italic; color:#666; padding:10px; font-size:0.9em;">${lec ? lec.teacher : '-'}</td>`;
+                    html += `<td style="text-align:center; font-style:italic; color:#666; padding:10px; font-size:0.9em;">${lec ? lec.teacher : ''}</td>`;
                 }
-                html += `</tr></tbody></table></div></div>`;
+                html += `</tr></tbody></table></div>`;
+                
+                html += `</div>`;
             });
             
             document.getElementById('dailyContent').innerHTML = html;
@@ -868,7 +1028,7 @@
             const subjects = new Set();
             
             allData.filter(r => r.classGroup === cls).forEach(row => {
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (!summary[name]) summary[name] = { total: 0, subjects: {} };
                     summary[name].total += row.lectureCount;
                     summary[name].subjects[row.subject] = (summary[name].subjects[row.subject] || 0) + row.lectureCount;
@@ -891,14 +1051,14 @@
             const subArr = Array.from(subjects).sort();
             
             let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:10px;">🏫 Class ${cls} - Absence Summary</h3>
-                        <p style="color:#666; margin-bottom:20px;">Click on any student name to view their detailed profile</p>
+                        <p style="color: #666; margin-bottom: 20px;">Click on any student name to view their detailed profile</p>
                         <div style="overflow-x:auto;"><table><thead><tr><th>Student Name</th>`;
             subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
             html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
             
             sorted.forEach(([name, data]) => {
                 const sev = getSeverity(data.total);
-                // 5. STUDENT PROFILES: Clickable student name implementation
+                // 5. STUDENT PROFILES: Clickable student name implementation (uses the 3-name string)
                 html += `<tr class="row-${sev}"><td class="clickable" onclick="showStudentProfile('${name.replace(/'/g, "\\'")}')">${name}</td>`;
                 
                 subArr.forEach(sub => {
@@ -953,7 +1113,7 @@
                 if (!row.classGroup) return;
                 if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
                 
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (!byClass[row.classGroup][name]) {
                         byClass[row.classGroup][name] = { total: 0, subjects: {} };
                     }
@@ -983,7 +1143,7 @@
                 
                 sorted.forEach(([name, data]) => {
                     const sev = getSeverity(data.total);
-                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
+                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`; // Display the 3-name string
                     
                     subArr.forEach(sub => {
                         const count = data.subjects[sub] || 0;
@@ -1038,7 +1198,7 @@
                 if (!row.classGroup) return;
                 if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
                 
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (!byClass[row.classGroup][name]) {
                         byClass[row.classGroup][name] = { total: 0, subjects: {} };
                     }
@@ -1068,7 +1228,7 @@
                 
                 sorted.forEach(([name, data]) => {
                     const sev = getSeverity(data.total);
-                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
+                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`; // Display the 3-name string
                     
                     subArr.forEach(sub => {
                         const count = data.subjects[sub] || 0;
@@ -1086,6 +1246,7 @@
         }
 
         function searchStudent() {
+            // NOTE: The student search query must now match the 3-name format or part of it.
             const query = document.getElementById('studentSearch').value.toLowerCase().trim();
             
             if (!query) {
@@ -1095,8 +1256,9 @@
 
             const details = {};
             
+            // Loop through all data to find students whose 3-name string contains the query
             allData.forEach(row => {
-                row.absences.forEach(name => {
+                row.absences.forEach(name => { // 'name' is the 3-name string
                     if (name.toLowerCase().includes(query)) {
                         if (!details[name]) details[name] = { class: row.classGroup, total: 0, log: [] };
                         details[name].total += row.lectureCount;
@@ -1120,7 +1282,7 @@
             }
             
             let html = '';
-            Object.entries(details).forEach(([name, data]) => {
+            Object.entries(details).forEach(([name, data]) => { // 'name' is the 3-name string
                 data.log.sort((a, b) => new Date(b.date) - new Date(a.date));
                 const subjects = [...new Set(data.log.map(a => a.subject))];
                 const sev = getSeverity(data.total);
@@ -1162,8 +1324,95 @@
             document.getElementById('studentContent').innerHTML = html;
         }
 
+        // NEW: Search function from header
+        function searchStudentFromHeader() {
+            const query = document.getElementById('headerStudentSearch').value.toLowerCase().trim();
+            
+            if (!query || query.length < 2) {
+                return; // Don't search until at least 2 characters
+            }
+
+            const details = {};
+            
+            // Loop through all data to find students whose 3-name string contains the query
+            allData.forEach(row => {
+                row.absences.forEach(name => {
+                    if (name.toLowerCase().includes(query)) {
+                        if (!details[name]) details[name] = { class: row.classGroup, total: 0, log: [] };
+                        details[name].total += row.lectureCount;
+                        details[name].log.push({
+                            date: row.date,
+                            teacher: row.teacher,
+                            subject: row.subject,
+                            lecture: row.lecture,
+                            count: row.lectureCount
+                        });
+                    }
+                });
+            });
+
+            if (Object.keys(details).length === 0) {
+                document.getElementById('searchModalContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
+                    <p style="font-size:3em;">🔍</p>
+                    <p>No students found matching "<strong>${query}</strong>"</p>
+                </div>`;
+                document.getElementById('searchResultsModal').style.display = 'block';
+                return;
+            }
+            
+            let html = '<h2 style="color:#667eea; margin-bottom:20px;">👤 Search Results</h2>';
+            
+            Object.entries(details).forEach(([name, data]) => {
+                data.log.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const subjects = [...new Set(data.log.map(a => a.subject))];
+                const sev = getSeverity(data.total);
+                
+                html += `<div class="chart-container">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                        <h4 style="color:#667eea; font-size:1.3em;">${name}</h4>
+                        ${getBadge(data.total)}
+                    </div>
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="label">Class</div>
+                            <div class="value" style="font-size:1.5em;">${data.class || 'N/A'}</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="label">Total Absences</div>
+                            <div class="value" style="color:${sev === 'high' ? '#ff4444' : sev === 'medium' ? '#ff8800' : '#4CAF50'};">${data.total}</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="label">Subjects</div>
+                            <div class="value" style="font-size:1.5em;">${subjects.length}</div>
+                        </div>
+                    </div>
+                    <p style="margin:15px 0;"><strong>Subjects Missed:</strong> ${subjects.join(', ')}</p>
+                    <details style="margin-top:15px;">
+                        <summary style="cursor:pointer; color:#667eea; font-weight:600; font-size:1.05em; padding:10px; background:#f8f9fa; border-radius:8px;">📋 View Complete Log (${data.log.length} entries)</summary>
+                        <div style="overflow-x:auto; margin-top:15px;">
+                            <table>
+                                <thead><tr><th>Date</th><th>Lecture</th><th>Subject</th><th>Teacher</th></tr></thead>
+                                <tbody>`;
+                
+                data.log.forEach(a => {
+                    html += `<tr><td>${a.date}</td><td>${a.lecture}</td><td>${a.subject}</td><td>${a.teacher}</td></tr>`;
+                });
+                
+                html += `</tbody></table></div></details></div>`;
+            });
+
+            document.getElementById('searchModalContent').innerHTML = html;
+            document.getElementById('searchResultsModal').style.display = 'block';
+        }
+
+        function closeSearchModal() {
+            document.getElementById('searchResultsModal').style.display = 'none';
+            document.getElementById('headerStudentSearch').value = '';
+        }
+
         // 5. STUDENT PROFILES: Detailed Profile View
         function showStudentProfile(name) {
+            // 'name' is the 3-name string passed from the clickable roster/search result
             const details = { class: '', total: 0, log: [] };
             
             allData.forEach(row => {
@@ -1187,8 +1436,7 @@
             const sev = getSeverity(details.total);
             
             let html = `<div class="student-profile-header">
-                <h2>👤 ${name}</h2>
-                <div style="margin-top:10px;">${getBadge(details.total)}</div>
+                <h2>👤 ${name}</h2> <div style="margin-top:10px;">${getBadge(details.total)}</div>
             </div>
             
             <div class="profile-stats">
@@ -1235,162 +1483,162 @@
             document.getElementById('studentModal').style.display = 'none';
         }
 
-function loadAnalytics() {
-    const riskSummary = calculateExpulsionRisk();
-    const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
-    
-    // Group students by class
-    const studentsByClass = {};
-    
-    Object.entries(riskSummary).forEach(([name, data]) => {
-        // Find the student's class from allData
-        let studentClass = 'Unknown';
-        for (const row of allData) {
-            if (row.absences.includes(name)) {
-                studentClass = row.classGroup || 'Unknown';
-                break;
-            }
-        }
-        
-        if (!studentsByClass[studentClass]) {
-            studentsByClass[studentClass] = [];
-        }
-        
-        studentsByClass[studentClass].push({ name, ...data });
-    });
-    
-    // Sort classes alphabetically
-    const sortedClasses = Object.keys(studentsByClass).sort();
-    
-    let html = `
-        <div class="chart-container" style="margin-top: 20px;">
-            <h3 style="color:#ff4444; margin-bottom:15px; font-size:1.5em;">⚠️ Expulsion Risk Report</h3>
-            <p style="color:#666; margin-bottom:20px;">
-                Tracking students with <strong>${lecturesPerDay}</strong> or more lectures missed in a day counting as 1 day missed, 
-                with a dismissal threshold of <strong>${expulsionDays}</strong> total days.
-            </p>
-    `;
-    
-    // Create a table for each class
-    sortedClasses.forEach(className => {
-        const students = studentsByClass[className];
-        
-        // Sort students within class by days missed (highest first)
-        students.sort((a, b) => b.totalDaysMissed - a.totalDaysMissed);
-        
-        html += `
-            <div style="margin-bottom: 30px;">
-                <h4 style="color:#667eea; margin-bottom:15px; font-size:1.3em;">🏫 Class ${className}</h4>
-                <div style="overflow-x:auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Student Name</th>
-                                <th style="text-align:center;">Total Days Missed</th>
-                                <th style="text-align:center;">Days Remaining</th>
-                                <th style="text-align:center;">Risk Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-        `;
-        
-        students.forEach(student => {
-            const isExpelled = student.totalDaysMissed >= expulsionDays;
-            const riskPercent = student.totalDaysMissed / expulsionDays;
+        function loadAnalytics() {
+            const riskSummary = calculateExpulsionRisk();
+            const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
             
-            let rowClass = 'row-low';
-            let statusText = 'LOW RISK';
-            let statusColor = '#4CAF50';
+            // Group students by class
+            const studentsByClass = {};
             
-            if (isExpelled) {
-                rowClass = 'row-high';
-                statusText = 'DISMISSED';
-                statusColor = '#ff4444';
-            } else if (riskPercent >= 0.75) {
-                rowClass = 'row-medium';
-                statusText = 'HIGH RISK';
-                statusColor = '#ff8800';
-            }
+            Object.entries(riskSummary).forEach(([name, data]) => { // 'name' is the 3-name string
+                // Find the student's class from allData
+                let studentClass = 'Unknown';
+                for (const row of allData) {
+                    if (row.absences.includes(name)) {
+                        studentClass = row.classGroup || 'Unknown';
+                        break;
+                    }
+                }
+                
+                if (!studentsByClass[studentClass]) {
+                    studentsByClass[studentClass] = [];
+                }
+                
+                studentsByClass[studentClass].push({ name, ...data });
+            });
             
-            const daysRemaining = Math.max(0, expulsionDays - student.totalDaysMissed);
-
-            html += `
-                <tr class="${rowClass}">
-                    <td><span class="clickable" onclick="showStudentProfile('${student.name.replace(/'/g, "\\'")}')">${student.name}</span></td>
-                    <td style="text-align:center; font-weight:bold;">${student.totalDaysMissed}</td>
-                    <td style="text-align:center;">${daysRemaining}</td>
-                    <td style="text-align:center; font-weight:bold; color: ${statusColor};">${statusText}</td>
-                </tr>
+            // Sort classes alphabetically
+            const sortedClasses = Object.keys(studentsByClass).sort();
+            
+            let html = `
+                <div class="chart-container" style="margin-top: 20px;">
+                    <h3 style="color:#ff4444; margin-bottom:15px; font-size:1.5em;">⚠️ Expulsion Risk Report</h3>
+                    <p style="color:#666; margin-bottom:20px;">
+                        Tracking students with <strong>${lecturesPerDay}</strong> or more lectures missed in a day counting as 1 day missed, 
+                        with a dismissal threshold of <strong>${expulsionDays}</strong> total days.
+                    </p>
             `;
-        });
-        
-        html += `
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += `</div>`;
-    
-    // --- Original Analytics Tables (Appended Below Risk Report) ---
-    
-    const byClass = {};
-    classes.forEach(c => byClass[c] = 0);
-    
-    allData.forEach(row => {
-        if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
-            byClass[row.classGroup] += row.absences.length * row.lectureCount;
+            
+            // Create a table for each class
+            sortedClasses.forEach(className => {
+                const students = studentsByClass[className];
+                
+                // Sort students within class by days missed (highest first)
+                students.sort((a, b) => b.totalDaysMissed - a.totalDaysMissed);
+                
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <h4 style="color:#667eea; margin-bottom:15px; font-size:1.3em;">🏫 Class ${className}</h4>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th style="text-align:center;">Total Days Missed</th>
+                                        <th style="text-align:center;">Days Remaining</th>
+                                        <th style="text-align:center;">Risk Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+                
+                students.forEach(student => {
+                    const isExpelled = student.totalDaysMissed >= expulsionDays;
+                    const riskPercent = student.totalDaysMissed / expulsionDays;
+                    
+                    let rowClass = 'row-low';
+                    let statusText = 'LOW RISK';
+                    let statusColor = '#4CAF50';
+                    
+                    if (isExpelled) {
+                        rowClass = 'row-high';
+                        statusText = 'DISMISSED';
+                        statusColor = '#ff4444';
+                    } else if (riskPercent >= 0.75) {
+                        rowClass = 'row-medium';
+                        statusText = 'HIGH RISK';
+                        statusColor = '#ff8800';
+                    }
+                    
+                    const daysRemaining = Math.max(0, expulsionDays - student.totalDaysMissed);
+
+                    html += `
+                        <tr class="${rowClass}">
+                            <td><span class="clickable" onclick="showStudentProfile('${student.name.replace(/'/g, "\\'")}')">${student.name}</span></td>
+                            <td style="text-align:center; font-weight:bold;">${student.totalDaysMissed}</td>
+                            <td style="text-align:center;">${daysRemaining}</td>
+                            <td style="text-align:center; font-weight:bold; color: ${statusColor};">${statusText}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            
+            // --- Original Analytics Tables (Appended Below Risk Report) ---
+            
+            const byClass = {};
+            classes.forEach(c => byClass[c] = 0);
+            
+            allData.forEach(row => {
+                if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
+                    byClass[row.classGroup] += row.absences.length * row.lectureCount;
+                }
+            });
+
+            const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+            allData.forEach(row => {
+                const match = String(row.lecture).match(/\d+/); 
+                const lec = match ? parseInt(match[0]) : 0;
+                
+                if (lec >= 1 && lec <= 6) {
+                    byLecture[lec] += row.absences.length * row.lectureCount;
+                }
+            });
+
+            const bySubject = {};
+            allData.forEach(row => {
+                if (row.subject) {
+                    bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
+                }
+            });
+
+            let oldAnalyticsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top: 30px;">';
+            
+            // Absences by Class
+            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+            Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
+                oldAnalyticsHtml += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            // Absences by Lecture Time
+            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+            Object.entries(byLecture).forEach(([lec, count]) => {
+                oldAnalyticsHtml += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            // Absences by Subject
+            oldAnalyticsHtml += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
+            const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
+            Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
+                const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
+                oldAnalyticsHtml += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            oldAnalyticsHtml += '</div>';
+
+            document.getElementById('analyticsContent').innerHTML = html + oldAnalyticsHtml;
         }
-    });
-
-    const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
-    allData.forEach(row => {
-        const match = String(row.lecture).match(/\d+/); 
-        const lec = match ? parseInt(match[0]) : 0;
-        
-        if (lec >= 1 && lec <= 6) {
-            byLecture[lec] += row.absences.length * row.lectureCount;
-        }
-    });
-
-    const bySubject = {};
-    allData.forEach(row => {
-        if (row.subject) {
-            bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
-        }
-    });
-
-    let oldAnalyticsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top: 30px;">';
-    
-    // Absences by Class
-    oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-    Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
-        oldAnalyticsHtml += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-    });
-    oldAnalyticsHtml += '</tbody></table></div></div>';
-
-    // Absences by Lecture Time
-    oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-    Object.entries(byLecture).forEach(([lec, count]) => {
-        oldAnalyticsHtml += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-    });
-    oldAnalyticsHtml += '</tbody></table></div></div>';
-
-    // Absences by Subject
-    oldAnalyticsHtml += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
-    const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
-    Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
-        const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
-        oldAnalyticsHtml += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
-    });
-    oldAnalyticsHtml += '</tbody></table></div></div>';
-
-    oldAnalyticsHtml += '</div>';
-
-    document.getElementById('analyticsContent').innerHTML = html + oldAnalyticsHtml;
-}
 
         function showTab(tabName) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -1413,6 +1661,9 @@ function loadAnalytics() {
         window.onclick = function(event) {
             if (event.target == document.getElementById('studentModal')) {
                 closeModal();
+            }
+            if (event.target == document.getElementById('searchResultsModal')) {
+                closeSearchModal();
             }
         }
         
@@ -1471,4 +1722,6 @@ function loadAnalytics() {
     </script>
 </body>
 </html>
+
+
 
