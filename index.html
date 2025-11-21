@@ -765,6 +765,9 @@
 
         function setToday() {
             const now = new Date();
+            const dayOfWeek = now.getDay();
+            
+            // If today is Friday (5) or Saturday (6), show message but still allow selection
             document.getElementById('dailyDate').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
             filterDaily();
         }
@@ -784,6 +787,27 @@
         function filterDaily() {
             const val = document.getElementById('dailyDate').value;
             if (!val) return;
+            
+            // Check if selected date is a weekend (Friday=5 or Saturday=6)
+            const selectedDate = new Date(val);
+            const dayOfWeek = selectedDate.getDay();
+            
+            if (dayOfWeek === 5 || dayOfWeek === 6) {
+                const dayName = dayOfWeek === 5 ? 'Friday' : 'Saturday';
+                document.getElementById('dailyContent').innerHTML = `
+                    <div style="text-align:center; padding:80px 20px;">
+                        <div style="font-size:5em; margin-bottom:20px;">🏖️</div>
+                        <h2 style="color:#667eea; font-size:2em; margin-bottom:15px;">Weekend - No School</h2>
+                        <p style="color:#666; font-size:1.2em; margin-bottom:10px;">
+                            <strong>${dayName}, ${formatDate(selectedDate)}</strong>
+                        </p>
+                        <p style="color:#999; font-size:1em;">
+                            The institute is closed on weekends. Please select a weekday to view the daily report.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
             
             const filterDate = normalizeDate(val);
             const filtered = allData.filter(r => r.date === filterDate);
@@ -1493,7 +1517,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Dashboard initializing...');
             
-            // 1. ALWAYS fetch data immediately on page load to show currentstatus
+            // 1. ALWAYS fetch data immediately on page load to show current status
             fetchData(); 
             
             // 2. Start the time-based refresh loop
@@ -1503,5 +1527,6 @@
     </script>
 </body>
 </html>
+
 
 
