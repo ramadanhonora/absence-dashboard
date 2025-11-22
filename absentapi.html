@@ -425,20 +425,23 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            
-            <div class="header-main-content">
-                
-                <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 140px;">
-                
-                <div class="header-titles">
-                    <h1 style="color: #667eea; font-size: 2.5em; margin: 0;">Akre Computer Institute : پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
-                    <h2 style="color: #764ba2; font-size: 1.5em; margin: 5px 0 0 0;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h2>
-                </div>
-            </div>
-            <button class="btn" onclick="fetchData()">🔄 Refresh Data</button>
-            <p id="lastUpdate" style="color: #999; font-size: 0.9em; margin-top: 10px;"></p>
+<div class="header">
+    <div class="header-main-content">
+        <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 140px;">
+        <div class="header-titles">
+            <h1>Akre Computer Institute : پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+            <h2>پەیمانگەها کومپیوتەرێ ل ئاکرێ</h2>
         </div>
+    </div>
+    
+    <!-- NEW: Search bar and Refresh button together -->
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 15px;">
+        <input type="text" id="headerStudentSearch" placeholder="🔍 Search student by name..." onkeyup="searchStudentFromHeader()" style="flex: 1; min-width: 250px; padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
+        <button class="btn" onclick="fetchData()">🔄 Refresh Data</button>
+    </div>
+    
+    <p id="lastUpdate" style="color: #999; font-size: 0.9em; margin-top: 10px;"></p>
+</div>
 
         <div class="stats-grid">
             <div class="stat-card total">
@@ -465,14 +468,13 @@
             </div>
         </div>
 
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('daily')">📅 Daily</div>
-            <div class="tab" onclick="showTab('roster')">📋 Roster</div>
-            <div class="tab" onclick="showTab('weekly')">📊 Weekly</div>
-            <div class="tab" onclick="showTab('monthly')">📅 Monthly</div>
-            <div class="tab" onclick="showTab('student')">👤 Student</div>
-            <div class="tab" onclick="showTab('analytics')">📈 Analytics</div>
-        </div>
+<div class="tabs">
+    <div class="tab active" onclick="showTab('daily')">📅 Daily</div>
+    <div class="tab" onclick="showTab('roster')">📋 Roster</div>
+    <div class="tab" onclick="showTab('weekly')">📊 Weekly</div>
+    <div class="tab" onclick="showTab('monthly')">📅 Monthly</div>
+    <div class="tab" onclick="showTab('analytics')">📈 Analytics</div>
+</div>
 
         <div id="daily" class="content-section active">
             <h2 style="color: #667eea; margin-bottom: 10px;">📅 Daily Absence Report</h2>
@@ -1722,6 +1724,7 @@
     </script>
 </body>
 </html>
+
 
 
 
