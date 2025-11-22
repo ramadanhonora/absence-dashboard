@@ -1436,7 +1436,17 @@
         }
         
 
-
+// NEW: Function to show student profile from dropdown click
+        function showStudentProfileFromDropdown(name) {
+            // Close the dropdown
+            document.getElementById('dropdownResults').classList.remove('show');
+            
+            // Clear the search input
+            document.getElementById('headerStudentSearch').value = '';
+            
+            // Show the existing student profile modal
+            showStudentProfile(name);
+        }
 
         // 5. STUDENT PROFILES: Detailed Profile View
         function showStudentProfile(name) {
@@ -1754,6 +1764,7 @@ window.onclick = function(event) {
     </script>
 </body>
 </html>
+
 
 
 
