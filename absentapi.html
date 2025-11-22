@@ -26,6 +26,56 @@
             margin-bottom: 30px;
             text-align: center;
         }
+    /* Google-Style Dropdown Search */
+        #dropdownResults {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        #dropdownResults.show {
+            display: block !important;
+        }
+        
+        .dropdown-result-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .dropdown-result-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .dropdown-result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-student-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .dropdown-student-info {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .dropdown-no-results {
+            padding: 30px;
+            text-align: center;
+            color: #999;
+        }
         
         .header h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
         
@@ -434,11 +484,12 @@
         </div>
     </div>
     
-    <!--  Search bar -->
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 15px;">
-        <input type="text" id="headerStudentSearch" placeholder="🔍 Search student by name..." onkeyup="searchStudentFromHeader()" style="flex: 1; min-width: 250px; padding: 12px 15px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;">
-
-
+<!--  Google-style Search bar -->
+    <div style="position: relative; margin-top: 15px;">
+        <input type="text" id="headerStudentSearch" placeholder="🔍 Search student by name..." onkeyup="searchStudentFromHeader()" style="width: 100%; padding: 15px 20px; border: 2px solid #ddd; border-radius: 24px; font-size: 1em; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        
+        <!-- Dropdown Results -->
+        <div id="dropdownResults" style="display: none;"></div>
     </div>
     
     <p id="lastUpdate" style="color: #999; font-size: 0.9em; margin-top: 10px;"></p>
@@ -577,12 +628,7 @@
             <div id="modalContent"></div>
         </div>
     </div>
-    <div id="searchResultsModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeSearchModal()">&times;</span>
-            <div id="searchModalContent"></div>
-        </div>
-    </div>
+
 <script>
         // NOTE: The submission features (1 & 2) cannot be implemented as the backend code (form and submission logic) is missing.
         // I have focused on enhancing the client-side dashboard, filtering, and mobile experience.
@@ -1326,11 +1372,15 @@
         }
 
         // NEW: Search function from header
+        // NEW: Google-style dropdown search function
         function searchStudentFromHeader() {
             const query = document.getElementById('headerStudentSearch').value.toLowerCase().trim();
+            const dropdown = document.getElementById('dropdownResults');
             
-            if (!query || query.length < 2) {
-                return; // Don't search until at least 2 characters
+            // Hide dropdown if search is less than 2 characters
+            if (query.length < 2) {
+                dropdown.classList.remove('show');
+                return;
             }
 
             const details = {};
@@ -1352,15 +1402,48 @@
                 });
             });
 
+            // Show dropdown
+            dropdown.classList.add('show');
+            
+            // No results found
             if (Object.keys(details).length === 0) {
-                document.getElementById('searchModalContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
-                    <p style="font-size:3em;">🔍</p>
-                    <p>No students found matching "<strong>${query}</strong>"</p>
-                </div>`;
-                document.getElementById('searchResultsModal').style.display = 'block';
+                dropdown.innerHTML = '<div class="dropdown-no-results">🔍 No students found matching "<strong>' + query + '</strong>"</div>';
                 return;
             }
             
+            // Build dropdown HTML with results
+            let html = '';
+            Object.entries(details).forEach(([name, data]) => {
+                const sev = getSeverity(data.total);
+                const badge = sev === 'high' ? 'high' : sev === 'medium' ? 'medium' : 'low';
+                const badgeText = sev === 'high' ? 'HIGH RISK' : sev === 'medium' ? 'AT RISK' : 'GOOD';
+                const subjects = [...new Set(data.log.map(a => a.subject))];
+                
+                html += `
+                    <div class="dropdown-result-item" onclick="showStudentProfileFromDropdown('${name.replace(/'/g, "\\'")}')">
+                        <div class="dropdown-student-name">
+                            ${name}
+                            <span class="badge badge-${badge}">${badgeText}</span>
+                        </div>
+                        <div class="dropdown-student-info">
+                            Class ${data.class || 'N/A'} • ${data.total} absences • ${subjects.length} subjects affected
+                        </div>
+                    </div>
+                `;
+            });
+
+            dropdown.innerHTML = html;
+        }
+        function showStudentProfileFromDropdown(name) {
+            // Close the dropdown
+            document.getElementById('dropdownResults').classList.remove('show');
+            
+            // Clear the search input
+            document.getElementById('headerStudentSearch').value = '';
+            
+            // Show the existing student profile modal
+            showStudentProfile(name);
+        }            
             let html = '<h2 style="color:#667eea; margin-bottom:20px;">👤 Search Results</h2>';
             
             Object.entries(details).forEach(([name, data]) => {
@@ -1406,10 +1489,7 @@
             document.getElementById('searchResultsModal').style.display = 'block';
         }
 
-        function closeSearchModal() {
-            document.getElementById('searchResultsModal').style.display = 'none';
-            document.getElementById('headerStudentSearch').value = '';
-        }
+
 
         // 5. STUDENT PROFILES: Detailed Profile View
         function showStudentProfile(name) {
@@ -1659,14 +1739,18 @@
             if (tabName === 'analytics') loadAnalytics();
         }
 
-        window.onclick = function(event) {
+window.onclick = function(event) {
             if (event.target == document.getElementById('studentModal')) {
                 closeModal();
             }
-            if (event.target == document.getElementById('searchResultsModal')) {
-                closeSearchModal();
-            }
         }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#headerStudentSearch') && !e.target.closest('#dropdownResults')) {
+                document.getElementById('dropdownResults').classList.remove('show');
+            }
+        });
         
         // 1. New function to manage the timed refresh logic
         function scheduleDataFetch() {
@@ -1723,6 +1807,7 @@
     </script>
 </body>
 </html>
+
 
 
 
