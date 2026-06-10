@@ -25,883 +25,1057 @@
   --white: #ffffff;
   --shadow: 0 4px 24px rgba(15,25,35,0.10);
   --shadow-lg: 0 12px 48px rgba(15,25,35,0.18);
-  --radius: 8px;
-  --radius-lg: 16px;
-  --font: 'Tajawal', 'Cairo', sans-serif;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: var(--font);
-  -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background-color: var(--paper);
+  font-family: 'Cairo', 'Tajawal', sans-serif;
+  background: var(--paper);
   color: var(--ink);
-  line-height: 1.6;
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
-  padding: 0;
+  direction: rtl;
+  overflow-x: hidden;
 }
 
-/* =======================================================
-   UTILITIES & OVERLAYS
-   ======================================================= */
-.loading-overlay {
-  position: fixed;
-  top:0; left:0; right:0; bottom:0;
-  background-color: rgba(245,240,232,0.95);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-.loading-overlay.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--cream);
-  border-top: 4px solid var(--accent);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.loading-text {
-  font-weight: 700;
-  color: var(--ink);
-  font-size: 1.1rem;
-}
-
-/* Toast System */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background-color: var(--ink);
-  color: var(--white);
-  padding: 12px 24px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  z-index: 9000;
-  font-weight: 500;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
-  opacity: 0;
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(200,64,42,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 80% 90%, rgba(45,106,79,0.06) 0%, transparent 60%),
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(212,206,192,0.3) 39px, rgba(212,206,192,0.3) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(212,206,192,0.15) 39px, rgba(212,206,192,0.15) 40px);
+  z-index: 0;
   pointer-events: none;
 }
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-.toast.error { background-color: var(--accent); }
-.toast.success { background-color: var(--green); }
 
 /* =======================================================
-   APP LAYOUT CONTAINER
+   HEADER
    ======================================================= */
-.app-container {
-  width: 100%;
-  max-width: 540px;
-  margin: 0 auto;
-  padding: 16px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.screen {
-  display: none;
-  flex-direction: column;
-  width: 100%;
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-.screen.active {
-  display: flex;
-}
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* =======================================================
-   UI COMPONENTS (CARDS, BUTTONS, INPUTS)
-   ======================================================= */
-.card {
-  background-color: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  box-shadow: var(--shadow);
-  margin-bottom: 20px;
-}
-
-.logo-header {
-  text-align: center;
-  margin: 20px 0 32px 0;
-}
-.logo-circle {
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background-color: var(--white);
-  border: 2px solid var(--accent);
-  margin: 0 auto 16px auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-.logo-circle img {
-  width: 84%;
-  height: 84%;
-  object-fit: contain;
-}
-.logo-header h1 {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--ink);
-  margin-bottom: 4px;
-}
-.logo-header p {
-  font-size: 0.95rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-/* Forms */
-.form-group {
-  margin-bottom: 20px;
-}
-.form-group label {
-  display: block;
-  font-weight: 700;
-  margin-bottom: 8px;
-  font-size: 0.95rem;
-  color: var(--ink2);
-}
-.input-control {
-  width: 100%;
-  padding: 14px 16px;
-  font-size: 1rem;
-  border: 2px solid var(--cream);
-  background-color: #faf8f5;
-  border-radius: var(--radius);
-  color: var(--ink);
-  outline: none;
-  transition: all 0.25s ease;
-}
-.input-control:focus {
-  border-color: var(--accent);
-  background-color: var(--white);
-  box-shadow: 0 0 0 4px rgba(200,64,42,0.08);
-}
-select.input-control {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f1923' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: left 16px center;
-  background-size: 16px;
-  padding-left: 40px;
-}
-body[dir="ltr"] select.input-control {
-  background-position: right 16px center;
-  padding-left: 16px;
-  padding-right: 40px;
-}
-
-/* Language Switcher */
-.lang-switcher {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 24px;
-}
-.btn-lang {
-  background: var(--cream);
-  border: none;
-  padding: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  border-radius: var(--radius);
-  cursor: pointer;
-  color: var(--ink2);
-  transition: all 0.2s;
-}
-.btn-lang.active {
-  background: var(--accent);
-  color: var(--white);
-}
-
-/* Main Action Buttons */
-.btn-primary {
-  width: 100%;
-  background-color: var(--accent);
-  color: var(--white);
-  border: none;
-  padding: 16px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  border-radius: var(--radius);
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(200,64,42,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s;
-}
-.btn-primary:hover { background-color: #b03420; }
-.btn-primary:active { transform: translateY(1px); }
-
-.btn-secondary {
-  width: 100%;
-  background-color: transparent;
-  border: 2px solid var(--border);
-  color: var(--ink2);
-  padding: 14px;
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-secondary:hover { background-color: var(--cream); }
-
-/* Navigation Bar */
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--cream);
-}
-.nav-user-info h2 { font-size: 1.15rem; font-weight: 800; }
-.nav-user-info p { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
-.btn-logout {
-  background: var(--cream);
-  border: none;
-  padding: 8px 14px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  border-radius: var(--radius);
-  color: var(--accent);
-  cursor: pointer;
-}
-
-/* =======================================================
-   CHECKLIST UI COMPONENTS
-   ======================================================= */
-.checklist-wrapper {
-  margin-top: 8px;
-}
-.student-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background-color: #faf8f5;
-  border: 1px solid var(--cream);
-  border-radius: var(--radius);
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
-.student-row:hover {
-  background-color: var(--white);
-  border-color: var(--border);
-}
-.student-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.student-num {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--muted);
-  background: var(--cream);
-  width: 24px; height: 24px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-}
-.student-name {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--ink);
-}
-
-/* Custom Styled Toggle Switch */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 46px;
-  height: 26px;
-  pointer-events: none;
-}
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: var(--green-light);
-  border-radius: 34px;
-  transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.slider:before {
-  position: absolute; content: "";
-  height: 18px; width: 18px;
-  left: 4px; bottom: 4px;
-  background-color: white;
-  border-radius: 50%;
-  transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-body[dir="rtl"] .slider:before { left: auto; right: 4px; }
-
-input:checked + .slider { background-color: var(--accent); }
-input:checked + .slider:before { transform: translateX(20px); }
-body[dir="rtl"] input:checked + .slider:before { transform: translateX(-20px); }
-
-/* Row State Color Updates */
-.student-row.absent {
-  background-color: #fff3f2;
-  border-color: #f7d6d3;
-}
-.student-row.absent .student-name { color: var(--accent); }
-.student-row.absent .student-num { background-color: #f7d6d3; color: var(--accent); }
-
-/* Summary List Layout */
-.detail-box {
-  background-color: #faf8f5;
-  border: 1px solid var(--cream);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 20px;
-}
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px dashed var(--cream);
-}
-.detail-row:last-child { border-bottom: none; }
-.detail-row .label { color: var(--muted); font-weight: 500; font-size: 0.95rem; }
-.detail-row .val { color: var(--ink); font-weight: 700; font-size: 0.95rem; }
-
-/* Dynamic Counter Header */
-.counter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
+.site-header {
+  position: relative; z-index: 10;
   background: var(--ink);
-  color: var(--white);
-  padding: 12px 16px;
-  border-radius: var(--radius);
+  color: var(--paper);
+  padding: 18px 40px;
+  display: flex; align-items: center; gap: 18px;
+  border-bottom: 3px solid var(--accent);
 }
-.counter-header span { font-weight: 700; font-size: 0.95rem; }
-.counter-header .count-badge {
+.site-header .logo-badge {
+  width: 52px; height: 52px;
   background: var(--accent);
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-}
-
-/* Success View Custom Items */
-.success-banner {
-  text-align: center;
-  margin: 16px 0 28px 0;
-}
-.success-icon {
-  width: 64px; height: 64px;
-  background-color: #e8f5e9;
-  color: var(--green);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 16px auto;
-  font-size: 2rem;
+  font-size: 22px; font-weight: 800; color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 4px rgba(200,64,42,0.25);
+}
+.site-header .header-text h1 {
+  font-size: 1.1rem; font-weight: 700; letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+.site-header .header-text p {
+  font-size: 0.78rem; color: var(--accent2); font-weight: 400; margin-top: 2px;
+}
+.header-user {
+  margin-right: auto;
+  display: flex; align-items: center; gap: 12px;
+  display: none;
+}
+.header-user .user-pill {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-size: 0.82rem; color: var(--paper);
+  display: flex; align-items: center; gap: 8px;
+}
+.header-user .user-pill span.dot {
+  width: 8px; height: 8px; background: #4ade80; border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.btn-logout {
+  background: none; border: 1px solid rgba(200,64,42,0.5);
+  color: var(--accent2); border-radius: 8px;
+  padding: 6px 14px; font-size: 0.8rem; cursor: pointer;
+  font-family: inherit; transition: all 0.2s;
+}
+.btn-logout:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Language switcher */
+.lang-switcher { display: none; align-items: center; gap: 6px; margin-right: 10px; }
+.lang-switcher.visible { display: flex; }
+.lang-btn {
+  background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.18);
+  color: var(--paper); border-radius: 8px; padding: 5px 12px;
+  font-size: 0.78rem; font-weight: 700; cursor: pointer;
+  font-family: inherit; transition: all 0.2s;
+}
+.lang-btn:hover { background: rgba(255,255,255,0.2); }
+.lang-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* =======================================================
+   MAIN & LAYOUT SCREENS
+   ======================================================= */
+main {
+  position: relative; z-index: 1;
+  min-height: calc(100vh - 89px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 48px 20px 60px;
+}
+
+.screen { display: none; width: 100%; max-width: 960px; }
+.screen.active { display: block; animation: fadeUp 0.4s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =======================================================
+   LOGIN SCREEN
+   ======================================================= */
+#screen-login { max-width: 440px; }
+.login-card {
+  background: var(--white); border-radius: 20px;
+  box-shadow: var(--shadow-lg); overflow: hidden; border: 1px solid var(--border);
+}
+.login-card-top {
+  background: var(--ink); padding: 36px 32px 28px; text-align: center; position: relative; overflow: hidden;
+}
+.login-card-top::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 120%, rgba(200,64,42,0.3) 0%, transparent 60%);
+}
+.login-card-top .aci-logo {
+  width: 70px; height: 70px; background: var(--accent); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: #fff;
+  margin: 0 auto 16px; position: relative; z-index: 1;
+  box-shadow: 0 0 0 6px rgba(200,64,42,0.2), 0 8px 24px rgba(200,64,42,0.4);
+}
+.login-card-top h2 { color: var(--white); font-size: 1.15rem; font-weight: 700; position: relative; z-index: 1; }
+.login-card-top p { color: var(--accent2); font-size: 0.82rem; margin-top: 4px; position: relative; z-index: 1; }
+.login-card-body { padding: 32px; }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 0.84rem; font-weight: 600; color: var(--ink2); margin-bottom: 8px; }
+.form-group label span.req { color: var(--accent); margin-right: 2px; }
+
+.form-control {
+  width: 100%; padding: 12px 16px; border: 1.5px solid var(--border); border-radius: 10px;
+  font-family: inherit; font-size: 0.95rem; color: var(--ink); background: var(--paper);
+  transition: border-color 0.2s, box-shadow 0.2s; outline: none; direction: rtl;
+}
+.form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,64,42,0.12); background: var(--white); }
+.form-control.error { border-color: var(--accent); background: #fff5f5; }
+
+.error-msg {
+  background: #fff0ee; border: 1px solid #ffd0ca; color: var(--accent); border-radius: 10px;
+  padding: 12px 16px; font-size: 0.85rem; margin-bottom: 18px; display: none; animation: fadeUp 0.3s ease;
+  text-align: right; line-height: 1.5;
+}
+.error-msg.show { display: block; }
+
+.btn-primary {
+  width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 10px;
+  font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+}
+.btn-primary::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%); }
+.btn-primary:hover { background: #a8321e; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(200,64,42,0.4); }
+.btn-primary:disabled { background: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* =======================================================
+   SUBMIT SCREEN & CARDS
+   ======================================================= */
+#screen-submit { max-width: 760px; }
+.welcome-banner {
+  background: var(--ink); color: var(--white); border-radius: 16px; padding: 20px 28px; margin-bottom: 28px;
+  display: flex; align-items: center; gap: 16px; border: 1px solid rgba(255,255,255,0.06); box-shadow: var(--shadow);
+}
+.welcome-banner .avatar {
+  width: 48px; height: 48px; flex-shrink: 0; background: var(--accent); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: #fff;
+}
+.welcome-banner h3 { font-size: 1rem; font-weight: 700; }
+.welcome-banner p { font-size: 0.8rem; color: var(--accent2); margin-top: 3px; }
+
+.card { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px; }
+.card-header { background: var(--ink2); color: var(--white); padding: 16px 24px; display: flex; align-items: center; gap: 10px; }
+.card-header .step-badge { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; flex-shrink: 0; }
+.card-header h3 { font-size: 0.95rem; font-weight: 700; }
+.card-body { padding: 24px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.students-area { border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+.students-area-header { background: var(--cream); padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+.students-area-header h4 { font-size: 0.88rem; font-weight: 700; color: var(--ink2); }
+.students-count { background: var(--accent); color: #fff; border-radius: 100px; padding: 3px 12px; font-size: 0.78rem; font-weight: 700; }
+
+.students-grid { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; max-height: 380px; overflow-y: auto; }
+.students-grid::-webkit-scrollbar { width: 6px; }
+.students-grid::-webkit-scrollbar-track { background: var(--cream); }
+.students-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.student-check {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px;
+  border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s; background: var(--paper); user-select: none;
+}
+.student-check:hover { border-color: var(--accent2); background: #fff8f5; }
+.student-check.checked { border-color: var(--accent); background: #fff0ee; }
+.student-check input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--accent); cursor: pointer; }
+.student-check .sname { font-size: 0.82rem; font-weight: 500; color: var(--ink); line-height: 1.3; direction: rtl; }
+.student-check.checked .sname { color: var(--accent); font-weight: 700; }
+
+.no-students { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 0.88rem; }
+.no-students .icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+
+.absent-preview { margin-top: 14px; background: #fff0ee; border: 1px solid #ffd0ca; border-radius: 10px; padding: 14px 18px; display: none; }
+.absent-preview.show { display: block; }
+.absent-preview h5 { font-size: 0.82rem; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+.absent-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.absent-pill { background: var(--accent); color: #fff; border-radius: 100px; padding: 4px 12px; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.absent-pill .remove-pill { cursor: pointer; opacity: 0.7; font-size: 0.9rem; line-height: 1; }
+.absent-pill .remove-pill:hover { opacity: 1; }
+
+.action-row { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+.btn-secondary { padding: 12px 24px; background: none; border: 1.5px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 0.9rem; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-submit { padding: 12px 32px; background: var(--green); color: #fff; border: none; border-radius: 10px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+.btn-submit:hover { background: var(--green-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(45,106,79,0.35); }
+.btn-submit:disabled { background: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* =======================================================
+   SUCCESS SCREEN
+   ======================================================= */
+#screen-success { max-width: 480px; }
+.success-card { background: var(--white); border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-lg); padding: 48px 36px; text-align: center; }
+.success-icon { width: 80px; height: 80px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 38px; margin: 0 auto 24px; animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-card h2 { font-size: 1.4rem; font-weight: 800; color: var(--green); margin-bottom: 12px; }
+.success-card p { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+.success-details { background: var(--paper); border-radius: 12px; padding: 16px 20px; margin: 20px 0; text-align: right; direction: rtl; }
+.success-details .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.success-details .detail-row:last-child { border-bottom: none; }
+.success-details .detail-row .label { color: var(--muted); }
+.success-details .detail-row .val { font-weight: 700; color: var(--ink); }
+.btn-new { margin-top: 24px; padding: 12px 28px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.btn-new:hover { background: var(--accent); }
+
+/* =======================================================
+   OVERLAYS & TOASTS
+   ======================================================= */
+.loading-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(15,25,35,0.6); display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.loading-overlay.show { display: flex; }
+.loading-box { background: var(--white); border-radius: 16px; padding: 32px 40px; text-align: center; box-shadow: var(--shadow-lg); }
+.loading-box p { margin-top: 14px; font-size: 0.9rem; color: var(--muted); }
+.loading-box .big-spinner { width: 44px; height: 44px; border: 4px solid var(--cream); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.toast { 
+  position: fixed; bottom: 30px; left: 50%; 
+  transform: translateX(-50%) translateY(120px); 
+  background: var(--ink); color: #fff; padding: 12px 24px; 
+  border-radius: 100px; font-size: 0.88rem; font-weight: 600; 
+  z-index: 200; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+  display: flex; align-items: center; gap: 8px; text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--green); }
+.toast.error { background: var(--accent); }
+
+/* =======================================================
+   💻 DESKTOP OPTIMIZATION (SIDE-BY-SIDE NO SCROLL)
+   ======================================================= */
+@media (min-width: 850px) {
+  .screen {
+    display: none;
+  }
+  .screen.active {
+    display: block !important;
+  }
+
+  #screen-submit.active {
+    max-width: 1100px !important;
+    display: grid !important; 
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important; 
+    align-items: start !important; 
+  }
+  
+  #screen-submit.active .welcome-banner { 
+    grid-column: 1 / -1 !important; 
+    margin-bottom: 0 !important;
+  }
+  
+  #screen-submit.active .card { 
+    margin-bottom: 0 !important; 
+    height: 100% !important;
+  }
+  
+  #screen-submit.active .action-row { 
+    grid-column: 1 / -1 !important; 
+    margin-top: 10px !important;
+  }
+}
+
+/* =======================================================
+   📱 MOBILE & TABLET OPTIMIZATION (RESPONSIVE DESIGN)
+   ======================================================= */
+@media (max-width: 768px) {
+  main { padding: 30px 15px 60px; }
+  .site-header { padding: 15px 20px; }
+  .welcome-banner { flex-direction: column; text-align: center; }
+  .welcome-banner .avatar { margin: 0 auto; }
+}
+
+@media (max-width: 560px) {
+  main { padding: 15px 12px 90px; }
+  .welcome-banner { display: none !important; }
+  .site-header { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .site-header .logo-badge { width: 38px; height: 38px; font-size: 14px; }
+  .site-header .header-text h1 { font-size: 0.9rem; }
+  .site-header .header-text p { font-size: 0.65rem; }
+  .lang-switcher { margin: 5px 0 0 0; width: 100%; justify-content: center; order: 3; }
+  .header-user { width: 100%; justify-content: space-between; margin-top: 8px; order: 4; }
+  .card { margin-bottom: 12px; border-radius: 12px; }
+  .card-header { padding: 10px 14px; }
+  .card-header h3 { font-size: 0.85rem; }
+  .card-header .step-badge { width: 24px; height: 24px; font-size: 0.7rem; }
+  .card-body { padding: 14px; }
+  .form-row { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px !important; }
+  .form-control { padding: 8px 10px; font-size: 0.85rem; }
+  .form-group { margin-bottom: 0; }
+  .form-group label { font-size: 0.75rem; margin-bottom: 4px; }
+  .students-area-header { padding: 8px 12px; }
+  .students-area-header h4 { font-size: 0.8rem; }
+  .students-grid { grid-template-columns: 1fr; max-height: 45vh; padding: 10px; }
+  .student-check { padding: 8px 12px; }
+  .no-students { padding: 20px 10px; font-size: 0.8rem; }
+  .no-students .icon { font-size: 2rem; margin-bottom: 5px; }
+  .login-card-top { padding: 20px 15px 15px; }
+  .login-card-body { padding: 15px; }
+  .action-row { 
+    position: fixed; bottom: 0; left: 0; right: 0; 
+    background: var(--white); padding: 12px 15px; margin: 0; 
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.12); z-index: 50; 
+    display: flex; flex-direction: row; gap: 10px; border-top: 1px solid var(--border);
+  }
+  .btn-submit { flex: 2; padding: 12px; justify-content: center; font-size: 0.9rem; margin: 0; }
+  .btn-secondary { flex: 1; padding: 12px; justify-content: center; font-size: 0.85rem; margin: 0; }
+  .toast { width: 90%; max-width: 320px; padding: 10px; font-size: 0.8rem; bottom: 80px; }
 }
 </style>
 </head>
 <body>
 
+<header class="site-header">
+  <div class="logo-badge">ACI</div>
+  <div class="header-text">
+    <h1 data-i18n="instName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+    <p data-i18n="headerSub">سیستەما تومارکرنا نەهاتنێ</p>
+  </div>
+  <div class="lang-switcher" id="langSwitcher">
+    <button class="lang-btn" id="btnLangKu" onclick="setLang('ku')">کوردی</button>
+    <button class="lang-btn" id="btnLangAr" onclick="setLang('ar')">عربي</button>
+    <button class="lang-btn" id="btnLangEn" onclick="setLang('en')">EN</button>
+  </div>
+  <div class="header-user" id="headerUser">
+    <div class="user-pill"><span class="dot"></span><span id="headerUserName"></span></div>
+    <button class="btn-logout" id="btnLogout" onclick="doLogout()" data-i18n="btnLogout">🚪 دەرچوون</button>
+  </div>
+</header>
+
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">...</div>
+  <div class="loading-box">
+    <div class="big-spinner"></div>
+    <p id="loadingText">خۆراستکرن و خواندنا داتایان...</p>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<div class="app-container">
+<main>
+  <div class="screen active" id="screen-login">
+    <div class="login-card">
+      <div class="login-card-top">
+        <div class="aci-logo">ACI</div>
+        <h2 data-i18n="loginTitle">چوونا ژوورێ سیستەمێ</h2>
+        <p data-i18n="loginSub">تومارکرنا نەهاتنا قوتابیان</p>
+      </div>
+      <div class="login-card-body">
+        <div class="error-msg" id="loginError">⚠️ <span id="loginErrorText">خۆراستکرن و خواندنا داتایێن سیستەمی...</span></div>
+        
+        <div class="form-group">
+          <label><span data-i18n="labelUser">ناڤێ بکارهێنەر</span> <span class="req">*</span></label>
+          <input class="form-control" type="text" id="loginUsername" placeholder="ناڤێ مامۆستای..." autocomplete="username" disabled />
+        </div>
+        <div class="form-group">
+          <label><span data-i18n="labelPass">وشەی نهێنی</span> <span class="req">*</span></label>
+          <input class="form-control" type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" disabled />
+        </div>
+        <button class="btn-primary" id="btnLogin" onclick="doLogin()" disabled data-i18n="btnLogin">چوونا ژوورێ ←</button>
+      </div>
+    </div>
+  </div>
 
-  <div id="screen-login" class="screen">
-    <div class="logo-header">
-      <div class="logo-circle"><img src="aci.jpg" alt="Logo"></div>
-      <h1 id="loginMainTitle">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
-      <p id="loginSubTitle">سیستەمێ ئەلەکترۆنی یێ تۆمارکرنا نەهاتنێ</p>
+  <div class="screen" id="screen-submit">
+    <div class="welcome-banner">
+      <div class="avatar" id="welcomeAvatar">م</div>
+      <div>
+        <h3 id="welcomeName">مامۆستا</h3>
+        <p data-i18n="welcomeSub">تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
+      </div>
     </div>
 
     <div class="card">
-      <div class="lang-switcher">
-        <button class="btn-lang" id="lang-btn-ku" onclick="setLanguage('ku')">کوردی</button>
-        <button class="btn-lang" id="lang-btn-ar" onclick="setLanguage('ar')">العربية</button>
-        <button class="btn-lang" id="lang-btn-en" onclick="setLanguage('en')">English</button>
+      <div class="card-header">
+        <div class="step-badge">١</div>
+        <h3 data-i18n="step1">زانیارییێن دەرسێ</h3>
       </div>
-
-      <div class="form-group">
-        <label id="lblUser">ناڤێ بەکارهێنەری</label>
-        <input type="text" id="loginUser" class="input-control" placeholder="..." autofocus autocomplete="username">
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label><span data-i18n="labelDate">بەروار</span> <span class="req">*</span></label>
+            <input class="form-control" type="date" id="fDate" onchange="saveFormState()" />
+          </div>
+          <div class="form-group">
+            <label><span data-i18n="labelLecture">ژمارەیا دەرسێ</span> <span class="req">*</span></label>
+            <select class="form-control" id="fLecture">
+              <option value="" data-i18n="placeholder">— هلبژێرە —</option>
+              <option>Lecture 1</option>
+              <option>Lecture 2</option>
+              <option>Lecture 3</option>
+              <option>Lecture 4</option>
+              <option>Lecture 5</option>
+              <option>Lecture 6</option>
+              <option>Lectures 1-2 (Merged)</option>
+              <option>Lectures 3-4 (Merged)</option>
+              <option>Lectures 5-6 (Merged)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label><span data-i18n="labelSubject">بابەت</span> <span class="req">*</span></label>
+            <select class="form-control" id="fSubject" onchange="saveFormState()">
+              <option value="">— هلبژاره —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><span data-i18n="labelClass">گروپا پۆلێ</span> <span class="req">*</span></label>
+            <select class="form-control" id="fClass" onchange="onClassChange()">
+              <option value="">— هلبژاره —</option>
+            </select>
+          </div>
+        </div>
       </div>
-
-      <div class="form-group">
-        <label id="lblPass">پەیڤا دەربازبوونێ</label>
-        <input type="password" id="loginPass" class="input-control" placeholder="••••••••" autocomplete="current-password">
-      </div>
-
-      <button class="btn-primary" onclick="processLogin()" style="margin-top: 8px;">
-        <span id="lblBtnLogin">چوونە دناو سیستەمی دا</span>
-      </button>
-    </div>
-  </div>
-
-  <div id="screen-submit" class="screen">
-    <div class="navbar">
-      <div class="nav-user-info">
-        <h2 id="navTeacherName">...</h2>
-        <p id="navTeacherSub">تۆمارکرنا نەهاتنا ڕۆژانە</p>
-      </div>
-      <button class="btn-logout" id="lblLogoutBtn" onclick="processLogout()">چوونە دەرڤە</button>
     </div>
 
     <div class="card">
-      <div class="form-group">
-        <label id="lblFormSubject">بابەت یان پڕۆگرامێ خواندنێ</label>
-        <select id="formSubject" class="input-control" onchange="handleSubjectChange()"></select>
+      <div class="card-header">
+        <div class="step-badge">٢</div>
+        <h3 data-i18n="step2">قوتابیێن نەهاتی</h3>
       </div>
-
-      <div class="form-group">
-        <label id="lblFormClass">قۆناغ و پۆل (الشعبة)</label>
-        <select id="formClass" class="input-control"></select>
+      <div class="card-body">
+        <div class="students-area">
+          <div class="students-area-header">
+            <h4 id="studentsAreaTitle">📋 <span data-i18n="studentsTitle">هلبژارنا پۆلێ</span></h4>
+            <span class="students-count" id="absentCount">0 <span data-i18n="absentLabel">نەهاتی</span></span>
+          </div>
+          <div id="studentsContainer">
+            <div class="no-students">
+              <span class="icon">🎓</span>
+              <span data-i18n="noStudents">پۆلێ هلبژێرە دا کو لیستا قوتابیان دەرکەڤە</span>
+            </div>
+          </div>
+        </div>
+        <div class="absent-preview" id="absentPreview">
+          <h5 data-i18n="absentPreview">✗ قوتابیێن نەهاتی:</h5>
+          <div class="absent-pills" id="absentPills"></div>
+        </div>
       </div>
+    </div>
 
-      <div class="form-group">
-        <label id="lblFormLecture">بەشێ وانێ (الحصة)</label>
-        <select id="formLecture" class="input-control">
-          <option value="وانا 1">وانا 1</option>
-          <option value="وانا 2">وانا 2</option>
-          <option value="وانا 3">وانا 3</option>
-          <option value="وانا 4">وانا 4</option>
-          <option value="وانا 5">وانا 5</option>
-          <option value="وانا 1 + وانا 2 (Merged)">وانا 1 + وانا 2 (Merged)</option>
-          <option value="وانا 3 + وانا 4 (Merged)">وانا 3 + وانا 4 (Merged)</option>
-        </select>
-      </div>
-
-      <button class="btn-primary" onclick="processLoadStudents()" style="margin-top: 12px;">
-        <span id="lblBtnLoadStudents">دەستپێکرنا پشکنینێ</span>
+    <div class="action-row">
+      <button class="btn-secondary" onclick="resetForm()" data-i18n="btnReset">🔄 سفرکرن</button>
+      <button class="btn-submit" id="btnSubmit" onclick="doSubmit()">
+        <span data-i18n="btnSubmit">📤 شاندن و پاشەکەفتکرن</span>
       </button>
     </div>
   </div>
 
-  <div id="screen-checklist" class="screen">
-    <div class="navbar">
-      <div class="nav-user-info">
-        <h2 id="checkHeaderClass">...</h2>
-        <p id="checkHeaderSubject">...</p>
-      </div>
-      <button class="btn-logout" id="lblCheckBackBtn" onclick="backToForm()">پاشڤە</button>
-    </div>
-
-    <div class="counter-header">
-      <span id="lblCheckCounterText">قوتابیێن نەهاتین</span>
-      <div class="count-badge" id="absentCounter">0</div>
-    </div>
-
-    <div class="checklist-wrapper" id="checklistContainer"></div>
-
-    <button class="btn-primary" onclick="confirmChecklist()" style="margin-top: 20px; margin-bottom: 30px;">
-      <span id="lblBtnConfirm">تۆمارکرن ب سەرکەفتوویی</span>
-    </button>
-  </div>
-
-  <div id="screen-success" class="screen">
-    <div class="card" style="margin-top: 24px; text-align: center;">
-      <div class="success-banner">
-        <div class="success-icon">✓</div>
-        <h2 id="lblSuccessTitle" style="color:var(--green)">تۆمارکرن ب سەرکەفتوویی ئەنجامدرا</h2>
-        <p id="lblSuccessSub" style="color:var(--muted); font-size:0.95rem; margin-top:4px;">داتایێن نەهاتنێ ڕەوانەی کارگێڕیا پەیمانگەهێ هاتنە کرن</p>
-      </div>
-
-      <div class="detail-box" id="successDetails"></div>
-
-      <button class="btn-primary" onclick="newSubmission()">
-        <span id="lblBtnNewReport">تۆمارکرنا ڕاپۆرتەکا نوو</span>
-      </button>
+  <div class="screen" id="screen-success">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2 data-i18n="successTitle">سەرکەفتن! تومار کرا</h2>
+      <p data-i18n="successSub">نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.</p>
+      <div class="success-details" id="successDetails"></div>
+      <button class="btn-new" onclick="newSubmission()" data-i18n="btnNew">➕ تومارکرنەکێ نوی</button>
     </div>
   </div>
-
-</div>
+</main>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
-const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
+const DASHBOARD_URL = 'https://ramadanhonora.github.io/absence-dashboard/absentapi.html';
 
 let TEACHERS = [];
-let STUDENTS_RAW = [];
+let STUDENTS = {};
 let currentTeacher = null;
+let selectedAbsent = new Set();
 let currentLang = 'ku';
 
 const LANGS = {
   ku: {
-    dir: 'rtl', loading: 'بارکرنا داتایان...', saving: 'تۆمارکرن و پێشکێشکرنا داتایان...',
-    errFill: 'تکایە هەمی خانەیان پڕ بکەن!', errLogin: 'ناڤێ بەکارهێنەری یان پەیڤا دەربازبوونێ شڵتەیە!',
-    toastLoadErr: 'شڵتەیەک د گەهشتنا بەشێ داتایێ دا ڕوویدا.', toastNoStudents: 'چ قوتابی نەهاتنە دۆزینەوە بۆ ڤێ پۆلێ!',
-    toastSuccess: 'ڕاپۆرت ب سەرکەفتوویی هاتە ناردن.', toastSubmitErr: 'خەتایەک هەبوو د ناردنا ڕاپۆرتێ دا.',
-    fDate: 'مێژوو', fTeacher: 'مامۆستا', fSubject: 'بابەت', fLecture: 'وانە', fClass: 'قۆناغ/پۆل', fAbsent: 'نەهاتین', students: 'قوتابی',
-    lblUser: 'ناڤێ بەکارهێنەری', lblPass: 'وشەی تێپەڕ', lblBtnLogin: 'چوونە ژوورەوە', lblLogoutBtn: 'چوونە دەرەوە',
-    lblFormSubject: 'بابەتێ خواندنێ', lblFormClass: 'قۆناغ و پۆل (الشعبة)', lblFormLecture: 'بەشێ وانێ (الحصة)', lblBtnLoadStudents: 'دەستپێکرنا پشکنینێ',
-    lblCheckBackBtn: 'پاشڤە', lblCheckCounterText: 'قوتابیێن نەهاتین', lblBtnConfirm: 'پەسەندکرن و ناردن',
-    lblSuccessTitle: 'ب سەرکەفتوویی تۆمارکرا', lblSuccessSub: 'داتایێن نەهاتنێ ڕەوانەی سیستەمێ کارگێڕی هاتنە کرن.',
-    lblBtnNewReport: 'تۆمارکرنا ڕاپۆرتەکا نوو', loginMainTitle: 'پەیمانگەها کومپیوتەرێ ل ئاکرێ', loginSubTitle: 'سیستەمێ ئەلەکترۆنی یێ تۆمارکرنا نەهاتنێ'
+    dir:'rtl', htmlLang:'ku',
+    instName:       'پەیمانگەها کومپیوتەرێ ل ئاکرێ',
+    headerSub:      'سیستەما تومارکرنا نەهاتنێ',
+    loginTitle:     'چوونا ژوورێ سیستەمێ',
+    loginSub:       'تومارکرنا نەهاتنا قوتابیان',
+    labelUser:      'ناڤێ بکارهێنەر',
+    labelPass:      'وشەی نهێنی',
+    btnLogin:       'چوونا ژوورێ ←',
+    teacherPrefix:  'مامۆستا ',
+    welcomeSub:     'تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە',
+    step1:          'زانیارییێن دەرسێ',
+    step2:          'قوتابیێن نەهاتی',
+    labelDate:      'بەروار',
+    labelLecture:   'ژمارەیا دەرسێ',
+    labelSubject:   'بابەت',
+    labelClass:     'گروپا پۆلێ',
+    placeholder:    '— هلبژێرە —',
+    noStudents:     'پۆلێ هلبژێرە دا کو لیستا قوتابیان دەرکەڤە',
+    studentsTitle:  'هلبژارنا پۆلێ',
+    absentLabel:    'نەهاتی',
+    absentPreview:  '✗ قوتابیێن نەهاتی:',
+    btnReset:       '🔄 سفرکرن',
+    btnSubmit:      '📤 شاندن و پاشەکەفتکرن',
+    successTitle:   'سەرکەفتن! تومار کرا',
+    successSub:     'نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.',
+    btnNew:         '➕ تومارکرنەکێ نوی',
+    btnLogout:      '🚪 دەرچوون',
+    fDate:'بەروار', fTeacher:'مامۆستە', fSubject:'بابەت',
+    fLecture:'دەرس', fClass:'پۆل', fAbsent:'ژمارەیا نەهاتی', students:'قوتابی',
+    loading:        'خۆراستکرن و خواندنا داتایێن سیستەمی...',
+    loadingSubmit:  'تومارکرنا نەهاتنێ...',
+    toastLoaded:    '✅ هەمی داتا ب سەرکەفتی هاتنە بارکرن',
+    toastFill:      '⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
+    toastDuplicate: '⚠️ ئەم دەرسێ پێش ئێڤارێ تومار کراوە! دوبارەکرن نابێت.',
+    toastError:     '❌ پەیوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
+    toastConnErr:   '❌ پەیوەندی ب سێرڤەری نەهاتە کرن!',
+    errConnect:     'پەیوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
+    errWrong:       'ناڤ یا شێفرە شاشە! دیسا تاقی بکەڤە.',
+    errFill:        'تکایە هەمی خانەیێن پێدڤی داگرە!',
+    usernamePH:     'ناڤێ مامۆستای...',
   },
   ar: {
-    dir: 'rtl', loading: 'جاري تحميل البيانات...', saving: 'جاري حفظ وإرسال الغيابات...',
-    errFill: 'يرجى ملء جميع الحقول المطلوبة!', errLogin: 'اسم المستخدم أو كلمة المرور غير صحيحة!',
-    toastLoadErr: 'فشل في تحميل قاعدة البيانات من السيرفر.', toastNoStudents: 'لا يوجد طلاب مسجلين في هذه الشعبة!',
-    toastSuccess: 'تم إرسال تقرير الغياب بنجاح.', toastSubmitErr: 'فشل في إرسال البيانات، يرجى المحاولة لاحقاً.',
-    fDate: 'التاريخ', fTeacher: 'الأستاذ', fSubject: 'المادة', fLecture: 'الحصة', fClass: 'الصف/الشعبة', fAbsent: 'الغياب', students: 'طلاب',
-    lblUser: 'اسم المستخدم', lblPass: 'كلمة المرور', lblBtnLogin: 'تسجيل الدخول', lblLogoutBtn: 'تسجيل الخروج',
-    lblFormSubject: 'المادة الدراسية', lblFormClass: 'الصف والشعبة', lblFormLecture: 'الحصة الصفية', lblBtnLoadStudents: 'بدء تفقد الحضور',
-    lblCheckBackBtn: 'تراجع', lblCheckCounterText: 'عدد الطلاب الغائبين', lblBtnConfirm: 'تأكيد وإرسال التقرير',
-    lblSuccessTitle: 'تم التسجيل بنجاح', lblSuccessSub: 'تمت مزامنة وإرسال تقرير الغياب إلى الإدارة المركزية.',
-    lblBtnNewReport: 'تسجيل تقرير جديد', loginMainTitle: 'معهد عقرة للحاسوب', loginSubTitle: 'النظام الإلكتروني لتسجيل غيابات الطلاب'
+    dir:'rtl', htmlLang:'ar',
+    instName:       'معهد عقرة للكمبيوتر',
+    headerSub:      'نظام تسجيل الغياب',
+    loginTitle:     'تسجيل الدخول',
+    loginSub:       'تسجيل غياب الطلاب',
+    labelUser:      'اسم المستخدم',
+    labelPass:      'كلمة المرور',
+    btnLogin:       'دخول ←',
+    teacherPrefix:  'الأستاذ ',
+    welcomeSub:     'يرجى إدخال معلومات الدرس واختيار الطلاب الغائبين',
+    step1:          'معلومات الدرس',
+    step2:          'الطلاب الغائبون',
+    labelDate:      'التاريخ',
+    labelLecture:   'رقم المحاضرة',
+    labelSubject:   'المادة',
+    labelClass:     'المجموعة',
+    placeholder:    '— اختر —',
+    noStudents:     'اختر المجموعة لعرض قائمة الطلاب',
+    studentsTitle:  'اختيار المجموعة',
+    absentLabel:    'غائب',
+    absentPreview:  '✗ الطلاب الغائبون:',
+    btnReset:       '🔄 إعادة تعيين',
+    btnSubmit:      '📤 إرسال وحفظ',
+    successTitle:   '✅ تم الحفظ بنجاح!',
+    successSub:     'تم تسجيل غياب الطلاب بنجاح.',
+    btnNew:         '➕ تسجيل جديد',
+    btnLogout:      '🚪 تسجيل الخروج',
+    fDate:'التاريخ', fTeacher:'المعلم', fSubject:'المادة',
+    fLecture:'المحاضرة', fClass:'المجموعة', fAbsent:'عدد الغائبين', students:'طالب',
+    loading:        'جارٍ تحميل بيانات النظام...',
+    loadingSubmit:  'جارٍ حفظ الغياب...',
+    toastLoaded:    '✅ تم تحميل جميع البيانات بنجاح',
+    toastFill:      '⚠️ يرجى ملء جميع الحقول المطلوبة!',
+    toastDuplicate: '⚠️ تم تسجيل هذا الدرس مسبقاً! لا يمكن التكرار.',
+    toastError:     '❌ فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
+    toastConnErr:   '❌ فشل الاتصال بالخادم!',
+    errConnect:     'فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
+    errWrong:       'اسم المستخدم أو كلمة المرور غير صحيحة!',
+    errFill:        'يرجى ملء جميع الحقول المطلوبة!',
+    usernamePH:     'اسم المستخدم...',
   },
   en: {
-    dir: 'ltr', loading: 'Loading database logs...', saving: 'Submitting attendance logs...',
-    errFill: 'Please complete all required fields!', errLogin: 'Invalid Username or Password credentials!',
-    toastLoadErr: 'Error connecting to Google Sheets data layer.', toastNoStudents: 'No students found matching this class roster.',
-    toastSuccess: 'Attendance report transmitted successfully.', toastSubmitErr: 'Server transaction failure. Please retry.',
-    fDate: 'Date', fTeacher: 'Teacher', fSubject: 'Subject', fLecture: 'Lecture', fClass: 'Class', fAbsent: 'Absents', students: 'students',
-    lblUser: 'Username', lblPass: 'Password', lblBtnLogin: 'Log In', lblLogoutBtn: 'Sign Out',
-    lblFormSubject: 'Subject Course', lblFormClass: 'Class & Section', lblFormLecture: 'Lecture Hour', lblBtnLoadStudents: 'Launch Checklist',
-    lblCheckBackBtn: 'Back', lblCheckCounterText: 'Absent Students Count', lblBtnConfirm: 'Submit Absences',
-    lblSuccessTitle: 'Report Filed Successfully', lblSuccessSub: 'The attendance logging spreadsheet has been synchronized.',
-    lblBtnNewReport: 'File Another Roster', loginMainTitle: 'Akre Computer Institute', loginSubTitle: 'Electronic Student Absence Tracking System'
+    dir:'ltr', htmlLang:'en',
+    instName:       'Akre Computer Institute',
+    headerSub:      'Absence Registration System',
+    loginTitle:     'Sign In',
+    loginSub:       'Student Absence Registration',
+    labelUser:      'Username',
+    labelPass:      'Password',
+    btnLogin:       'Sign In →',
+    teacherPrefix:  'Teacher ',
+    welcomeSub:     'Please fill in lesson details and select absent students',
+    step1:          'Lesson Details',
+    step2:          'Absent Students',
+    labelDate:      'Date',
+    labelLecture:   'Lecture No.',
+    labelSubject:   'Subject',
+    labelClass:     'Class Group',
+    placeholder:    '— Select —',
+    noStudents:     'Select a class to show the student list',
+    studentsTitle:  'Select Class',
+    absentLabel:    'absent',
+    absentPreview:  '✗ Absent students:',
+    btnReset:       '🔄 Reset',
+    btnSubmit:      '📤 Submit',
+    successTitle:   '✅ Submitted Successfully!',
+    successSub:     'Student absences have been recorded.',
+    btnNew:         '➕ New Submission',
+    btnLogout:      '🚪 Logout',
+    fDate:'Date', fTeacher:'Teacher', fSubject:'Subject',
+    fLecture:'Lecture', fClass:'Class', fAbsent:'Absent Count', students:'students',
+    loading:        'Loading system data...',
+    loadingSubmit:  'Saving absence...',
+    toastLoaded:    '✅ All data loaded successfully',
+    toastFill:      '⚠️ Please fill all required fields!',
+    toastDuplicate: '⚠️ This lesson was already submitted!',
+    toastError:     '❌ Connection failed! Please try again.',
+    toastConnErr:   '❌ Could not connect to server!',
+    errConnect:     'Could not connect to server! Please try again.',
+    errWrong:       'Wrong username or password!',
+    errFill:        'Please fill all required fields!',
+    usernamePH:     'Username...',
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-  setLanguage('ku'); 
-  fetchRosterDatabase();
-});
-
-async function fetchRosterDatabase() {
-  showLoading(LANGS[currentLang].loading);
-  try {
-    const res = await fetch(API_URL);
-    if (!res.ok) throw new Error();
-    const data = await res.json();
-    
-    // تصحيح قراءة الأعمدة بناءً على الترتيب الفعلي في ملف الـ Google Sheet الخاص بك
-    if (data.teachers && data.teachers.length > 0) {
-      const header = data.teachers[0].map(h => h.toString().trim().toLowerCase());
-      
-      TEACHERS = data.teachers.slice(1).map(r => {
-        let o = {};
-        header.forEach((h, i) => {
-          // إزالة أي بادئة إذا وجدت وضمان قراءة الحقول المطلوبة
-          let cleanKey = h.replace('teachers-', '');
-          o[cleanKey] = r[i] ? r[i].toString().trim() : '';
-        });
-        return o;
-      }).filter(t => t.username);
-      
-      console.log("Loaded Teachers:", TEACHERS);
-    }
-    
-    if (data.students) {
-      STUDENTS_RAW = data.students;
-    }
-    
-    checkAutoLogin();
-
-  } catch(err) {
-    console.error("Database connection failure:", err);
-    showToast(LANGS[currentLang].toastLoadErr, 'error');
-    showScreen('screen-login');
-  } finally {
-    hideLoading();
-  }
-}
-
-function setLanguage(lang) {
+function setLang(lang) {
+  if (!LANGS[lang]) return;
   currentLang = lang;
   const L = LANGS[lang];
-  
-  document.documentElement.lang = lang;
-  document.documentElement.dir = L.dir;
-  document.body.setAttribute('dir', L.dir);
-
-  const ids = [
-    'lblUser','lblPass','lblBtnLogin','lblLogoutBtn','lblFormSubject',
-    'lblFormClass','lblFormLecture','lblBtnLoadStudents','lblCheckBackBtn',
-    'lblCheckCounterText','lblBtnConfirm','lblSuccessTitle','lblSuccessSub',
-    'lblBtnNewReport','loginMainTitle','loginSubTitle'
-  ];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && L[id]) el.textContent = L[id];
-  });
 
   if (currentTeacher) {
-    document.getElementById('navTeacherName').textContent = currentTeacher.displaynames || currentTeacher.username;
+    localStorage.setItem('lang_' + currentTeacher.username, lang);
   }
 
-  document.querySelectorAll('.btn-lang').forEach(b => b.classList.remove('active'));
-  const activeBtn = document.getElementById(`lang-btn-${lang}`);
-  if (activeBtn) activeBtn.classList.add('active');
+  document.documentElement.dir  = L.dir;
+  document.documentElement.lang = L.htmlLang;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (L[key] !== undefined) el.textContent = L[key];
+  });
+
+  if (currentTeacher && document.getElementById('welcomeName')) {
+    document.getElementById('welcomeName').textContent = L.teacherPrefix + (currentTeacher.arabicName || currentTeacher.username);
+  }
+
+  const unInput = document.getElementById('loginUsername');
+  if (unInput) unInput.placeholder = L.usernamePH;
+
+  document.querySelectorAll('select.form-control').forEach(sel => {
+    const first = sel.querySelector('option[value=""]');
+    if (first) first.textContent = L.placeholder;
+  });
+
+  updateAbsentCount();
+
+  const cls = document.getElementById('fClass') ? document.getElementById('fClass').value : '';
+  if (cls && STUDENTS[cls]) {
+    document.getElementById('studentsAreaTitle').innerHTML =
+      '📋 <span data-i18n="studentsTitle">' + cls + ' — ' + STUDENTS[cls].length + ' ' + L.students + '</span>';
+  }
+
+  ['ku','ar','en'].forEach(l => {
+    const btn = document.getElementById('btnLang' + l.charAt(0).toUpperCase() + l.slice(1));
+    if (btn) btn.classList.toggle('active', l === lang);
+  });
 }
 
+function loadTeacherLang() {
+  if (!currentTeacher) return;
+  const saved = localStorage.getItem('lang_' + currentTeacher.username) || 'ku';
+  setLang(saved);
+}
+
+window.onload = () => {
+  document.getElementById('fDate').valueAsDate = new Date();
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  loadSystemData();
+};
+
+function loadSystemData() {
+  const L = LANGS[currentLang];
+  showLoading(L.loading);
+  const errBox  = document.getElementById('loginError');
+  const errText = document.getElementById('loginErrorText');
+  errBox.classList.remove('show');
+
+  fetch(APPS_SCRIPT_URL)
+    .then(res => res.json())
+    .then(data => {
+      hideLoading();
+      if (data.error) {
+        errText.textContent = data.error;
+        errBox.classList.add('show');
+        showToast(LANGS[currentLang].toastConnErr, 'error');
+      } else {
+        TEACHERS = data.teachers || [];
+        STUDENTS = data.students || {};
+        document.getElementById('loginUsername').disabled = false;
+        document.getElementById('loginPassword').disabled = false;
+        document.getElementById('btnLogin').disabled = false;
+        showToast(LANGS[currentLang].toastLoaded, 'success');
+        
+        // 🔄 AUTO LOGIN CHECK 🔄
+        checkAutoLogin();
+      }
+    })
+    .catch(err => {
+      hideLoading();
+      errText.textContent = LANGS[currentLang].errConnect;
+      errBox.classList.add('show');
+      showToast(LANGS[currentLang].toastConnErr, 'error');
+      console.error(err);
+    });
+}
+
+// Check if teacher or admin credentials are saved locally
 function checkAutoLogin() {
   const savedUser = localStorage.getItem('remembered_username');
   const savedPass = localStorage.getItem('remembered_password');
   
   if (savedUser && savedPass) {
-    if (savedUser === 'admin' && savedPass === 'admin1234') {
-      window.location.href = 'absentapi.html';
+    // 🔐 التحقق التلقائي لحساب الأدمن
+    if (savedUser === 'admin' && savedPass === '1234') {
+      window.location.href = DASHBOARD_URL;
       return;
     }
     
-    const teacherMatch = TEACHERS.find(t => t.username.toLowerCase() === savedUser.toLowerCase() && t.password === savedPass);
-    if (teacherMatch) {
-      currentTeacher = teacherMatch;
-      initTeacherSession();
-      return;
+    // التحقق التلقائي للأساتذة من السيرفر
+    if (TEACHERS.length > 0) {
+      const teacher = TEACHERS.find(t => t.username === savedUser && t.password === savedPass);
+      if (teacher) {
+        currentTeacher = teacher;
+        showSubmitScreen();
+      }
     }
   }
-  showScreen('screen-login');
 }
 
-function processLogin() {
-  const u = document.getElementById('loginUser').value.trim().toLowerCase();
-  const p = document.getElementById('loginPass').value.trim();
-  
+function doLogin() {
+  const u = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const p = document.getElementById('loginPassword').value.trim();
+  const errBox  = document.getElementById('loginError');
+  const errText = document.getElementById('loginErrorText');
+
   if (!u || !p) {
-    showToast(LANGS[currentLang].errFill, 'error');
+    errText.textContent = LANGS[currentLang].errFill;
+    errBox.classList.add('show');
     return;
   }
 
-  // 🚀 تسجيل دخول الأدمن
-  if (u === 'admin' && p === 'admin1234') {
+  // 🚀 التحقق من بيانات الأدمن والتوجيه لصفحة الـ Dashboard
+  if (u === 'admin' && p === '1234') {
+    errBox.classList.remove('show');
     localStorage.setItem('remembered_username', 'admin');
-    localStorage.setItem('remembered_password', 'admin1234');
-    window.location.href = 'absentapi.html';
+    localStorage.setItem('remembered_password', '1234');
+    window.location.href = DASHBOARD_URL;
     return;
   }
 
-  // تسجيل دخول الأساتذة والمطابقة الحساسة لحالة الأحرف الصغيرة
-  const teacher = TEACHERS.find(t => t.username.toLowerCase() === u && t.password === p);
+  // التحقق من بيانات المعلمين
+  const teacher = TEACHERS.find(t => t.username === u && t.password === p);
   if (!teacher) {
-    showToast(LANGS[currentLang].errLogin, 'error');
+    errText.textContent = LANGS[currentLang].errWrong;
+    errBox.classList.add('show');
+    document.getElementById('loginUsername').classList.add('error');
+    document.getElementById('loginPassword').classList.add('error');
     return;
   }
 
+  errBox.classList.remove('show');
   currentTeacher = teacher;
+  
+  // 💾 SAVE LOGIN CREDENTIALS 💾
   localStorage.setItem('remembered_username', u);
   localStorage.setItem('remembered_password', p);
   
-  initTeacherSession();
+  showSubmitScreen();
 }
 
-function initTeacherSession() {
-  document.getElementById('navTeacherName').textContent = currentTeacher.displaynames || currentTeacher.username;
-  
-  const subjects = currentTeacher.subjects ? currentTeacher.subjects.split(',').map(s => s.trim()) : [];
-  const subSelect = document.getElementById('formSubject');
-  subSelect.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+function doLogout() {
+  // ❌ ERASE RECORDED LOGIN DETAILS ❌
+  localStorage.removeItem('remembered_username');
+  localStorage.removeItem('remembered_password');
 
-  handleSubjectChange();
+  currentTeacher = null;
+  selectedAbsent.clear();
+  showScreen('screen-login');
+  document.getElementById('headerUser').style.display = 'none';
+  document.getElementById('langSwitcher').classList.remove('visible');
+  document.getElementById('loginUsername').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginUsername').classList.remove('error');
+  document.getElementById('loginPassword').classList.remove('error');
+  setLang('ku');
+  loadSystemData();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showSubmitScreen() {
+  const L = LANGS[currentLang];
+  const tName = currentTeacher.arabicName || currentTeacher.username;
+  document.getElementById('welcomeName').textContent = L.teacherPrefix + tName;
+  document.getElementById('welcomeAvatar').textContent = tName.charAt(0);
+  document.getElementById('headerUserName').textContent = tName;
+  document.getElementById('headerUser').style.display = 'flex';
+  document.getElementById('langSwitcher').classList.add('visible');
+
+  const sel = document.getElementById('fSubject');
+  sel.innerHTML = '<option value="" data-i18n="placeholder">— هلبژێرە —</option>';
+  if (currentTeacher.subjects && Array.isArray(currentTeacher.subjects)) {
+    currentTeacher.subjects.forEach(s => {
+      const o = document.createElement('option'); o.value = s; o.textContent = s;
+      sel.appendChild(o);
+    });
+  }
+
+  const cls = document.getElementById('fClass');
+  cls.innerHTML = '<option value="" data-i18n="placeholder">— هلبژێرە —</option>';
+  if (currentTeacher.classes && Array.isArray(currentTeacher.classes)) {
+    currentTeacher.classes.forEach(c => {
+      const o = document.createElement('option'); o.value = c; o.textContent = c;
+      cls.appendChild(o);
+    });
+  }
+
+  resetStudents();
   showScreen('screen-submit');
+  loadTeacherLang();
+  setTimeout(restoreFormState, 80);
 }
 
-function handleSubjectChange() {
-  const classes = currentTeacher.classes ? currentTeacher.classes.split(',').map(c => c.trim()) : [];
-  const clsSelect = document.getElementById('formClass');
-  clsSelect.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+function onClassChange() {
+  const cls = document.getElementById('fClass').value;
+  selectedAbsent.clear();
+  renderStudents(cls);
+  updateAbsentCount();
+  renderAbsentPreview();
+  saveFormState();
 }
 
-function processLoadStudents() {
-  const cls = document.getElementById('formClass').value;
-  const sub = document.getElementById('formSubject').value;
-  
-  if (!cls || !sub) {
-    showToast(LANGS[currentLang].errFill, 'error');
+function renderStudents(cls) {
+  const container = document.getElementById('studentsContainer');
+  const L = LANGS[currentLang];
+
+  if (!cls || !STUDENTS[cls]) {
+    container.innerHTML = '<div class="no-students"><span class="icon">🎓</span><span data-i18n="noStudents">' + L.noStudents + '</span></div>';
+    document.getElementById('studentsAreaTitle').innerHTML = '📋 <span data-i18n="studentsTitle">' + L.studentsTitle + '</span>';
     return;
   }
 
-  let classIndex = -1;
-  if (STUDENTS_RAW.length > 0) {
-    classIndex = STUDENTS_RAW[0].findIndex(h => h && h.toString().trim() === cls);
-  }
+  const students = STUDENTS[cls];
+  document.getElementById('studentsAreaTitle').innerHTML =
+    '📋 <span data-i18n="studentsTitle">' + cls + ' — ' + students.length + ' ' + L.students + '</span>';
 
-  if (classIndex === -1) {
-    showToast(LANGS[currentLang].toastNoStudents, 'error');
-    return;
-  }
-
-  const listContainer = document.getElementById('checklistContainer');
-  listContainer.innerHTML = '';
-  let count = 0;
-
-  for (let i = 1; i < STUDENTS_RAW.length; i++) {
-    const studentName = STUDENTS_RAW[i][classIndex];
-    if (studentName && studentName.toString().trim() !== "") {
-      count++;
-      const row = document.createElement('div');
-      row.className = 'student-row';
-      row.dataset.name = studentName.toString().trim();
-      row.onclick = function() { toggleStudentState(this); };
-
-      row.innerHTML = `
-        <div class="student-info">
-          <div class="student-num">${count}</div>
-          <div class="student-name">${studentName.toString().trim()}</div>
-        </div>
-        <label class="switch">
-          <input type="checkbox" onchange="this.checked = !this.checked;">
-          <span class="slider"></span>
-        </label>
-      `;
-      listContainer.appendChild(row);
-    }
-  }
-
-  if (count === 0) {
-    showToast(LANGS[currentLang].toastNoStudents, 'error');
-    return;
-  }
-
-  document.getElementById('checkHeaderClass').textContent = cls;
-  document.getElementById('checkHeaderSubject').textContent = sub;
-  document.getElementById('absentCounter').textContent = '0';
-  
-  showScreen('screen-checklist');
-}
-
-function toggleStudentState(rowEl) {
-  const checkbox = rowEl.querySelector('input[type="checkbox"]');
-  rowEl.classList.toggle('absent');
-  checkbox.checked = rowEl.classList.contains('absent');
-  
-  const totalAbsent = document.querySelectorAll('.student-row.absent').length;
-  document.getElementById('absentCounter').textContent = totalAbsent;
-}
-
-async function confirmChecklist() {
-  const dateObj = new Date();
-  const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
-  
-  const teacherName = currentTeacher.username; 
-  const subject = document.getElementById('formSubject').value;
-  const cls = document.getElementById('formClass').value;
-  const lecture = document.getElementById('formLecture').value;
-  
-  const absentStudents = [];
-  document.querySelectorAll('.student-row.absent').forEach(row => {
-    absentStudents.push(row.dataset.name);
+  let html = '<div class="students-grid">';
+  students.forEach(name => {
+    const safe = name.replace(/'/g, "\\'");
+    html += `<label class="student-check" onclick="toggleStudent(event, '${safe}')">
+               <input type="checkbox" value="${name}" onchange="toggleStudent(event, '${safe}')">
+               <span class="sname">${name}</span>
+             </label>`;
   });
-  
-  const absentString = absentStudents.join(', ');
+  html += '</div>';
+  container.innerHTML = html;
+}
 
-  showLoading(LANGS[currentLang].saving);
+function toggleStudent(e, name) {
+  e.stopPropagation();
+  const label = e.currentTarget.tagName === 'LABEL' ? e.currentTarget : e.currentTarget.closest('label');
+  if (!label) return;
+  const cb = label.querySelector('input[type=checkbox]');
+  if (selectedAbsent.has(name)) {
+    selectedAbsent.delete(name);
+    label.classList.remove('checked');
+    if (cb) cb.checked = false;
+  } else {
+    selectedAbsent.add(name);
+    label.classList.add('checked');
+    if (cb) cb.checked = true;
+  }
+  updateAbsentCount();
+  renderAbsentPreview();
+}
+
+function updateAbsentCount() {
+  const L = LANGS[currentLang];
+  document.getElementById('absentCount').innerHTML =
+    selectedAbsent.size + ' <span data-i18n="absentLabel">' + L.absentLabel + '</span>';
+}
+
+function renderAbsentPreview() {
+  const preview = document.getElementById('absentPreview');
+  const pills   = document.getElementById('absentPills');
+  const L = LANGS[currentLang];
+  if (selectedAbsent.size === 0) { preview.classList.remove('show'); return; }
+  preview.classList.add('show');
+  document.querySelector('.absent-preview h5').textContent = L.absentPreview;
+  pills.innerHTML = [...selectedAbsent].map(n => {
+    const safe = n.replace(/'/g, "\\'");
+    return `<span class="absent-pill">${n}
+              <span class="remove-pill" onclick="removeAbsent('${safe}')">✕</span>
+            </span>`;
+  }).join('');
+}
+
+function removeAbsent(name) {
+  selectedAbsent.delete(name);
+  document.querySelectorAll('.student-check').forEach(lbl => {
+    if (lbl.querySelector('.sname').textContent === name) {
+      lbl.classList.remove('checked');
+      lbl.querySelector('input').checked = false;
+    }
+  });
+  updateAbsentCount();
+  renderAbsentPreview();
+}
+
+function resetStudents() {
+  selectedAbsent.clear();
+  const L = LANGS[currentLang];
+  document.getElementById('studentsContainer').innerHTML =
+    '<div class="no-students"><span class="icon">🎓</span><span data-i18n="noStudents">' + L.noStudents + '</span></div>';
+  document.getElementById('absentCount').innerHTML =
+    '0 <span data-i18n="absentLabel">' + L.absentLabel + '</span>';
+  document.getElementById('absentPreview').classList.remove('show');
+}
+
+function saveFormState() {
+  if (!currentTeacher) return;
+  const state = {
+    username: currentTeacher.username,
+    date:    document.getElementById('fDate').value,
+    subject: document.getElementById('fSubject').value,
+    lecture: document.getElementById('fLecture').value,
+    cls:     document.getElementById('fClass').value,
+  };
+  sessionStorage.setItem('formState', JSON.stringify(state));
+}
+
+function restoreFormState() {
+  const raw = sessionStorage.getItem('formState');
+  if (!raw || !currentTeacher) return;
+  try {
+    const s = JSON.parse(raw);
+    if (s.username !== currentTeacher.username) return;
+    if (s.date)    document.getElementById('fDate').value    = s.date;
+    if (s.subject) document.getElementById('fSubject').value = s.subject;
+    if (s.lecture) document.getElementById('fLecture').value = s.lecture;
+    if (s.cls) { document.getElementById('fClass').value = s.cls; onClassChange(); }
+  } catch(e) {}
+}
+
+function resetForm() {
+  document.getElementById('fSubject').value = '';
+  document.getElementById('fClass').value   = '';
+  document.getElementById('fLecture').value = '';
+  document.getElementById('fDate').valueAsDate = new Date();
+  resetStudents();
+  sessionStorage.removeItem('formState');
+}
+
+async function doSubmit() {
+  const L       = LANGS[currentLang];
+  const date    = document.getElementById('fDate').value;
+  const subject = document.getElementById('fSubject').value;
+  const lecture = document.getElementById('fLecture').value;
+  const cls     = document.getElementById('fClass').value;
+
+  if (!date || !subject || !lecture || !cls) {
+    showToast(L.toastFill, 'error'); return;
+  }
+
+  const submitKey = date + '|' + cls + '|' + subject + '|' + lecture;
+  if (sessionStorage.getItem(submitKey)) {
+    showToast(L.toastDuplicate, 'error'); return;
+  }
+
+  showLoading(L.loadingSubmit);
+  const absentList = [...selectedAbsent].join(', ');
+
+  const now = new Date();
+  const ts  = (now.getMonth()+1) + '/' + now.getDate() + '/' + now.getFullYear()
+            + ' ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0')
+            + ':' + String(now.getSeconds()).padStart(2,'0');
+
+  const [yyyy, mm, dd] = date.split('-');
+  const formattedDate  = parseInt(mm) + '/' + parseInt(dd) + '/' + yyyy;
+
+  const payload = {
+    timestamp:      ts,
+    date:           formattedDate,
+    teacherName:    currentTeacher.displayName || currentTeacher.username,
+    subject:        subject,
+    lectureNo:      lecture,
+    classGroup:     cls,
+    absentStudents: absentList
+  };
 
   try {
-    const payload = new URLSearchParams();
-    payload.append('date', formattedDate);
-    payload.append('teacher', teacherName);
-    payload.append('subject', subject);
-    payload.append('lecture', lecture);
-    payload.append('class', cls);
-    payload.append('absent', absentString);
-
-    const response = await fetch(SUBMIT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
-      body: payload,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      mode:   'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body:   JSON.stringify(payload),
     });
-
-    const result = await response.json();
-    
-    if (result.status === 'success') {
-      showToast(LANGS[currentLang].toastSuccess, 'success');
-      showSuccessView(formattedDate, subject, lecture, cls, absentString);
-    } else {
-      throw new Error();
-    }
-  } catch (err) {
-    showToast(LANGS[currentLang].toastSubmitErr, 'error');
-  } finally {
     hideLoading();
+    sessionStorage.setItem(submitKey, '1');
+    sessionStorage.removeItem('formState');
+    showSuccess(formattedDate, subject, lecture, cls, absentList);
+  } catch(err) {
+    hideLoading();
+    showToast(L.toastError, 'error');
+    console.error(err);
   }
 }
 
-function showSuccessView(date, subject, lecture, cls, absent) {
+function showSuccess(date, subject, lecture, cls, absent) {
   const L = LANGS[currentLang];
   const absentArr = absent ? absent.split(', ').filter(Boolean) : [];
-  const teacherDisplay = currentTeacher.displaynames || currentTeacher.username;
-
   document.getElementById('successDetails').innerHTML =
     row(L.fDate,    date) +
-    row(L.fTeacher, teacherDisplay) +
+    row(L.fTeacher, currentTeacher.arabicName || currentTeacher.username) +
     row(L.fSubject, subject) +
     row(L.fLecture, lecture) +
     row(L.fClass,   cls) +
-    `<div class="detail-row"><span class="label">${L.fAbsent}</span>` +
-    `<span class="val" style="color:var(--accent)">${absentArr.length} ${L.students}</span></div>`;
-    
+    '<div class="detail-row"><span class="label">' + L.fAbsent + '</span>' +
+    '<span class="val" style="color:var(--accent)">' + absentArr.length + ' ' + L.students + '</span></div>';
   showScreen('screen-success');
 }
 
 function row(label, val) {
-  return `<div class="detail-row"><span class="label">${label}</span><span class="val">${val}</span></div>`;
+  return '<div class="detail-row"><span class="label">' + label + '</span><span class="val">' + val + '</span></div>';
 }
 
-function newSubmission() {
-  document.getElementById('absentCounter').textContent = '0';
-  showScreen('screen-submit');
-}
-
-function backToForm() { showScreen('screen-submit'); }
-
-function processLogout() {
-  localStorage.clear();
-  currentTeacher = null;
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
-  showScreen('screen-login');
-}
-
-// التحكم في عرض الشاشات والبطاقات
-function showScreen(screenId) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const target = document.getElementById(screenId);
-  if (target) target.classList.add('active');
-}
+function newSubmission() { resetForm(); showScreen('screen-submit'); }
 
 function showLoading(msg) {
   document.getElementById('loadingText').textContent = msg || '...';
@@ -914,8 +1088,15 @@ function hideLoading() {
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
-  setTimeout(() => { t.classList.remove('show'); }, 3500);
+  t.className = 'toast' + (type ? ' ' + type : '');
+  
+  t.classList.add('show');
+  
+  if (window.toastTimer) clearTimeout(window.toastTimer);
+  
+  window.toastTimer = setTimeout(() => {
+    t.classList.remove('show');
+  }, 3500);
 }
 </script>
 </body>
