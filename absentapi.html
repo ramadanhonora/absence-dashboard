@@ -490,7 +490,10 @@
         <div id="dropdownResults" style="display: none;"></div>
     </div>
     
-    <p id="lastUpdate" style="color: #999; font-size: 0.9em; margin-top: 10px;"></p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+        <p id="lastUpdate" style="color:#999;font-size:0.9em;"></p>
+        <button onclick="doAdminLogout()" style="background:#c8402a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9em;font-weight:700;cursor:pointer;">&#x1F6AA; Logout / دەرچوون</button>
+    </div>
 </div>
 
         <div class="stats-grid">
@@ -1589,10 +1592,26 @@
             setTimeout(scheduleDataFetch, intervalMs);
         }
 
+        function doAdminLogout() {
+            localStorage.removeItem('remembered_username');
+            localStorage.removeItem('remembered_password');
+            sessionStorage.setItem('explicit_logout', '1');
+            window.location.href = 'index.html';
+        }
+
+        function checkAdminAccess() {
+            const u = localStorage.getItem('remembered_username');
+            const p = localStorage.getItem('remembered_password');
+            if (!u || !p) {
+                window.location.href = 'index.html';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            checkAdminAccess();
             console.log('🚀 Dashboard initializing...');
-            fetchData(); 
-            scheduleDataFetch(); 
+            fetchData();
+            scheduleDataFetch();
         });
 
     </script>
