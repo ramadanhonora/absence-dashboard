@@ -427,7 +427,7 @@ main {
     <div class="welcome-banner">
       <div class="avatar" id="welcomeAvatar">م</div>
       <div>
-        <h3 id="welcomeName">مامۆستا</h3>
+        <h3 id="welcomeName">م</h3>
         <p data-i18n="welcomeSub">تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
       </div>
     </div>
@@ -513,7 +513,7 @@ main {
     <div class="success-card">
       <div class="success-icon">✅</div>
       <h2 data-i18n="successTitle">سەرکەفتن! تومار کرا</h2>
-      <p data-i18n="successSub">نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.</p>
+      <p data-i18n="successSub">نەهatna قوتابیان ب سەرکەفتی هاتە تومارکرن.</p>
       <div class="success-details" id="successDetails"></div>
       <button class="btn-new" onclick="newSubmission()" data-i18n="btnNew">➕ تومارکرنەکێ نوی</button>
     </div>
@@ -566,9 +566,9 @@ const LANGS = {
     toastLoaded:    '✅ هەمی داتا ب سەرکەفتی هاتنە بارکرن',
     toastFill:      '⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
     toastDuplicate: '⚠️ ئەم دەرسێ پێش ئێڤارێ تومار کراوە! دوبارەکرن نابێت.',
-    toastError:     '❌ پەیوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
-    toastConnErr:   '❌ پەیوەندی ب سێرڤەری نەهاتە کرن!',
-    errConnect:     'پەیوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
+    toastError:     '❌ پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
+    toastConnErr:   '❌ پەيوەندی ب سێرڤەری نەهاتە کرن!',
+    errConnect:     'پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
     errWrong:       'ناڤ یا شێفرە شاشە! دیسا تاقی بکەڤە.',
     errFill:        'تکایە هەمی خانەیێن پێدڤی داگرە!',
     usernamePH:     'ناڤێ مامۆستای...',
@@ -677,7 +677,9 @@ function setLang(lang) {
   });
 
   if (currentTeacher && document.getElementById('welcomeName')) {
-    document.getElementById('welcomeName').textContent = L.teacherPrefix + (currentTeacher.arabicName || currentTeacher.username);
+    // استخدام الاسم المعروض أو الاسم الفعلي المتوفر في البيانات
+    const displayName = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
+    document.getElementById('welcomeName').textContent = L.teacherPrefix + displayName;
   }
 
   const unInput = document.getElementById('loginUsername');
@@ -739,7 +741,7 @@ function loadSystemData() {
         document.getElementById('btnLogin').disabled = false;
         showToast(LANGS[currentLang].toastLoaded, 'success');
         
-        // 🔄 AUTO LOGIN CHECK 🔄
+        // التحقق من تسجيل الدخول التلقائي المحفوظ
         checkAutoLogin();
       }
     })
@@ -752,21 +754,19 @@ function loadSystemData() {
     });
 }
 
-// Check if teacher or admin credentials are saved locally
 function checkAutoLogin() {
   const savedUser = localStorage.getItem('remembered_username');
   const savedPass = localStorage.getItem('remembered_password');
   
   if (savedUser && savedPass) {
-    // 🔐 التحقق التلقائي لحساب الأدمن
+    // إذا كان الأدمن مسجل مسبقاً، يتم تحويله للوحة التحكم
     if (savedUser === 'admin' && savedPass === '1234') {
       window.location.href = DASHBOARD_URL;
       return;
     }
     
-    // التحقق التلقائي للأساتذة من السيرفر
     if (TEACHERS.length > 0) {
-      const teacher = TEACHERS.find(t => t.username === savedUser && t.password === savedPass);
+      const teacher = TEACHERS.find(t => t.username.toLowerCase() === savedUser.toLowerCase() && t.password === savedPass);
       if (teacher) {
         currentTeacher = teacher;
         showSubmitScreen();
@@ -787,7 +787,7 @@ function doLogin() {
     return;
   }
 
-  // 🚀 التحقق من بيانات الأدمن والتوجيه لصفحة الـ Dashboard
+  // 🔐 إعادة توجيه الآدمن الفورية إلى لوحة التحكم (Dashboard)
   if (u === 'admin' && p === '1234') {
     errBox.classList.remove('show');
     localStorage.setItem('remembered_username', 'admin');
@@ -796,8 +796,8 @@ function doLogin() {
     return;
   }
 
-  // التحقق من بيانات المعلمين
-  const teacher = TEACHERS.find(t => t.username === u && t.password === p);
+  // 📝 مطابقة حساب الأساتذة (مثل ali) بدون التحسس من حالة الأحرف (Capital/Small)
+  const teacher = TEACHERS.find(t => t.username.toLowerCase() === u && t.password === p);
   if (!teacher) {
     errText.textContent = LANGS[currentLang].errWrong;
     errBox.classList.add('show');
@@ -809,7 +809,6 @@ function doLogin() {
   errBox.classList.remove('show');
   currentTeacher = teacher;
   
-  // 💾 SAVE LOGIN CREDENTIALS 💾
   localStorage.setItem('remembered_username', u);
   localStorage.setItem('remembered_password', p);
   
@@ -817,7 +816,6 @@ function doLogin() {
 }
 
 function doLogout() {
-  // ❌ ERASE RECORDED LOGIN DETAILS ❌
   localStorage.removeItem('remembered_username');
   localStorage.removeItem('remembered_password');
 
@@ -841,7 +839,7 @@ function showScreen(id) {
 
 function showSubmitScreen() {
   const L = LANGS[currentLang];
-  const tName = currentTeacher.arabicName || currentTeacher.username;
+  const tName = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
   document.getElementById('welcomeName').textContent = L.teacherPrefix + tName;
   document.getElementById('welcomeAvatar').textContent = tName.charAt(0);
   document.getElementById('headerUserName').textContent = tName;
@@ -850,21 +848,35 @@ function showSubmitScreen() {
 
   const sel = document.getElementById('fSubject');
   sel.innerHTML = '<option value="" data-i18n="placeholder">— هلبژێرە —</option>';
-  if (currentTeacher.subjects && Array.isArray(currentTeacher.subjects)) {
-    currentTeacher.subjects.forEach(s => {
-      const o = document.createElement('option'); o.value = s; o.textContent = s;
-      sel.appendChild(o);
-    });
+  
+  let subjectsArr = [];
+  if (currentTeacher.subjects) {
+    if (Array.isArray(currentTeacher.subjects)) {
+      subjectsArr = currentTeacher.subjects;
+    } else if (typeof currentTeacher.subjects === 'string') {
+      subjectsArr = currentTeacher.subjects.split(',').map(s => s.trim());
+    }
   }
+  subjectsArr.forEach(s => {
+    const o = document.createElement('option'); o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
 
   const cls = document.getElementById('fClass');
   cls.innerHTML = '<option value="" data-i18n="placeholder">— هلبژێرە —</option>';
-  if (currentTeacher.classes && Array.isArray(currentTeacher.classes)) {
-    currentTeacher.classes.forEach(c => {
-      const o = document.createElement('option'); o.value = c; o.textContent = c;
-      cls.appendChild(o);
-    });
+  
+  let classesArr = [];
+  if (currentTeacher.classes) {
+    if (Array.isArray(currentTeacher.classes)) {
+      classesArr = currentTeacher.classes;
+    } else if (typeof currentTeacher.classes === 'string') {
+      classesArr = currentTeacher.classes.split(',').map(c => c.trim());
+    }
   }
+  classesArr.forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c;
+    cls.appendChild(o);
+  });
 
   resetStudents();
   showScreen('screen-submit');
@@ -1029,10 +1041,12 @@ async function doSubmit() {
   const [yyyy, mm, dd] = date.split('-');
   const formattedDate  = parseInt(mm) + '/' + parseInt(dd) + '/' + yyyy;
 
+  const tDisplay = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
+
   const payload = {
     timestamp:      ts,
     date:           formattedDate,
-    teacherName:    currentTeacher.displayName || currentTeacher.username,
+    teacherName:    tDisplay,
     subject:        subject,
     lectureNo:      lecture,
     classGroup:     cls,
@@ -1060,9 +1074,11 @@ async function doSubmit() {
 function showSuccess(date, subject, lecture, cls, absent) {
   const L = LANGS[currentLang];
   const absentArr = absent ? absent.split(', ').filter(Boolean) : [];
+  const tDisplay = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
+  
   document.getElementById('successDetails').innerHTML =
     row(L.fDate,    date) +
-    row(L.fTeacher, currentTeacher.arabicName || currentTeacher.username) +
+    row(L.fTeacher, tDisplay) +
     row(L.fSubject, subject) +
     row(L.fLecture, lecture) +
     row(L.fClass,   cls) +
