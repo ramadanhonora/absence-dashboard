@@ -565,6 +565,7 @@ const LANGS = {
     loadingSubmit:  'تومارکرنا نەهاتنێ...',
     toastLoaded:    '✅ هەمی داتا ب سەرکەفتی هاتنە بارکرن',
     toastFill:      '⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
+    toastWeekend:   '🚫 هەینی و شەممە روژێن دەرفەتê ne! تومارکرن نابێت.',
     toastDuplicate: '⚠️ ئەم دەرسێ پێش ئێڤارێ تومار کراوە! دوبارەکرن نابێت.',
     toastError:     '❌ پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
     toastConnErr:   '❌ پەيوەندی ب سێرڤەری نەهاتە کرن!',
@@ -607,6 +608,7 @@ const LANGS = {
     loadingSubmit:  'جارٍ حفظ الغياب...',
     toastLoaded:    '✅ تم تحميل جميع البيانات بنجاح',
     toastFill:      '⚠️ يرجى ملء جميع الحقول المطلوبة!',
+    toastWeekend:   '🚫 الجمعة والسبت أيام عطلة! لا يمكن التسجيل.',
     toastDuplicate: '⚠️ تم تسجيل هذا الدرس مسبقاً! لا يمكن التكرار.',
     toastError:     '❌ فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
     toastConnErr:   '❌ فشل الاتصال بالخادم!',
@@ -649,6 +651,7 @@ const LANGS = {
     loadingSubmit:  'Saving absence...',
     toastLoaded:    '✅ All data loaded successfully',
     toastFill:      '⚠️ Please fill all required fields!',
+    toastWeekend:   '🚫 Friday and Saturday are holidays! No submissions allowed.',
     toastDuplicate: '⚠️ This lesson was already submitted!',
     toastError:     '❌ Connection failed! Please try again.',
     toastConnErr:   '❌ Could not connect to server!',
@@ -677,7 +680,7 @@ function setLang(lang) {
   });
 
   if (currentTeacher && document.getElementById('welcomeName')) {
-    const displayName = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
+    const displayName = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.username;
     document.getElementById('welcomeName').textContent = L.teacherPrefix + displayName;
   }
 
@@ -763,9 +766,12 @@ function checkAutoLogin() {
   const savedPass = localStorage.getItem('remembered_password');
   
   if (savedUser && savedPass) {
-    if (savedUser === 'admin' && savedPass === '1234') {
-      window.location.href = DASHBOARD_URL;
-      return;
+    if (TEACHERS.length > 0) {
+      const savedAdmin = TEACHERS.find(t => t.username.toLowerCase() === savedUser.toLowerCase() && t.password === savedPass && t.displayName === 'Admin Dashboard');
+      if (savedAdmin) {
+        window.location.href = DASHBOARD_URL;
+        return;
+      }
     }
     
     if (TEACHERS.length > 0) {
@@ -790,11 +796,12 @@ function doLogin() {
     return;
   }
 
-  if (u === 'admin' && p === '1234') {
+  const adminTeacher = TEACHERS.find(t => t.username.toLowerCase() === u && t.password === p && t.displayName === 'Admin Dashboard');
+  if (adminTeacher) {
     errBox.classList.remove('show');
-    localStorage.setItem('remembered_username', 'admin');
-    localStorage.setItem('remembered_password', '1234');
-    sessionStorage.removeItem('explicit_logout'); // clear logout state on deliberate sign-in
+    localStorage.setItem('remembered_username', u);
+    localStorage.setItem('remembered_password', p);
+    sessionStorage.removeItem('explicit_logout');
     window.location.href = DASHBOARD_URL;
     return;
   }
@@ -846,7 +853,7 @@ function showScreen(id) {
 
 function showSubmitScreen() {
   const L = LANGS[currentLang];
-  const tName = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
+  const tName = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.username;
   document.getElementById('welcomeName').textContent = L.teacherPrefix + tName;
   document.getElementById('welcomeAvatar').textContent = tName.charAt(0);
   document.getElementById('headerUserName').textContent = tName;
@@ -1032,6 +1039,11 @@ async function doSubmit() {
     showToast(L.toastFill, 'error'); return;
   }
 
+  const todayDay = new Date().getDay();
+  if (todayDay === 5 || todayDay === 6) {
+    showToast(L.toastWeekend, 'error'); return;
+  }
+
   const submitKey = date + '|' + cls + '|' + subject + '|' + lecture;
   if (sessionStorage.getItem(submitKey)) {
     showToast(L.toastDuplicate, 'error'); return;
@@ -1048,7 +1060,7 @@ async function doSubmit() {
   const [yyyy, mm, dd] = date.split('-');
   const formattedDate  = parseInt(mm) + '/' + parseInt(dd) + '/' + yyyy;
 
-  const tDisplay = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
+  const tDisplay = currentTeacher.displayName || currentTeacher.username;
 
   const payload = {
     timestamp:      ts,
@@ -1081,8 +1093,7 @@ async function doSubmit() {
 function showSuccess(date, subject, lecture, cls, absent) {
   const L = LANGS[currentLang];
   const absentArr = absent ? absent.split(', ').filter(Boolean) : [];
-  const tDisplay = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
-  
+  const tDisplay = currentTeacher.displayName || currentTeacher.username;
   document.getElementById('successDetails').innerHTML =
     row(L.fDate,    date) +
     row(L.fTeacher, tDisplay) +
