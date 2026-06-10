@@ -369,6 +369,92 @@ main {
   .btn-secondary { flex: 1; padding: 12px; justify-content: center; font-size: 0.85rem; margin: 0; }
   .toast { width: 90%; max-width: 320px; padding: 10px; font-size: 0.8rem; bottom: 80px; }
 }
+
+  /* ── MY SUBMISSIONS PANEL ── */
+  .subs-btn {
+    background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25);
+    color: var(--white); border-radius: 8px; padding: 7px 14px;
+    font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all 0.2s; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .subs-btn:hover { background: rgba(255,255,255,0.22); }
+  .subs-badge {
+    background: var(--accent); color: #fff; border-radius: 100px;
+    padding: 1px 7px; font-size: 0.72rem; font-weight: 800;
+  }
+  .subs-panel {
+    display: none; background: var(--white); border-radius: 16px;
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    margin-bottom: 20px; overflow: hidden;
+    animation: fadeUp 0.3s ease both;
+  }
+  .subs-panel.open { display: block; }
+  .subs-panel-head {
+    background: var(--ink2); color: var(--white); padding: 14px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .subs-panel-head h3 { font-size: 0.92rem; font-weight: 700; }
+  .subs-panel-close {
+    background: none; border: none; color: rgba(255,255,255,0.55);
+    font-size: 1.1rem; cursor: pointer; padding: 0 4px; font-family: inherit;
+  }
+  .subs-panel-close:hover { color: #fff; }
+  .subs-panel-body { padding: 16px 20px; }
+  .subs-state {
+    text-align: center; padding: 28px 16px;
+    color: var(--muted); font-size: 0.88rem;
+  }
+  .subs-state .subs-state-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+  .subs-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .subs-table th {
+    background: var(--cream); color: var(--ink2); font-weight: 700;
+    font-size: 0.77rem; padding: 9px 12px; text-align: right;
+    border-bottom: 2px solid var(--border);
+  }
+  .subs-table td { padding: 9px 12px; border-bottom: 1px solid var(--cream); vertical-align: middle; }
+  .subs-table tr:last-child td { border-bottom: none; }
+  .subs-table tr:hover td { background: #fafaf8; }
+  .absent-badge {
+    background: var(--accent); color: #fff; border-radius: 100px;
+    padding: 2px 10px; font-size: 0.74rem; font-weight: 700; display: inline-block;
+  }
+  .absent-badge.zero { background: var(--green); }
+  .btn-del-row {
+    background: none; border: 1.5px solid #ffd0ca; color: var(--accent);
+    border-radius: 7px; padding: 5px 10px; font-size: 0.77rem;
+    cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-del-row:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  /* Confirm dialog */
+  .confirm-overlay {
+    position: fixed; inset: 0; z-index: 400;
+    background: rgba(15,25,35,0.55); backdrop-filter: blur(3px);
+    display: none; align-items: center; justify-content: center;
+  }
+  .confirm-overlay.show { display: flex; }
+  .confirm-box {
+    background: var(--white); border-radius: 16px; padding: 32px 28px;
+    max-width: 380px; width: 90%; box-shadow: 0 16px 48px rgba(15,25,35,0.25);
+    text-align: center; animation: fadeUp 0.3s ease both;
+  }
+  .confirm-icon { font-size: 2.4rem; margin-bottom: 12px; }
+  .confirm-box h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .confirm-box p  { font-size: 0.84rem; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
+  .confirm-btns   { display: flex; gap: 10px; justify-content: center; }
+  .btn-conf-cancel {
+    padding: 10px 22px; background: none; border: 1.5px solid var(--border);
+    border-radius: 10px; font-family: inherit; font-size: 0.88rem;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+  }
+  .btn-conf-cancel:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-conf-delete {
+    padding: 10px 22px; background: var(--accent); border: none;
+    border-radius: 10px; font-family: inherit; font-size: 0.88rem;
+    font-weight: 700; color: #fff; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-conf-delete:hover { background: #a8321e; }
+
 </style>
 </head>
 <body>
@@ -426,9 +512,40 @@ main {
   <div class="screen" id="screen-submit">
     <div class="welcome-banner">
       <div class="avatar" id="welcomeAvatar">م</div>
-      <div>
+      <div style="flex:1">
         <h3 id="welcomeName">م</h3>
         <p data-i18n="welcomeSub">تکایە زانياريێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
+      </div>
+      <button class="subs-btn" id="btnMySubs" onclick="toggleSubsPanel()">
+        <span class="subs-badge" id="subsBadge">0</span>
+        <span data-i18n="btnMySubs">📋 تومارێن ئەمرۆ</span>
+      </button>
+    </div>
+
+    <!-- TODAY'S SUBMISSIONS PANEL -->
+    <div class="subs-panel" id="subsPanel">
+      <div class="subs-panel-head">
+        <h3 data-i18n="mySubsTitle">تومارکرنێن ئەمرۆ</h3>
+        <button class="subs-panel-close" onclick="toggleSubsPanel()">✕</button>
+      </div>
+      <div class="subs-panel-body" id="subsPanelBody">
+        <div class="subs-state">
+          <span class="subs-state-icon">⏳</span>
+          <span data-i18n="mySubsLoading">چاوەروانبە...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIRM DELETE DIALOG -->
+    <div class="confirm-overlay" id="confirmOverlay">
+      <div class="confirm-box">
+        <div class="confirm-icon">🗑️</div>
+        <h3 id="confirmTitle" data-i18n="confirmTitle">تومارکرن بسڕەوە؟</h3>
+        <p id="confirmMsg" data-i18n="confirmMsg">ئەم کارە نابێتە پووچەلکرن.</p>
+        <div class="confirm-btns">
+          <button class="btn-conf-cancel" id="confirmCancelBtn" onclick="closeConfirm()">هەڵوەستان</button>
+          <button class="btn-conf-delete" id="confirmDeleteBtn" onclick="executeDelete()">🗑️ بسڕەوە</button>
+        </div>
       </div>
     </div>
 
@@ -567,6 +684,21 @@ const LANGS = {
     toastFill:      '⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
     toastWeekend:   '🚫 هەینی و شەممە روژێن دەرفەتê ne! تومارکرن نابێت.',
     toastDuplicate: '⚠️ ئەم دەرسێ پێش ئێڤارێ تومار کراوە! دوبارەکرن نابێت.',
+    btnMySubs:      '📋 تومارێن ئەمرۆ',
+    mySubsTitle:    'تومارکرنێن ئەمرۆ',
+    mySubsLoading:  'چاوەروانبە...',
+    mySubsEmpty:    'هیچ تومارکرنێک ئەمرۆ نین',
+    thLecture:      'دەرس',
+    thSubject:      'بابەت',
+    thClass:        'پۆل',
+    thAbsent:       'نەهاتی',
+    confirmTitle:   'تومارکرن بسڕەوە؟',
+    confirmMsg:     'ئەم کارە نابێتە پووچەلکرن. دوبارە تومار بکە ئەگەر پێدڤی بوو.',
+    confirmCancel:  'هەڵوەستان',
+    confirmDelete:  '🗑️ بسڕەوە',
+    toastDelOk:     '✅ تومارکرن هاتە سڕینەوە. دوبارە تومار بکە.',
+    toastDelFail:   '❌ سڕینەوە سەرنەکەفت! دوبارە تاقی بکەڤە.',
+    loadingDel:     'سڕینەوەی تومارکرن...',
     toastError:     '❌ پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
     toastConnErr:   '❌ پەيوەندی ب سێرڤەری نەهاتە کرن!',
     errConnect:     'پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
@@ -610,6 +742,21 @@ const LANGS = {
     toastFill:      '⚠️ يرجى ملء جميع الحقول المطلوبة!',
     toastWeekend:   '🚫 الجمعة والسبت أيام عطلة! لا يمكن التسجيل.',
     toastDuplicate: '⚠️ تم تسجيل هذا الدرس مسبقاً! لا يمكن التكرار.',
+    btnMySubs:      '📋 سجلات اليوم',
+    mySubsTitle:    'سجلاتي اليوم',
+    mySubsLoading:  'جارٍ التحميل...',
+    mySubsEmpty:    'لا توجد سجلات اليوم',
+    thLecture:      'المحاضرة',
+    thSubject:      'المادة',
+    thClass:        'المجموعة',
+    thAbsent:       'الغائبون',
+    confirmTitle:   'حذف السجل؟',
+    confirmMsg:     'لا يمكن التراجع عن هذا. أعد التسجيل إذا لزم الأمر.',
+    confirmCancel:  'إلغاء',
+    confirmDelete:  '🗑️ حذف',
+    toastDelOk:     '✅ تم حذف السجل. أعد التسجيل إذا لزم.',
+    toastDelFail:   '❌ فشل الحذف! يرجى المحاولة مرة أخرى.',
+    loadingDel:     'جارٍ حذف السجل...',
     toastError:     '❌ فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
     toastConnErr:   '❌ فشل الاتصال بالخادم!',
     errConnect:     'فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
@@ -653,6 +800,21 @@ const LANGS = {
     toastFill:      '⚠️ Please fill all required fields!',
     toastWeekend:   '🚫 Friday and Saturday are holidays! No submissions allowed.',
     toastDuplicate: '⚠️ This lesson was already submitted!',
+    btnMySubs:      "📋 Today's Records",
+    mySubsTitle:    "Today's Submissions",
+    mySubsLoading:  'Loading...',
+    mySubsEmpty:    'No submissions today yet',
+    thLecture:      'Lecture',
+    thSubject:      'Subject',
+    thClass:        'Class',
+    thAbsent:       'Absent',
+    confirmTitle:   'Delete submission?',
+    confirmMsg:     'This cannot be undone. Resubmit if needed.',
+    confirmCancel:  'Cancel',
+    confirmDelete:  '🗑️ Delete',
+    toastDelOk:     '✅ Submission deleted. Resubmit if needed.',
+    toastDelFail:   '❌ Delete failed! Please try again.',
+    loadingDel:     'Deleting submission...',
     toastError:     '❌ Connection failed! Please try again.',
     toastConnErr:   '❌ Could not connect to server!',
     errConnect:     'Could not connect to server! Please try again.',
@@ -826,6 +988,9 @@ function doLogin() {
 }
 
 function doLogout() {
+  todayRows = [];
+  document.getElementById('subsBadge').textContent = '0';
+  const sp = document.getElementById('subsPanel'); if(sp) sp.classList.remove('open');
   // Clear persistent global memories completely
   localStorage.removeItem('remembered_username');
   localStorage.removeItem('remembered_password');
@@ -1082,6 +1247,7 @@ async function doSubmit() {
     hideLoading();
     sessionStorage.setItem(submitKey, '1');
     sessionStorage.removeItem('formState');
+    bumpSubsBadge();
     showSuccess(formattedDate, subject, lecture, cls, absentList);
   } catch(err) {
     hideLoading();
@@ -1117,6 +1283,143 @@ function showLoading(msg) {
 }
 function hideLoading() {
   document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+
+// ════════════════════════════════════════════
+//  TODAY'S SUBMISSIONS — teacher can delete own rows
+// ════════════════════════════════════════════
+let todayRows        = [];
+let pendingDeleteRow = null;
+
+function getTodayFormatted() {
+  const d = new Date();
+  return (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
+}
+
+function toggleSubsPanel() {
+  const panel = document.getElementById('subsPanel');
+  if (panel.classList.contains('open')) {
+    panel.classList.remove('open');
+  } else {
+    panel.classList.add('open');
+    loadTodayRows();
+  }
+}
+
+async function loadTodayRows() {
+  const L    = LANGS[currentLang];
+  const body = document.getElementById('subsPanelBody');
+  body.innerHTML = '<div class="subs-state"><span class="subs-state-icon">⏳</span>' + L.mySubsLoading + '</div>';
+
+  try {
+    const url = APPS_SCRIPT_URL
+              + '?action=getTodayRows&teacher='
+              + encodeURIComponent(currentTeacher.displayName);
+    const res  = await fetch(url);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    todayRows = data.rows || [];
+    renderTodayRows();
+  } catch(err) {
+    const body2 = document.getElementById('subsPanelBody');
+    body2.innerHTML = '<div class="subs-state"><span class="subs-state-icon">⚠️</span>' + err.message + '</div>';
+    console.error('loadTodayRows:', err);
+  }
+}
+
+function renderTodayRows() {
+  const L     = LANGS[currentLang];
+  const body  = document.getElementById('subsPanelBody');
+  const badge = document.getElementById('subsBadge');
+  badge.textContent = todayRows.length;
+
+  if (!todayRows.length) {
+    body.innerHTML = '<div class="subs-state"><span class="subs-state-icon">📭</span>' + L.mySubsEmpty + '</div>';
+    return;
+  }
+
+  let html = '<div style="overflow-x:auto"><table class="subs-table"><thead><tr>'
+           + '<th>' + L.thLecture + '</th>'
+           + '<th>' + L.thSubject + '</th>'
+           + '<th>' + L.thClass   + '</th>'
+           + '<th>' + L.thAbsent  + '</th>'
+           + '<th></th>'
+           + '</tr></thead><tbody>';
+
+  todayRows.forEach(function(r) {
+    const names = r.absentStudents
+                  ? r.absentStudents.split(',').map(function(n){return n.trim();}).filter(Boolean)
+                  : [];
+    html += '<tr>'
+          + '<td><strong>' + (r.lectureNo   || '—') + '</strong></td>'
+          + '<td>'         + (r.subject     || '—') + '</td>'
+          + '<td><strong>' + (r.classGroup  || '—') + '</strong></td>'
+          + '<td><span class="absent-badge' + (names.length === 0 ? ' zero' : '') + '">'
+          +    names.length + ' ' + L.absentLabel
+          + '</span></td>'
+          + '<td><button class="btn-del-row" onclick="askDelete(' + r.rowNumber + ')">'
+          +    L.confirmDelete + '</button></td>'
+          + '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+}
+
+function askDelete(rowNumber) {
+  const L = LANGS[currentLang];
+  pendingDeleteRow = rowNumber;
+  document.getElementById('confirmTitle').textContent     = L.confirmTitle;
+  document.getElementById('confirmMsg').textContent       = L.confirmMsg;
+  document.getElementById('confirmCancelBtn').textContent = L.confirmCancel;
+  document.getElementById('confirmDeleteBtn').textContent = L.confirmDelete;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  pendingDeleteRow = null;
+}
+
+async function executeDelete() {
+  if (!pendingDeleteRow) return;
+  const rowNum = pendingDeleteRow;
+  closeConfirm();
+  const L = LANGS[currentLang];
+  showLoading(L.loadingDel);
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        action:     'deleteRow',
+        rowNumber:  rowNum,
+        teacher:    currentTeacher.displayName
+      })
+    });
+    hideLoading();
+    // Remove deleted row from local array and re-render
+    todayRows = todayRows.filter(function(r){ return r.rowNumber !== rowNum; });
+    renderTodayRows();
+    showToast(L.toastDelOk, 'success');
+  } catch(err) {
+    hideLoading();
+    showToast(L.toastDelFail, 'error');
+    console.error('executeDelete:', err);
+  }
+}
+
+// Bump badge after each new submission
+function bumpSubsBadge() {
+  const badge = document.getElementById('subsBadge');
+  if (!badge) return;
+  badge.textContent = parseInt(badge.textContent || '0') + 1;
+  // If panel is open, reload to show the new row
+  const panel = document.getElementById('subsPanel');
+  if (panel && panel.classList.contains('open')) loadTodayRows();
 }
 
 function showToast(msg, type) {
