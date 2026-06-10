@@ -369,120 +369,6 @@ main {
   .btn-secondary { flex: 1; padding: 12px; justify-content: center; font-size: 0.85rem; margin: 0; }
   .toast { width: 90%; max-width: 320px; padding: 10px; font-size: 0.8rem; bottom: 80px; }
 }
-
-  /* ── MY SUBMISSIONS PANEL ── */
-  .my-submissions-panel {
-    display: none;
-    background: var(--white);
-    border-radius: 16px;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
-    overflow: hidden;
-    animation: fadeUp 0.3s ease both;
-  }
-  .my-submissions-panel.open { display: block; }
-  .my-submissions-header {
-    background: var(--ink2);
-    color: var(--white);
-    padding: 14px 24px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .my-submissions-header h3 { font-size: 0.95rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-  .my-submissions-header .close-panel {
-    background: none; border: none; color: rgba(255,255,255,0.6);
-    font-size: 1.2rem; cursor: pointer; padding: 0 4px; line-height: 1;
-    transition: color 0.2s;
-  }
-  .my-submissions-header .close-panel:hover { color: #fff; }
-  .my-submissions-body { padding: 16px 20px; }
-  .my-submissions-loading {
-    text-align: center; padding: 28px; color: var(--muted); font-size: 0.88rem;
-  }
-  .my-submissions-empty {
-    text-align: center; padding: 28px;
-    color: var(--muted); font-size: 0.88rem;
-  }
-  .my-submissions-empty span { font-size: 2rem; display: block; margin-bottom: 8px; }
-  .sub-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  .sub-table th {
-    background: var(--cream); color: var(--ink2);
-    padding: 10px 12px; text-align: right;
-    font-weight: 700; font-size: 0.78rem;
-    border-bottom: 2px solid var(--border);
-  }
-  .sub-table td {
-    padding: 10px 12px; border-bottom: 1px solid var(--cream);
-    vertical-align: middle; color: var(--ink);
-  }
-  .sub-table tr:last-child td { border-bottom: none; }
-  .sub-table tr:hover td { background: #fafaf8; }
-  .sub-table .absent-count {
-    background: var(--accent); color: #fff;
-    border-radius: 100px; padding: 2px 10px;
-    font-size: 0.75rem; font-weight: 700;
-    display: inline-block;
-  }
-  .sub-table .absent-count.zero {
-    background: var(--green); 
-  }
-  .btn-delete-sub {
-    background: none; border: 1.5px solid #ffd0ca;
-    color: var(--accent); border-radius: 8px;
-    padding: 5px 10px; font-size: 0.78rem;
-    cursor: pointer; transition: all 0.2s;
-    font-family: inherit; white-space: nowrap;
-  }
-  .btn-delete-sub:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-today-subs {
-    background: rgba(255,255,255,0.1);
-    border: 1.5px solid rgba(255,255,255,0.25);
-    color: var(--white); border-radius: 8px;
-    padding: 6px 14px; font-size: 0.8rem; font-weight: 600;
-    cursor: pointer; font-family: inherit; transition: all 0.2s;
-    white-space: nowrap;
-  }
-  .btn-today-subs:hover { background: rgba(255,255,255,0.22); }
-  .btn-today-subs .sub-badge {
-    background: var(--accent); color: #fff;
-    border-radius: 100px; padding: 1px 7px;
-    font-size: 0.72rem; font-weight: 800;
-    margin-right: 4px; display: inline-block;
-  }
-
-  /* Confirm delete overlay */
-  .confirm-overlay {
-    position: fixed; inset: 0; z-index: 300;
-    background: rgba(15,25,35,0.55);
-    display: none; align-items: center; justify-content: center;
-    backdrop-filter: blur(3px);
-  }
-  .confirm-overlay.show { display: flex; }
-  .confirm-box {
-    background: var(--white); border-radius: 16px;
-    padding: 32px 28px; max-width: 380px; width: 90%;
-    box-shadow: 0 16px 48px rgba(15,25,35,0.25);
-    text-align: center; animation: fadeUp 0.3s ease both;
-  }
-  .confirm-box .confirm-icon { font-size: 2.5rem; margin-bottom: 12px; }
-  .confirm-box h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
-  .confirm-box p  { font-size: 0.84rem; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
-  .confirm-btns   { display: flex; gap: 10px; justify-content: center; }
-  .confirm-btns .btn-cancel {
-    padding: 10px 22px; background: none;
-    border: 1.5px solid var(--border); border-radius: 10px;
-    font-family: inherit; font-size: 0.88rem; color: var(--muted);
-    cursor: pointer; transition: all 0.2s;
-  }
-  .confirm-btns .btn-cancel:hover { border-color: var(--accent); color: var(--accent); }
-  .confirm-btns .btn-confirm-del {
-    padding: 10px 22px; background: var(--accent);
-    border: none; border-radius: 10px;
-    font-family: inherit; font-size: 0.88rem; font-weight: 700;
-    color: #fff; cursor: pointer; transition: all 0.2s;
-  }
-  .confirm-btns .btn-confirm-del:hover { background: #a8321e; }
-
 </style>
 </head>
 <body>
@@ -540,39 +426,11 @@ main {
   <div class="screen" id="screen-submit">
     <div class="welcome-banner">
       <div class="avatar" id="welcomeAvatar">م</div>
-      <div style="flex:1;">
+      <div>
         <h3 id="welcomeName">م</h3>
         <p data-i18n="welcomeSub">تکایە زانياريێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
       </div>
-      <button class="btn-today-subs" id="btnTodaySubs" onclick="toggleSubmissionsPanel()">
-        <span class="sub-badge" id="subsBadge">0</span>
-        <span data-i18n="btnMySubs">تومارێن ئەمرۆ</span>
-      </button>
     </div>
-
-  <!-- MY SUBMISSIONS PANEL -->
-  <div class="my-submissions-panel" id="mySubsPanel">
-    <div class="my-submissions-header">
-      <h3>📋 <span data-i18n="mySubsTitle">تومارکرنێن ئەمرۆ</span></h3>
-      <button class="close-panel" onclick="toggleSubmissionsPanel()">✕</button>
-    </div>
-    <div class="my-submissions-body" id="mySubsBody">
-      <div class="my-submissions-loading">⏳ <span data-i18n="mySubsLoading">چاوەروانبە...</span></div>
-    </div>
-  </div>
-
-  <!-- CONFIRM DELETE OVERLAY -->
-  <div class="confirm-overlay" id="confirmOverlay">
-    <div class="confirm-box">
-      <div class="confirm-icon">🗑️</div>
-      <h3 data-i18n="confirmTitle">تومارکرن بسڕەوە?</h3>
-      <p data-i18n="confirmMsg">ئەم کارە نابێتە پووچەلکرن. دوبارە تومار بکە ئەگەر پێدڤی بوو.</p>
-      <div class="confirm-btns">
-        <button class="btn-cancel" onclick="closeConfirm()" data-i18n="confirmCancel">هەڵبژاردن</button>
-        <button class="btn-confirm-del" id="btnConfirmDel" data-i18n="confirmDelete">🗑️ بسڕەوە</button>
-      </div>
-    </div>
-  </div>
 
     <div class="card">
       <div class="card-header">
@@ -707,21 +565,6 @@ const LANGS = {
     loadingSubmit:  'تومارکرنا نەهاتنێ...',
     toastLoaded:    '✅ هەمی داتا ب سەرکەفتی هاتنە بارکرن',
     toastFill:      '⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
-    btnMySubs:      'تومارێن ئەمرۆ',
-    mySubsTitle:    'تومارکرنێن ئەمرۆ',
-    mySubsLoading:  'چاوەروانبە...',
-    mySubsEmpty:    'هیچ تومارکرنێک ئەمرۆ نین',
-    thLecture:      'دەرس',
-    thSubject:      'بابەت',
-    thClass:        'پۆل',
-    thAbsent:       'نەهاتی',
-    thAction:       'کار',
-    confirmTitle:   'تومارکرن بسڕەوە?',
-    confirmMsg:     'ئەم کارە نابێتە پووچەلکرن. دوبارە تومار بکە ئەگەر پێدڤی بوو.',
-    confirmCancel:  'هەڵبژاردن',
-    confirmDelete:  '🗑️ بسڕەوە',
-    toastDeleted:   '✅ تومارکرن هاتە سڕینەوە',
-    toastDelFail:   '❌ سڕینەوە سەرنەکەفت! دوبارە تاقی بکەڤە.',
     toastWeekend:   '🚫 هەینی و شەممە روژێن دەرفەتê ne! تومارکرن نابێت.',
     toastDuplicate: '⚠️ ئەم دەرسێ پێش ئێڤارێ تومار کراوە! دوبارەکرن نابێت.',
     toastError:     '❌ پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
@@ -765,21 +608,6 @@ const LANGS = {
     loadingSubmit:  'جارٍ حفظ الغياب...',
     toastLoaded:    '✅ تم تحميل جميع البيانات بنجاح',
     toastFill:      '⚠️ يرجى ملء جميع الحقول المطلوبة!',
-    btnMySubs:      'سجلات اليوم',
-    mySubsTitle:    'سجلات اليوم',
-    mySubsLoading:  'جارٍ التحميل...',
-    mySubsEmpty:    'لا توجد سجلات اليوم',
-    thLecture:      'المحاضرة',
-    thSubject:      'المادة',
-    thClass:        'المجموعة',
-    thAbsent:       'الغائبون',
-    thAction:       'إجراء',
-    confirmTitle:   'حذف السجل؟',
-    confirmMsg:     'لا يمكن التراجع عن هذا. أعد التسجيل إذا لزم الأمر.',
-    confirmCancel:  'إلغاء',
-    confirmDelete:  '🗑️ حذف',
-    toastDeleted:   '✅ تم حذف السجل بنجاح',
-    toastDelFail:   '❌ فشل الحذف! يرجى المحاولة مرة أخرى.',
     toastWeekend:   '🚫 الجمعة والسبت أيام عطلة! لا يمكن التسجيل.',
     toastDuplicate: '⚠️ تم تسجيل هذا الدرس مسبقاً! لا يمكن التكرار.',
     toastError:     '❌ فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
@@ -823,21 +651,6 @@ const LANGS = {
     loadingSubmit:  'Saving absence...',
     toastLoaded:    '✅ All data loaded successfully',
     toastFill:      '⚠️ Please fill all required fields!',
-    btnMySubs:      "Today's Records",
-    mySubsTitle:    "Today's Submissions",
-    mySubsLoading:  'Loading...',
-    mySubsEmpty:    'No submissions today yet',
-    thLecture:      'Lecture',
-    thSubject:      'Subject',
-    thClass:        'Class',
-    thAbsent:       'Absent',
-    thAction:       'Action',
-    confirmTitle:   'Delete submission?',
-    confirmMsg:     'This cannot be undone. Resubmit if needed.',
-    confirmCancel:  'Cancel',
-    confirmDelete:  '🗑️ Delete',
-    toastDeleted:   '✅ Submission deleted successfully',
-    toastDelFail:   '❌ Delete failed! Please try again.',
     toastWeekend:   '🚫 Friday and Saturday are holidays! No submissions allowed.',
     toastDuplicate: '⚠️ This lesson was already submitted!',
     toastError:     '❌ Connection failed! Please try again.',
@@ -1304,160 +1117,6 @@ function showLoading(msg) {
 }
 function hideLoading() {
   document.getElementById('loadingOverlay').classList.remove('show');
-}
-
-
-// ════════════════════════════════════════════
-//  MY SUBMISSIONS — today's records for this teacher
-// ════════════════════════════════════════════
-let todaySubsData   = [];   // all today's rows from sheet
-let pendingDeleteRow = null; // row number waiting for confirm
-
-// Called when teacher clicks "Today's Records" button
-function toggleSubmissionsPanel() {
-  const panel = document.getElementById('mySubsPanel');
-  const isOpen = panel.classList.contains('open');
-  if (isOpen) {
-    panel.classList.remove('open');
-  } else {
-    panel.classList.add('open');
-    loadTodaySubmissions();
-  }
-}
-
-// Format today as M/D/YYYY to match sheet format
-function getTodayFormatted() {
-  const d = new Date();
-  return (d.getMonth()+1) + '/' + d.getDate() + '/' + d.getFullYear();
-}
-
-async function loadTodaySubmissions() {
-  const body = document.getElementById('mySubsBody');
-  const L    = LANGS[currentLang];
-  body.innerHTML = '<div class="my-submissions-loading">⏳ ' + L.mySubsLoading + '</div>';
-
-  try {
-    const res  = await fetch(APPS_SCRIPT_URL + '?action=getTodayRows&teacher='
-                   + encodeURIComponent(currentTeacher.displayName));
-    const data = await res.json();
-
-    if (data.error) throw new Error(data.error);
-
-    todaySubsData = data.rows || [];
-    renderTodaySubs();
-  } catch(err) {
-    body.innerHTML = '<div class="my-submissions-empty"><span>⚠️</span>' + err.message + '</div>';
-    console.error(err);
-  }
-}
-
-function renderTodaySubs() {
-  const body = document.getElementById('mySubsBody');
-  const L    = LANGS[currentLang];
-  const badge = document.getElementById('subsBadge');
-
-  if (!todaySubsData.length) {
-    badge.textContent = '0';
-    body.innerHTML = '<div class="my-submissions-empty"><span>📭</span>' + L.mySubsEmpty + '</div>';
-    return;
-  }
-
-  badge.textContent = todaySubsData.length;
-
-  let html = '<div style="overflow-x:auto;"><table class="sub-table">';
-  html += '<thead><tr>'
-       + '<th>' + L.thLecture + '</th>'
-       + '<th>' + L.thSubject + '</th>'
-       + '<th>' + L.thClass   + '</th>'
-       + '<th>' + L.thAbsent  + '</th>'
-       + '<th>' + L.thAction  + '</th>'
-       + '</tr></thead><tbody>';
-
-  todaySubsData.forEach(function(row) {
-    const absentNames = row.absentStudents
-      ? row.absentStudents.split(',').map(function(n){ return n.trim(); }).filter(Boolean)
-      : [];
-    const count = absentNames.length;
-    html += '<tr>'
-          + '<td><strong>' + (row.lectureNo || '—') + '</strong></td>'
-          + '<td>' + (row.subject || '—') + '</td>'
-          + '<td><strong>' + (row.classGroup || '—') + '</strong></td>'
-          + '<td><span class="absent-count' + (count === 0 ? ' zero' : '') + '">'
-          + count + ' ' + L.absentLabel + '</span></td>'
-          + '<td><button class="btn-delete-sub" onclick="confirmDelete(' + row.rowNumber + ')">'
-          + L.confirmDelete + '</button></td>'
-          + '</tr>';
-  });
-
-  html += '</tbody></table></div>';
-  body.innerHTML = html;
-}
-
-// ── DELETE FLOW ──────────────────────────────
-function confirmDelete(rowNumber) {
-  const L = LANGS[currentLang];
-  pendingDeleteRow = rowNumber;
-  document.querySelectorAll('[data-i18n="confirmTitle"]').forEach(el => el.textContent = L.confirmTitle);
-  document.querySelectorAll('[data-i18n="confirmMsg"]').forEach(el   => el.textContent = L.confirmMsg);
-  document.querySelectorAll('[data-i18n="confirmCancel"]').forEach(el => el.textContent = L.confirmCancel);
-  document.getElementById('btnConfirmDel').textContent = L.confirmDelete;
-  document.getElementById('btnConfirmDel').onclick = executeDelete;
-  document.getElementById('confirmOverlay').classList.add('show');
-}
-
-function closeConfirm() {
-  document.getElementById('confirmOverlay').classList.remove('show');
-  pendingDeleteRow = null;
-}
-
-async function executeDelete() {
-  if (!pendingDeleteRow) return;
-  closeConfirm();
-  const L = LANGS[currentLang];
-  showLoading(L.mySubsLoading);
-
-  try {
-    await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode:   'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body:   JSON.stringify({
-        action:    'deleteRow',
-        rowNumber: pendingDeleteRow,
-        teacher:   currentTeacher.displayName
-      })
-    });
-
-    hideLoading();
-    // Remove from local array and re-render
-    todaySubsData = todaySubsData.filter(function(r){ return r.rowNumber !== pendingDeleteRow; });
-    pendingDeleteRow = null;
-    // Also clear the duplicate-guard key for that row so teacher can resubmit
-    renderTodaySubs();
-    showToast(L.toastDeleted, 'success');
-  } catch(err) {
-    hideLoading();
-    showToast(L.toastDelFail, 'error');
-    console.error(err);
-  }
-}
-
-// Reset badge when logging out
-const _origLogout = doLogout;
-
-// Refresh badge after each successful submission
-const _origSuccess = showSuccess;
-function showSuccess(date, subject, lecture, cls, absent) {
-  _origSuccess(date, subject, lecture, cls, absent);
-  // Refresh submissions panel if open
-  const panel = document.getElementById('mySubsPanel');
-  if (panel && panel.classList.contains('open')) {
-    loadTodaySubmissions();
-  } else {
-    // Just bump the badge count
-    const badge = document.getElementById('subsBadge');
-    if (badge) badge.textContent = parseInt(badge.textContent || '0') + 1;
-  }
 }
 
 function showToast(msg, type) {
