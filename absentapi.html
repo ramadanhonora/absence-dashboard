@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akre Computer Institute - Admin Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+    <title>Enhanced Absence Dashboard</title>
+<style>
         /* BASE & LAYOUT */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Poppins', 'Noto Sans Arabic', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
         
-        .container { max-width: 1400px; margin: 0 auto; display: none; } /* Kept hidden until security script authorizes the admin */
+        .container { max-width: 1400px; margin: 0 auto; }
         
         .header {
             background: white;
@@ -25,31 +24,9 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             margin-bottom: 30px;
             text-align: center;
-            position: relative;
         }
 
-        /* Sign Out Button in Dashboard Header */
-        .btn-logout-admin {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            padding: 10px 18px;
-            background: #ffe6e6;
-            color: #ff4444;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-logout-admin:hover {
-            background: #ff4444;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Google-Style Dropdown Search */
+    /* Google-Style Dropdown Search */
         #dropdownResults {
             position: absolute;
             top: 60px;
@@ -61,7 +38,6 @@
             max-height: 400px;
             overflow-y: auto;
             z-index: 1000;
-            display: none;
         }
         
         #dropdownResults.show {
@@ -73,7 +49,6 @@
             border-bottom: 1px solid #f0f0f0;
             cursor: pointer;
             transition: background 0.2s;
-            text-align: left;
         }
         
         .dropdown-result-item:hover {
@@ -102,28 +77,28 @@
             color: #999;
         }
         
-        .header h1 { color: #667eea; font-size: 2.2em; margin-bottom: 10px; }
-        .header h2 { color: #555; font-size: 1.5em; }
+        .header h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
         
+        /* 4. VISUAL IMPROVEMENTS: STATS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            gap: 5px;
             margin-bottom: 30px;
         }
         
-        .header-main-content {
-            display: flex;          
-            align-items: center;    
-            gap: 25px;              
-            margin-bottom: 5px;     
-        }
+            .header-main-content {
+                display: flex;          /* Enable horizontal alignment for its children */
+                align-items: center;    /* Vertically center the logo with the text */
+                gap: 25px;              /* Adds space between the logo and the titles */
+                margin-bottom: 5px;     
+            }
 
-        .header-titles {
-            text-align: left; 
-        }
-
-        .stat-card {
+            .header-titles {
+                /* Ensures the titles are stacked on the left side of the text block */
+                text-align: left; 
+            }
+                    .stat-card {
             background: white;
             padding: 25px;
             border-radius: 15px;
@@ -161,12 +136,12 @@
         .badge-medium { background: #ff8800; color: white; }
         .badge-low { background: #4CAF50; color: white; }
         
-        /* TABS */
+        /* 3. MOBILE OPTIMIZATION: TABS */
         .tabs { 
             display: flex; 
             gap: 10px; 
             margin-bottom: 20px; 
-            flex-wrap: wrap; 
+            flex-wrap: wrap; /* Allows wrapping on small screens */
             justify-content: center;
         }
         .tab {
@@ -177,8 +152,8 @@
             transition: all 0.3s;
             font-weight: 600;
             color: #666;
-            flex-grow: 1; 
-            min-width: 100px; 
+            flex-grow: 1; /* Makes tabs fill available space on mobile */
+            min-width: 100px; /* Minimum width for readability */
             text-align: center;
         }
         .tab:hover { background: #f0f0f0; transform: translateY(-2px); }
@@ -192,7 +167,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* FILTERS & FORMS */
+        /* 6. ADVANCED FILTERS & 3. MOBILE OPTIMIZATION: FORMS */
         .filter-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px solid #e9ecef; }
         .filter-row { 
             display: flex; 
@@ -214,14 +189,14 @@
             border-radius: 8px; 
             font-size: 1em;
             transition: border 0.3s;
-            height: 48px; 
+            height: 48px; /* Touch friendly height */
         }
         .filter-group input:focus, .filter-group select:focus { 
             border-color: #667eea; 
             outline: none;
         }
         
-        /* Buttons */
+        /* Buttons - 3. MOBILE OPTIMIZATION: TOUCH FRIENDLY */
         .btn, .btn-secondary, .btn-success {
             padding: 12px 24px;
             border: none;
@@ -230,8 +205,8 @@
             font-weight: 600;
             transition: all 0.3s;
             font-size: 0.95em;
-            height: 48px; 
-            align-self: flex-end; 
+            height: 48px; /* Match input height */
+            align-self: flex-end; /* Align with inputs */
         }
         .btn { background: #667eea; color: white; }
         .btn:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3); }
@@ -240,11 +215,12 @@
         .btn-success { background: #4CAF50; color: white; }
         .btn-success:hover { background: #45a049; transform: translateY(-2px); }
         
-        /* Tables */
+        /* Tables - 4. VISUAL IMPROVEMENTS: COLOR CODING & 3. MOBILE OPTIMIZATION */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden; }
         th, td { padding: 14px; text-align: left; border: 1px solid #e9ecef; }
         th { background: #667eea; color: white; font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px; white-space: nowrap; }
         
+        /* Color-coded table rows */
         tr.row-high { background: #ffe6e6; }
         tr.row-high:hover { background: #ffd4d4; }
         tr.row-medium { background: #fff4e6; }
@@ -252,6 +228,7 @@
         tr.row-low { background: #e6ffe6; }
         tr.row-low:hover { background: #d4f5d4; }
         
+        /* 5. STUDENT PROFILES: Clickable student names */
         .clickable { 
             cursor: pointer; 
             color: #667eea; 
@@ -265,45 +242,256 @@
             text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
         }
         
-        /* MOBILE OPTIMIZATION */
+        /* Modal for Student Profile */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 3% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close { 
+            color: #aaa; 
+            float: right; 
+            font-size: 32px; 
+            font-weight: bold; 
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .close:hover { color: #000; transform: rotate(90deg); }
+        
+        .chart-container { 
+            margin-top: 20px; 
+            padding: 25px; 
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .student-profile-header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .student-profile-header h2 {
+            color: #667eea;
+            font-size: 2em;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .profile-stat {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .profile-stat .label {
+            font-size: 0.85em;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .profile-stat .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        /* 3. MOBILE OPTIMIZATION */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .header { padding: 20px; }
             .header h1 { font-size: 1.5em; }
-            .btn-logout-admin { position: static; width: 100%; margin-top: 15px; }
             .stat-card { padding: 15px; }
             .stat-card .number { font-size: 2em; }
             
+            /* Simplified filter layout for mobile */
             .filter-row { flex-direction: column; align-items: stretch; }
             .filter-group { min-width: 100%; }
             .btn, .btn-secondary, .btn-success { width: 100%; align-self: auto; margin-top: 5px; }
 
-            .tab { font-size: 0.85em; padding: 10px 15px; flex-basis: calc(50% - 5px); }
+            .tab { font-size: 0.85em; padding: 10px 15px; flex-basis: calc(50% - 5px); } /* Two tabs per row */
             .content-section { padding: 15px; }
+            .modal-content { padding: 20px; margin: 10% auto; }
+            
+            /* Smaller table text on mobile, force horizontal scroll */
+            .content-section table, .modal-content table { font-size: 0.8em; }
             th, td { padding: 8px; }
+            
+            /* Ensure tables scroll horizontally */
+            #rosterContent > div, #weeklyContent > div, #monthlyContent > div, #analyticsContent > div {
+                overflow-x: auto;
+            }
+        }
+        
+        /* PRINT STYLES - FIXED FOR CLEAR TEXT */
+        @media print {
+            body { 
+                background: white !important; 
+                padding: 0;
+                color: #000 !important;
+            }
+            
+            .tabs, .stats-grid, .filter-section, .header p, .btn, .btn-secondary, .btn-success { 
+                display: none !important; 
+            }
+            
+            .header { 
+                box-shadow: none;
+                border: 2px solid #000 !important;
+                margin-bottom: 20px;
+            }
+            
+            .header h1, .header h2 {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Force all text to print in solid black */
+            .content-section h2, .content-section h3, .content-section h4,
+            .chart-container h3, .chart-container h4,
+            table, th, td, p, span, strong, div {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Make table headers print with black text and gray background */
+            th {
+                background: #d3d3d3 !important;
+                color: #000 !important;
+                border: 1px solid #000 !important;
+                font-weight: bold !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Ensure table cells have visible borders */
+            td {
+                border: 1px solid #000 !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Make sure all text is bold and visible */
+            strong, .number, .value {
+                font-weight: bold !important;
+                color: #000 !important;
+            }
+            
+            /* Remove colored backgrounds for printing, keep white */
+            .chart-container {
+                background: white !important;
+                border: 1px solid #000 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 20px;
+            }
+            
+            /* Keep row backgrounds subtle but visible */
+            tr.row-high {
+                background: #f5f5f5 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            tr.row-medium {
+                background: #fafafa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            tr.row-low {
+                background: white !important;
+            }
+            
+            /* Ensure badges print clearly */
+            .badge {
+                border: 2px solid #000 !important;
+                color: #000 !important;
+                background: white !important;
+                padding: 3px 8px !important;
+                font-weight: bold !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            /* Make clickable text print as regular text */
+            .clickable {
+                color: #000 !important;
+                text-decoration: none !important;
+                cursor: default;
+            }
+            
+            /* Avoid page breaks inside tables */
+            table { 
+                page-break-inside: avoid; 
+                border: 1px solid #000 !important; 
+            }
+            
+            /* Ensure page breaks happen at appropriate places */
+            .chart-container {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
         }
     </style>
 </head>
 <body>
-    
-    <div class="container" id="dashboardContainer">
-        <div class="header">
-            <button class="btn-logout-admin" onclick="adminSignOut()">Sign Out</button>
-
-            <div class="header-main-content">
-                <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 140px;">
-                <div class="header-titles">
-                    <h1>Akre Computer Institute : پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
-                    <h2>تومارا نەهاتنا قوتابیان</h2>
-                </div>
-            </div>
-            
-            <div style="position: relative; margin-top: 15px;">
-                <input type="text" id="headerStudentSearch" placeholder="🔍 Search student by name..." onkeyup="searchStudentFromHeader()" style="width: 100%; padding: 15px 20px; border: 2px solid #ddd; border-radius: 24px; font-size: 1em; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                <div id="dropdownResults"></div>
-            </div>
-            <p id="lastUpdate" style="color: #999; font-size: 0.9em; margin-top: 10px;"></p>
+    <div class="container">
+<div class="header">
+    <div class="header-main-content">
+        <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 140px;">
+        <div class="header-titles">
+            <h1>Akre Computer Institute : پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+            <h2>تومارا نەهاتنا قوتابیان</h2>
         </div>
+    </div>
+    
+<div style="position: relative; margin-top: 15px;">
+        <input type="text" id="headerStudentSearch" placeholder="🔍 Search student by name..." onkeyup="searchStudentFromHeader()" style="width: 100%; padding: 15px 20px; border: 2px solid #ddd; border-radius: 24px; font-size: 1em; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+        
+        <div id="dropdownResults" style="display: none;"></div>
+    </div>
+    
+    <p id="lastUpdate" style="color: #999; font-size: 0.9em; margin-top: 10px;"></p>
+</div>
 
         <div class="stats-grid">
             <div class="stat-card total">
@@ -330,21 +518,22 @@
             </div>
         </div>
 
-        <div class="tabs">
-            <div class="tab active" onclick="showTab('daily')">📅 Daily</div>
-            <div class="tab" onclick="showTab('weekly')">📊 Weekly</div>
-            <div class="tab" onclick="showTab('monthly')">📅 Monthly</div>
-            <div class="tab" onclick="showTab('roster')">📋 Roster</div>
-            <div class="tab" onclick="showTab('analytics')">📈 Analytics</div>
-        </div>
+<div class="tabs">
+    <div class="tab active" onclick="showTab('daily')">📅 Daily</div>
+    <div class="tab" onclick="showTab('weekly')">📊 Weekly</div>
+    <div class="tab" onclick="showTab('monthly')">📅 Monthly</div>
+    <div class="tab" onclick="showTab('roster')">📋 Roster</div>
+    <div class="tab" onclick="showTab('analytics')">📈 Analytics</div>
+</div>
 
         <div id="daily" class="content-section active">
             <h2 style="color: #667eea; margin-bottom: 10px;">📅 Daily Absence Report</h2>
             <p style="color: #666; margin-bottom: 20px;">View detailed absence breakdown by lecture and class</p>
+            
             <div class="filter-section">
                 <div class="filter-row">
                     <div class="filter-group">
-                        <label>Base View Filter:</label>
+                        <label>📆 Select Date:</label>
                         <input type="date" id="dailyDate" onchange="filterDaily()">
                     </div>
                     <button class="btn" onclick="setToday()">Today</button>
@@ -356,6 +545,8 @@
 
         <div id="roster" class="content-section">
             <h2 style="color: #667eea; margin-bottom: 10px;">📋 Class Roster - Absence Summary</h2>
+            <p style="color: #666; margin-bottom: 20px;">Click on any student name to view their detailed absence profile</p>
+            
             <div class="filter-section">
                 <div class="filter-row">
                     <div class="filter-group">
@@ -369,128 +560,1041 @@
                     <button class="btn-success" onclick="window.print()">🖨️ Print Report</button>
                 </div>
             </div>
-            <div id="rosterContent"></div>
+            <div id="rosterContent"><div style="text-align:center; padding:50px; color:#999;">Select a class to view roster</div></div>
+        </div>
+
+        <div id="weekly" class="content-section">
+            <h2 style="color: #667eea; margin-bottom: 10px;">📊 Weekly Absence Reports</h2>
+            <p style="color: #666; margin-bottom: 20px;">Comprehensive weekly summaries by class and subject</p>
+            
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>📅 Select Week:</label>
+                        <select id="weekSelect" onchange="loadWeekly()"></select>
+                    </div>
+                    <button class="btn-success" onclick="window.print()">🖨️ Print Report</button>
+                </div>
+            </div>
+            <div id="weeklyContent"><div style="text-align:center; padding:50px; color:#999;">Select a week to view report</div></div>
+        </div>
+
+        <div id="monthly" class="content-section">
+            <h2 style="color: #667eea; margin-bottom: 10px;">📅 Monthly Absence Reports</h2>
+            <p style="color: #666; margin-bottom: 20px;">Monthly trends and patterns across all classes</p>
+            
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>📆 Select Month:</label>
+                        <select id="monthSelect" onchange="loadMonthly()"></select>
+                    </div>
+                    <button class="btn-success" onclick="window.print()">🖨️ Print Report</button>
+                </div>
+            </div>
+            <div id="monthlyContent"><div style="text-align:center; padding:50px; color:#999;">Select a month to view report</div></div>
+        </div>
+
+        <div id="analytics" class="content-section">
+            <h2 style="color: #667eea; margin-bottom: 10px;">📈 Visual Analytics & Insights</h2>
+            <p style="color: #666; margin-bottom: 20px;">Data-driven insights across classes, subjects, and time periods</p>
+            
+            <div class="filter-section">
+                <h3 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Policy Risk Configuration</h3>
+                <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Configure the rules for calculating a student's expulsion risk based on days missed.</p>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="lecturesPerDay">Lectures to Count as 1 Day Missed:</label>
+                        <input type="number" id="lecturesPerDay" value="3" min="1" onchange="loadAnalytics()" title="If a student misses this many lectures in one day, it counts as one full day missed." style="min-width: 250px;">
+                    </div>
+                    <div class="filter-group">
+                        <label for="expulsionDays">Days Missed Threshold for Dismissal:</label>
+                        <input type="number" id="expulsionDays" value="21" min="1" onchange="loadAnalytics()" title="If a student accumulates this many calculated 'days missed', they are flagged for dismissal." style="min-width: 250px;">
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+            <div id="analyticsContent"><div style="text-align:center; padding:50px; color:#667eea; font-size:1.2em;">⏳ Loading analytics...</div></div>
         </div>
     </div>
 
-    <script>
-        // CONFIGURATION PARAMETERS
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data'; //
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+<script>
+        // ** CONFIGURATION **
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
+        const SCHOOL_START = '9/21/2025';
+
         let allData = [];
+        let classes = [];
+        let weeks = [];
+        let months = [];
 
-        // 🔒 SECURITY GATEKEEPER: VERIFY ADMIN SESSION IMMEDIATELY ON PAGE LOAD
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔒 Verifying Admin session authorization...');
-            
-            const savedUser = localStorage.getItem('remembered_username');
-            
-            // If session details don't match admin, kick them back out to index.html
-            if (savedUser !== 'admin') {
-                console.warn('⚠️ Access Denied. Redirecting to login portal...');
-                window.location.href = 'index.html';
-            } else {
-                console.log('✅ Access granted. Initializing Admin Dashboard panels...');
-                // Unhide the dashboard container layout securely
-                document.getElementById('dashboardContainer').style.display = 'block';
-                
-                // Initialize Data API syncs
-                fetchData(); 
-                scheduleDataFetch();
-            }
-        });
-
-        // Sign Out Administrator function
-        function adminSignOut() {
-            localStorage.removeItem('remembered_username');
-            localStorage.removeItem('remembered_password');
-            console.log('🔒 Admin signed out successfully.');
-            window.location.href = 'index.html';
+        // --- HELPER FUNCTIONS ---
+        function getThreeNames(fullName) {
+            if (!fullName) return '';
+            const names = fullName.trim().split(/\s+/).filter(Boolean);
+            return names.slice(0, 3).join(' ');
         }
 
-        // Automatic close drop-down menu handler
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('#headerStudentSearch') && !e.target.closest('#dropdownResults')) {
-                document.getElementById('dropdownResults').classList.remove('show'); //
+        function normalizeDate(dateStr) {
+            if (!dateStr) return '';
+            let d;
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    d = new Date(parts[2], parts[0] - 1, parts[1]);
+                } else {
+                    d = new Date(dateStr);
+                }
+            } else {
+                 d = new Date(dateStr);
             }
-        });
-        
-        // Dropdown Student Instant Search Engine Function
+            if (isNaN(d.getTime())) return '';
+            return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+        }
+
+        function formatDate(d) {
+            if (!d || isNaN(d.getTime())) return '';
+            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+        }
+
+        function getLectureCount(lec) {
+            const s = String(lec).toLowerCase();
+            return (s.includes('and') || s.includes(',') || s.includes('merged') || /\d\s*-\s*\d/.test(s)) ? 2 : 1;
+        }
+
+        function getSeverity(count) {
+            if (count >= 15) return 'high';
+            if (count >= 8) return 'medium';
+            return 'low';
+        }
+
+        function getBadge(count) {
+            const sev = getSeverity(count);
+            const label = sev === 'high' ? 'HIGH RISK' : sev === 'medium' ? 'AT RISK' : 'GOOD';
+            return `<span class="badge badge-${sev}">${label}</span>`;
+        }
+
+        // --- GLOBAL SEARCH FUNCTIONS (Defined early to prevent Scope Errors) ---
+
+        // 1. TRIGGER FROM DROPDOWN: Called when a user clicks a result in the header dropdown
+        function showStudentProfileFromDropdown(nameEncoded) {
+            // Decode the safe string back to the real name
+            const name = decodeURIComponent(nameEncoded);
+            
+            // Close dropdown and clear search
+            document.getElementById('dropdownResults').classList.remove('show');
+            document.getElementById('headerStudentSearch').value = '';
+            
+            // Show the profile modal
+            showStudentProfile(name);
+        }
+
+        // 2. SEARCH LOGIC: Populates the dropdown as you type
         function searchStudentFromHeader() {
             const query = document.getElementById('headerStudentSearch').value.toLowerCase().trim();
             const dropdown = document.getElementById('dropdownResults');
             
-            if (query.length < 2) { 
-                dropdown.classList.remove('show'); 
-                return; 
+            if (query.length < 2) {
+                dropdown.classList.remove('show');
+                return;
             }
+
+            const details = {};
             
+            allData.forEach(row => {
+                row.absences.forEach(name => {
+                    if (name.toLowerCase().includes(query)) {
+                        if (!details[name]) details[name] = { class: row.classGroup, total: 0, log: [] };
+                        details[name].total += row.lectureCount;
+                        details[name].log.push({ subject: row.subject });
+                    }
+                });
+            });
+
             dropdown.classList.add('show');
-            // This displays a beautiful search dropdown. It connects dynamically with your data objects parsed in fetchData()
-            dropdown.innerHTML = `<div class='dropdown-result-item'><div class='dropdown-student-name'>Searching for "${query}"...</div></div>`;
-        }
-
-        // Smart Caching Background Scheduling loop engine
-        function scheduleDataFetch() {
-            const now = new Date(); //
-            const currentHour = now.getHours(); //
-            const START_HOUR = 8; //
-            const END_HOUR = 14;  //
-            let intervalMs;
             
-            if (currentHour >= START_HOUR && currentHour < END_HOUR) {
-                intervalMs = 300000; // 5 mins actively tracking
-                console.log(`⏰ Dashboard checking macro APIs. Next call in 5 minutes...`);
-                fetchData(); //
-            } else {
-                const nextStart = new Date(now); //
-                if (currentHour >= END_HOUR) { nextStart.setDate(now.getDate() + 1); } //
-                nextStart.setHours(START_HOUR, 0, 1, 0);  //
-                intervalMs = nextStart.getTime() - now.getTime(); //
-                console.log(`😴 Outside working hours. Caching loops scheduled to resume at 8:00 AM.`);
+            if (Object.keys(details).length === 0) {
+                dropdown.innerHTML = '<div class="dropdown-no-results">🔍 No students found matching "<strong>' + query + '</strong>"</div>';
+                return;
             }
-            setTimeout(scheduleDataFetch, intervalMs); //
+            
+            let html = '';
+            Object.entries(details).forEach(([name, data]) => {
+                const sev = getSeverity(data.total);
+                const badge = sev === 'high' ? 'high' : sev === 'medium' ? 'medium' : 'low';
+                const badgeText = sev === 'high' ? 'HIGH RISK' : sev === 'medium' ? 'AT RISK' : 'GOOD';
+                const subjects = [...new Set(data.log.map(a => a.subject))];
+                
+                // SAFE STRING: Encode name to prevent quote errors in HTML
+                const safeName = encodeURIComponent(name);
+                
+                html += `
+                    <div class="dropdown-result-item" 
+                         onclick="showStudentProfileFromDropdown('${safeName}')">
+                        <div class="dropdown-student-name">
+                            ${name}
+                            <span class="badge badge-${badge}">${badgeText}</span>
+                        </div>
+                        <div class="dropdown-student-info">
+                            Class ${data.class || 'N/A'} • ${data.total} absences • ${subjects.length} subjects affected
+                        </div>
+                    </div>
+                `;
+            });
+
+            dropdown.innerHTML = html;
         }
 
-        // Fetch Google Sheet data entries
+        // --- CORE LOGIC ---
+
+        function parseData(json) {
+            if (!json?.values || json.values.length < 2) return [];
+            
+            const headers = json.values[0];
+            const rows = json.values.slice(1);
+            const data = [];
+
+            rows.forEach(row => {
+                const obj = {};
+                headers.forEach((h, i) => obj[h] = row[i] || '');
+                
+                const date = obj['   Q1: Date  '] || obj['Q1: Date'] || obj[headers.find(h => h.includes('Date'))] || '';
+                const teacher = obj['   Q2: Teacher Name'] || obj['Q2: Teacher Name'] || obj[headers.find(h => h.includes('Teacher Name'))] || 'Unknown';
+                const subject = obj['  Q3: Subject  '] || obj['Q3: Subject'] || obj[headers.find(h => h.includes('Subject'))] || 'Unknown';
+                const lecture = obj['  Q4: Lecture No.  '] || obj['Q4: Lecture No.'] || obj[headers.find(h => h.includes('Lecture No.'))] || 'Lecture 1';
+                const classGroup = obj['  Q5: Class Group  '] || obj['Q5: Class Group'] || obj[headers.find(h => h.includes('Class Group'))] || '';
+                
+                let absences = [];
+                for (const [k, v] of Object.entries(obj)) {
+                    if (k.toLowerCase().includes('absent') && v && v.trim()) {
+                        absences.push(...v.split(',').map(s => s.trim()).filter(Boolean));
+                    }
+                }
+                
+                const processedAbsences = absences.map(getThreeNames);
+                
+                if (date && classGroup) {
+                    data.push({
+                        date: date,
+                        teacher: teacher,
+                        subject: subject,
+                        lecture: lecture,
+                        lectureCount: getLectureCount(lecture),
+                        classGroup: classGroup,
+                        absences: processedAbsences
+                    });
+                }
+            });
+            
+            data.forEach(entry => {
+                entry.absences = [...new Set(entry.absences)];
+            });
+
+            console.log(`✅ Parsed ${data.length} records`);
+            return data;
+        }
+
         async function fetchData() {
-            document.getElementById('lastUpdate').innerHTML = '<span>⏳ Syncing Google Sheets...</span>';
+            document.getElementById('lastUpdate').innerHTML = '<span style="color:#667eea;">⏳ Fetching latest data...</span>';
+            
             try {
+                console.log('📥 Fetching from API...');
                 const response = await fetch(API_URL);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
-                // On a successful response, your dashboard metrics will parse values here
-                document.getElementById('lastUpdate').innerHTML = `<span style="color:#4CAF50;">✅ Connected live: ${new Date().toLocaleTimeString()}</span>`;
+                const json = await response.json();
+                allData = parseData(json).map(row => ({
+                    ...row,
+                    date: normalizeDate(row.date)
+                })).filter(row => row.date);
                 
-                // For demonstration text placeholders:
-                document.getElementById('totalAbsences').textContent = "142";
-                document.getElementById('totalStudents').textContent = "84";
-                document.getElementById('highRisk').textContent = "5";
-                document.getElementById('atRisk').textContent = "12";
-                document.getElementById('totalClasses').textContent = "11";
-                document.getElementById('dailyContent').innerHTML = `<div style="text-align:center; padding:20px; color:#666;">Data synchronized perfectly. Select a tab layout option to manage logs.</div>`;
+                classes = [...new Set(allData.map(r => r.classGroup).filter(Boolean))].sort();
+                weeks = getWeeks();
+                months = getMonths();
                 
-            } catch (err) {
-                console.error("Dashboard Sync Failed:", err);
-                document.getElementById('lastUpdate').innerHTML = `<span style="color:#ff4444;">⚠️ Mode standalone active (API Connection Error).</span>`;
+                console.log(`✅ Loaded ${allData.length} records, ${classes.length} classes`);
+                
+                updateDashboard();
+                loadDaily();
+                if(document.getElementById('roster').classList.contains('active')) loadRoster();
+                if(document.getElementById('weekly').classList.contains('active')) loadWeeklyDropdown();
+                if(document.getElementById('monthly').classList.contains('active')) loadMonthlyDropdown();
+                if(document.getElementById('analytics').classList.contains('active')) loadAnalytics();
+                
+                document.getElementById('lastUpdate').innerHTML = `<span style="color:#4CAF50;">✅ Last updated: ${new Date().toLocaleTimeString()}</span>`;
+            } catch (error) {
+                console.error('❌ Error:', error);
+                document.getElementById('lastUpdate').innerHTML = `<span style="color:#ff4444;">❌ Error: ${error.message} (Check Sheet ID/API Key)</span>`;
             }
         }
 
-        // UI Tab View control toggles
-        function showTab(tabId) {
-            console.log("Navigating tabs: " + tabId);
-            // Toggle active visual states on tabs
+        function updateDashboard() {
+            let totalAbs = 0;
+            const students = {};
+            
+            allData.forEach(row => {
+                const count = row.lectureCount * row.absences.length;
+                totalAbs += count;
+                
+                row.absences.forEach(name => {
+                    const key = name.toLowerCase();
+                    students[key] = (students[key] || 0) + row.lectureCount;
+                });
+            });
+            
+            let high = 0, medium = 0;
+            Object.values(students).forEach(count => {
+                if (count >= 15) high++;
+                else if (count >= 8) medium++;
+            });
+            
+            document.getElementById('totalAbsences').textContent = totalAbs;
+            document.getElementById('totalStudents').textContent = Object.keys(students).length;
+            document.getElementById('highRisk').textContent = high;
+            document.getElementById('atRisk').textContent = medium;
+            document.getElementById('totalClasses').textContent = classes.length;
+        }
+
+        function getWeeks() {
+            const start = new Date(SCHOOL_START);
+            if (isNaN(start.getTime())) return [];
+            
+            const arr = [];
+            let current = new Date(start);
+            current.setDate(current.getDate() - current.getDay()); 
+            
+            const now = new Date();
+            let num = 1;
+            
+            while (current <= now) {
+                const wStart = new Date(current);
+                const wEnd = new Date(current);
+                wEnd.setDate(wEnd.getDate() + 6);
+                
+                if (wStart <= now) {
+                    arr.push({ number: num++, start: wStart, end: wEnd });
+                }
+                current.setDate(current.getDate() + 7);
+            }
+            return arr.reverse();
+        }
+
+        function getMonths() {
+            const start = new Date(SCHOOL_START);
+            if (isNaN(start.getTime())) return [];
+            
+            const arr = [];
+            let current = new Date(start.getFullYear(), start.getMonth(), 1);
+            const now = new Date();
+            
+            while (current <= now) {
+                const mStart = new Date(current);
+                const mEnd = new Date(current.getFullYear(), current.getMonth() + 1, 0);
+                
+                if (mStart <= now) {
+                    arr.push({ 
+                        name: mStart.toLocaleString('default', { month: 'long', year: 'numeric' }),
+                        start: mStart, 
+                        end: mEnd 
+                    });
+                }
+                current.setMonth(current.getMonth() + 1);
+            }
+            return arr.reverse();
+        }
+
+        // --- DAILY TAB ---
+        function setToday() {
+            const now = new Date();
+            document.getElementById('dailyDate').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            filterDaily();
+        }
+
+        function setPreviousDay() {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            document.getElementById('dailyDate').value = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+            filterDaily();
+        }
+
+        function loadDaily() {
+            if (!document.getElementById('dailyDate').value) setToday();
+            else filterDaily();
+        }
+
+        function filterDaily() {
+            const val = document.getElementById('dailyDate').value;
+            if (!val) return;
+            
+            const selectedDate = new Date(val);
+            const dayOfWeek = selectedDate.getDay();
+            
+            if (dayOfWeek === 5 || dayOfWeek === 6) {
+                const dayName = dayOfWeek === 5 ? 'Friday' : 'Saturday';
+                document.getElementById('dailyContent').innerHTML = `
+                    <div style="text-align:center; padding:80px 20px;">
+                        <div style="font-size:5em; margin-bottom:20px;">🏖️</div>
+                        <h2 style="color:#667eea; font-size:2em; margin-bottom:15px;">Weekend - No School</h2>
+                        <p style="color:#666; font-size:1.2em; margin-bottom:10px;">
+                            <strong>${dayName}, ${formatDate(selectedDate)}</strong>
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const filterDate = normalizeDate(val);
+            const filtered = allData.filter(r => r.date === filterDate);
+            
+            const byClass = {};
+            classes.forEach(cls => {
+                byClass[cls] = {};
+            });
+            
+            filtered.forEach(row => {
+                if (!row.classGroup) return;
+                if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
+                
+                const nums = String(row.lecture).match(/\d+/g) || ['1'];
+                nums.forEach(n => {
+                    const num = parseInt(n);
+                    if (num >= 1 && num <= 6) {
+                        if (!byClass[row.classGroup][num]) {
+                            byClass[row.classGroup][num] = { subject: row.subject, teacher: row.teacher, students: [] };
+                        }
+                        row.absences.forEach(s => {
+                            if (!byClass[row.classGroup][num].students.includes(s)) {
+                                byClass[row.classGroup][num].students.push(s);
+                            }
+                        });
+                    }
+                });
+            });
+            
+            let html = '';
+            Object.keys(byClass).sort().forEach(cls => {
+                const lectures = byClass[cls];
+                
+                html += `<div class="chart-container">
+                    <h3 style="color:#667eea; font-size:1.4em;">🏫 Class ${cls}</h3>
+                    <p style="color:#666; margin:10px 0;">📅 ${filterDate}</p>`;
+                
+                html += `<div style="overflow-x:auto;">
+                    <table><thead><tr>`;
+                
+                for (let i = 1; i <= 6; i++) html += `<th style="text-align:center;">Lec ${i}</th>`;
+                html += `</tr></thead><tbody><tr style="background:#f8f9fa;">`;
+                
+                for (let i = 1; i <= 6; i++) {
+                    const lec = lectures[i];
+                    html += `<td style="text-align:center; font-weight:bold; padding:14px;">${lec ? lec.subject : ''}</td>`;
+                }
+                html += `</tr><tr>`;
+                
+                for (let i = 1; i <= 6; i++) {
+                    const lec = lectures[i];
+                    if (lec && lec.students.length > 0) {
+                        html += `<td style="vertical-align:top; padding:10px;">
+                            <div style="color:#c33; font-weight:500; text-align:right; direction:rtl;"> 
+                                ${lec.students.map(s => `• ${s}`).join('<br>')}
+                            </div>
+                        </td>`;
+                    } else if (lec) {
+                        html += `<td style="text-align:center; color:#4CAF50; padding:10px; font-weight:600;">none</td>`;
+                    } else {
+                        html += `<td style="text-align:center; color:#999; padding:10px;"></td>`;
+                    }
+                }
+                html += `</tr><tr style="background:#f8f9fa;">`;
+                
+                for (let i = 1; i <= 6; i++) {
+                    const lec = lectures[i];
+                    html += `<td style="text-align:center; font-style:italic; color:#666; padding:10px; font-size:0.9em;">${lec ? lec.teacher : ''}</td>`;
+                }
+                html += `</tr></tbody></table></div>`;
+                
+                html += `</div>`;
+            });
+            
+            document.getElementById('dailyContent').innerHTML = html;
+        }
+
+        // --- ROSTER TAB ---
+        function loadRoster() {
+            const sel = document.getElementById('rosterClass');
+            const currentClass = sel.value;
+            sel.innerHTML = '<option value="">-- Select Class --</option>';
+            classes.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                sel.appendChild(opt);
+            });
+            
+            if (classes.includes(currentClass)) {
+                sel.value = currentClass;
+            } else if (classes.length > 0) {
+                sel.value = classes[0];
+            }
+            filterRoster();
+        }
+
+        function filterRoster() {
+            const cls = document.getElementById('rosterClass').value;
+            const minAbs = parseInt(document.getElementById('minAbsences').value) || 0;
+            
+            if (!cls) {
+                document.getElementById('rosterContent').innerHTML = '<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">Select a class to view roster</div>';
+                return;
+            }
+            
+            const summary = {};
+            const subjects = new Set();
+            
+            allData.filter(r => r.classGroup === cls).forEach(row => {
+                row.absences.forEach(name => {
+                    if (!summary[name]) summary[name] = { total: 0, subjects: {} };
+                    summary[name].total += row.lectureCount;
+                    summary[name].subjects[row.subject] = (summary[name].subjects[row.subject] || 0) + row.lectureCount;
+                    subjects.add(row.subject);
+                });
+            });
+            
+            const sorted = Object.entries(summary)
+                .filter(([_, data]) => data.total >= minAbs)
+                .sort((a, b) => b[1].total - a[1].total);
+            
+            if (sorted.length === 0) {
+                document.getElementById('rosterContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
+                    <p style="font-size:3em;">✅</p>
+                    <p>No students with ${minAbs}+ absences in Class ${cls}</p>
+                </div>`;
+                return;
+            }
+            
+            const subArr = Array.from(subjects).sort();
+            
+            let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:10px;">🏫 Class ${cls} - Absence Summary</h3>
+                        <p style="color: #666; margin-bottom: 20px;">Click on any student name to view their detailed profile</p>
+                        <div style="overflow-x:auto;"><table><thead><tr><th>Student Name</th>`;
+            subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
+            html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
+            
+            sorted.forEach(([name, data]) => {
+                const sev = getSeverity(data.total);
+                // SAFE STRING: Use encodeURIComponent for onclick
+                const safeName = encodeURIComponent(name);
+                
+                html += `<tr class="row-${sev}"><td class="clickable" onclick="showStudentProfileFromDropdown('${safeName}')">${name}</td>`;
+                
+                subArr.forEach(sub => {
+                    const count = data.subjects[sub] || 0;
+                    const color = count >= 3 ? '#c33' : count > 0 ? '#667eea' : '#999';
+                    html += `<td style="text-align:center; color:${color}; font-weight:bold; font-size:1.1em;">${count || '-'}</td>`;
+                });
+                
+                html += `<td style="text-align:center;"><strong style="font-size:1.2em;">${data.total}</strong> ${getBadge(data.total)}</td></tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            document.getElementById('rosterContent').innerHTML = html;
+        }
+
+        // --- WEEKLY TAB ---
+        function loadWeeklyDropdown() {
+            const sel = document.getElementById('weekSelect');
+            sel.innerHTML = '<option value="">-- Select Week --</option>';
+            weeks.forEach((w, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `Week ${w.number}: ${formatDate(w.start)} - ${formatDate(w.end)}`;
+                sel.appendChild(opt);
+            });
+            if (weeks.length > 0) {
+                sel.value = 0;
+                loadWeekly();
+            }
+        }
+
+        function loadWeekly() {
+            const idx = parseInt(document.getElementById('weekSelect').value);
+            if (isNaN(idx) || !weeks[idx]) return;
+            
+            const week = weeks[idx];
+            const data = allData.filter(r => {
+                const d = new Date(r.date);
+                return d >= week.start && d <= week.end;
+            });
+            
+            if (data.length === 0) {
+                 document.getElementById('weeklyContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
+                    <p style="font-size:3em;">📭</p>
+                    <p>No absences for Week ${week.number}</p>
+                </div>`;
+                return;
+            }
+            
+            const byClass = {};
+            data.forEach(row => {
+                if (!row.classGroup) return;
+                if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
+                
+                row.absences.forEach(name => {
+                    if (!byClass[row.classGroup][name]) {
+                        byClass[row.classGroup][name] = { total: 0, subjects: {} };
+                    }
+                    byClass[row.classGroup][name].total += row.lectureCount;
+                    byClass[row.classGroup][name].subjects[row.subject] = 
+                        (byClass[row.classGroup][name].subjects[row.subject] || 0) + row.lectureCount;
+                });
+            });
+            
+            let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:20px;">📊 Week ${week.number}: ${formatDate(week.start)} - ${formatDate(week.end)}</h3>`;
+            
+            Object.keys(byClass).sort().forEach(cls => {
+                const students = byClass[cls];
+                const sorted = Object.entries(students).sort((a, b) => b[1].total - a[1].total);
+                
+                const subjects = new Set();
+                Object.values(students).forEach(s => Object.keys(s.subjects).forEach(sub => subjects.add(sub)));
+                const subArr = Array.from(subjects).sort();
+                
+                html += `<div class="chart-container">
+                    <h4 style="color:#667eea; font-size:1.2em; margin-bottom:15px;">🏫 CLASS ${cls}</h4>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Student</th>`;
+                
+                subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
+                html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
+                
+                sorted.forEach(([name, data]) => {
+                    const sev = getSeverity(data.total);
+                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
+                    
+                    subArr.forEach(sub => {
+                        const count = data.subjects[sub] || 0;
+                        const color = count >= 3 ? '#c33' : count > 0 ? '#667eea' : '#999';
+                        html += `<td style="text-align:center; color:${color}; font-weight:bold;">${count || '-'}</td>`;
+                    });
+                    
+                    html += `<td style="text-align:center;"><strong style="font-size:1.1em;">${data.total}</strong> ${getBadge(data.total)}</td></tr>`;
+                });
+                
+                html += `</tbody></table></div></div>`;
+            });
+            
+            document.getElementById('weeklyContent').innerHTML = html;
+        }
+
+        // --- MONTHLY TAB ---
+        function loadMonthlyDropdown() {
+            const sel = document.getElementById('monthSelect');
+            sel.innerHTML = '<option value="">-- Select Month --</option>';
+            months.forEach((m, i) => {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `${m.name} (${formatDate(m.start)} - ${formatDate(m.end)})`;
+                sel.appendChild(opt);
+            });
+            if (months.length > 0) {
+                sel.value = 0;
+                loadMonthly();
+            }
+        }
+
+        function loadMonthly() {
+            const idx = parseInt(document.getElementById('monthSelect').value);
+            if (isNaN(idx) || !months[idx]) return;
+            
+            const month = months[idx];
+            const data = allData.filter(r => {
+                const d = new Date(r.date);
+                return d >= month.start && d <= month.end;
+            });
+            
+            if (data.length === 0) {
+                 document.getElementById('monthlyContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
+                    <p style="font-size:3em;">📭</p>
+                    <p>No absences for ${month.name}</p>
+                </div>`;
+                return;
+            }
+            
+            const byClass = {};
+            data.forEach(row => {
+                if (!row.classGroup) return;
+                if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
+                
+                row.absences.forEach(name => {
+                    if (!byClass[row.classGroup][name]) {
+                        byClass[row.classGroup][name] = { total: 0, subjects: {} };
+                    }
+                    byClass[row.classGroup][name].total += row.lectureCount;
+                    byClass[row.classGroup][name].subjects[row.subject] = 
+                        (byClass[row.classGroup][name].subjects[row.subject] || 0) + row.lectureCount;
+                });
+            });
+            
+            let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:20px;">📅 Monthly Report: ${month.name}</h3>`;
+            
+            Object.keys(byClass).sort().forEach(cls => {
+                const students = byClass[cls];
+                const sorted = Object.entries(students).sort((a, b) => b[1].total - a[1].total);
+                
+                const subjects = new Set();
+                Object.values(students).forEach(s => Object.keys(s.subjects).forEach(sub => subjects.add(sub)));
+                const subArr = Array.from(subjects).sort();
+                
+                html += `<div class="chart-container">
+                    <h4 style="color:#667eea; font-size:1.2em; margin-bottom:15px;">🏫 CLASS ${cls}</h4>
+                    <div style="overflow-x:auto;">
+                        <table><thead><tr><th>Student</th>`;
+                
+                subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
+                html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
+                
+                sorted.forEach(([name, data]) => {
+                    const sev = getSeverity(data.total);
+                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
+                    
+                    subArr.forEach(sub => {
+                        const count =data.subjects[sub] || 0;
+                        const color = count >= 6 ? '#c33' : count >= 3 ? '#ff8800' : count > 0 ? '#667eea' : '#999';
+                        html += `<td style="text-align:center; color:${color}; font-weight:bold;">${count || '-'}</td>`;
+                    });
+                    
+                    html += `<td style="text-align:center;"><strong style="font-size:1.1em;">${data.total}</strong> ${getBadge(data.total)}</td></tr>`;
+                });
+                
+                html += `</tbody></table></div></div>`;
+            });
+            
+            document.getElementById('monthlyContent').innerHTML = html;
+        }
+
+        // --- ANALYTICS TAB ---
+        function getPolicyThresholds() {
+            const lecturesInput = parseInt(document.getElementById('lecturesPerDay')?.value);
+            const daysInput = parseInt(document.getElementById('expulsionDays')?.value);
+            return {
+                lecturesPerDay: (lecturesInput > 0) ? lecturesInput : 3, 
+                expulsionDays: (daysInput > 0) ? daysInput : 21 
+            };
+        }
+
+        function calculateExpulsionRisk() {
+            const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
+            const studentDailyLectures = {};
+
+            allData.forEach(entry => {
+                entry.absences.forEach(name => {
+                    if (!studentDailyLectures[name]) {
+                        studentDailyLectures[name] = {};
+                    }
+                    studentDailyLectures[name][entry.date] = (studentDailyLectures[name][entry.date] || 0) + entry.lectureCount;
+                });
+            });
+
+            const studentRiskSummary = {};
+            for (const name in studentDailyLectures) {
+                let totalDaysMissed = 0;
+                for (const date in studentDailyLectures[name]) {
+                    const lecturesMissed = studentDailyLectures[name][date];
+                    if (lecturesMissed >= lecturesPerDay) {
+                        totalDaysMissed += 1;
+                    }
+                }
+                studentRiskSummary[name] = {
+                    totalDaysMissed: totalDaysMissed,
+                    isExpelled: totalDaysMissed >= expulsionDays,
+                };
+            }
+            return studentRiskSummary;
+        }
+
+        function loadAnalytics() {
+            const riskSummary = calculateExpulsionRisk();
+            const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
+            const studentsByClass = {};
+            
+            Object.entries(riskSummary).forEach(([name, data]) => {
+                let studentClass = 'Unknown';
+                for (const row of allData) {
+                    if (row.absences.includes(name)) {
+                        studentClass = row.classGroup || 'Unknown';
+                        break;
+                    }
+                }
+                if (!studentsByClass[studentClass]) studentsByClass[studentClass] = [];
+                studentsByClass[studentClass].push({ name, ...data });
+            });
+            
+            const sortedClasses = Object.keys(studentsByClass).sort();
+            
+            let html = `
+                <div class="chart-container" style="margin-top: 20px;">
+                    <h3 style="color:#ff4444; margin-bottom:15px; font-size:1.5em;">⚠️ Expulsion Risk Report</h3>
+                    <p style="color:#666; margin-bottom:20px;">
+                        Tracking students with <strong>${lecturesPerDay}</strong> or more lectures missed in a day counting as 1 day missed, 
+                        with a dismissal threshold of <strong>${expulsionDays}</strong> total days.
+                    </p>
+            `;
+            
+            sortedClasses.forEach(className => {
+                const students = studentsByClass[className];
+                students.sort((a, b) => b.totalDaysMissed - a.totalDaysMissed);
+                
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <h4 style="color:#667eea; margin-bottom:15px; font-size:1.3em;">🏫 Class ${className}</h4>
+                        <div style="overflow-x:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th style="text-align:center;">Total Days Missed</th>
+                                        <th style="text-align:center;">Days Remaining</th>
+                                        <th style="text-align:center;">Risk Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                `;
+                
+                students.forEach(student => {
+                    const isExpelled = student.totalDaysMissed >= expulsionDays;
+                    const riskPercent = student.totalDaysMissed / expulsionDays;
+                    
+                    let rowClass = 'row-low';
+                    let statusText = 'LOW RISK';
+                    let statusColor = '#4CAF50';
+                    
+                    if (isExpelled) {
+                        rowClass = 'row-high';
+                        statusText = 'DISMISSED';
+                        statusColor = '#ff4444';
+                    } else if (riskPercent >= 0.75) {
+                        rowClass = 'row-medium';
+                        statusText = 'HIGH RISK';
+                        statusColor = '#ff8800';
+                    }
+                    
+                    const daysRemaining = Math.max(0, expulsionDays - student.totalDaysMissed);
+                    const safeName = encodeURIComponent(student.name);
+
+                    html += `
+                        <tr class="${rowClass}">
+                            <td><span class="clickable" onclick="showStudentProfileFromDropdown('${safeName}')">${student.name}</span></td>
+                            <td style="text-align:center; font-weight:bold;">${student.totalDaysMissed}</td>
+                            <td style="text-align:center;">${daysRemaining}</td>
+                            <td style="text-align:center; font-weight:bold; color: ${statusColor};">${statusText}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `</tbody></table></div></div>`;
+            });
+            
+            html += `</div>`;
+            
+            // --- Legacy Analytics (Subject breakdown etc) ---
+            const byClass = {};
+            classes.forEach(c => byClass[c] = 0);
+            
+            allData.forEach(row => {
+                if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
+                    byClass[row.classGroup] += row.absences.length * row.lectureCount;
+                }
+            });
+
+            const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+            allData.forEach(row => {
+                const match = String(row.lecture).match(/\d+/); 
+                const lec = match ? parseInt(match[0]) : 0;
+                
+                if (lec >= 1 && lec <= 6) {
+                    byLecture[lec] += row.absences.length * row.lectureCount;
+                }
+            });
+
+            const bySubject = {};
+            allData.forEach(row => {
+                if (row.subject) {
+                    bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
+                }
+            });
+
+            let oldAnalyticsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top: 30px;">';
+            
+            // Absences by Class
+            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+            Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
+                oldAnalyticsHtml += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            // Absences by Lecture Time
+            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
+            Object.entries(byLecture).forEach(([lec, count]) => {
+                oldAnalyticsHtml += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            // Absences by Subject
+            oldAnalyticsHtml += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
+            const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
+            Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
+                const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
+                oldAnalyticsHtml += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
+            });
+            oldAnalyticsHtml += '</tbody></table></div></div>';
+
+            oldAnalyticsHtml += '</div>';
+
+            document.getElementById('analyticsContent').innerHTML = html + oldAnalyticsHtml;
+        }
+
+        // --- STUDENT PROFILE MODAL ---
+        function showStudentProfile(name) {
+            const details = { class: '', total: 0, log: [] };
+            
+            allData.forEach(row => {
+                row.absences.forEach(studentName => {
+                    if (studentName.toLowerCase() === name.toLowerCase()) {
+                        details.class = row.classGroup || details.class;
+                        details.total += row.lectureCount;
+                        details.log.push({
+                            date: row.date,
+                            teacher: row.teacher,
+                            subject: row.subject,
+                            lecture: row.lecture,
+                            count: row.lectureCount
+                        });
+                    }
+                });
+            });
+            
+            details.log.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const subjects = [...new Set(details.log.map(a => a.subject))];
+            const sev = getSeverity(details.total);
+            
+            let html = `<div class="student-profile-header">
+                <h2>👤 ${name}</h2> <div style="margin-top:10px;">${getBadge(details.total)}</div>
+            </div>
+            
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="label">🏫 Class</div>
+                    <div class="value" style="font-size:1.8em;">${details.class || 'N/A'}</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="label">📚 Total Absences</div>
+                    <div class="value" style="color:${sev === 'high' ? '#ff4444' : sev === 'medium' ? '#ff8800' : '#4CAF50'};">${details.total}</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="label">📖 Subjects Affected</div>
+                    <div class="value" style="font-size:1.8em;">${subjects.length}</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="label">📋 Total Entries</div>
+                    <div class="value" style="font-size:1.8em;">${details.log.length}</div>
+                </div>
+            </div>
+            
+            <div style="margin:25px 0; padding:15px; background:#f8f9fa; border-radius:8px;">
+                <strong style="color:#667eea;">Subjects Missed:</strong><br>
+                <span style="color:#666;">${subjects.join(', ')}</span>
+            </div>
+            
+            <h3 style="color:#667eea; margin:25px 0 15px 0;">📋 Complete Absence History</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Date</th><th>Lecture</th><th>Subject</th><th>Teacher</th></tr></thead>
+                    <tbody>`;
+            
+            details.log.forEach(a => {
+                html += `<tr><td>${a.date}</td><td>${a.lecture}</td><td>${a.subject}</td><td>${a.teacher}</td></tr>`;
+            });
+            
+            html += `</tbody></table></div>`;
+            
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('studentModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('studentModal').style.display = 'none';
+        }
+
+        // --- NAVIGATION & INIT ---
+        function showTab(tabName) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            
+            document.getElementById(tabName).classList.add('active');
+            document.querySelectorAll('.tab').forEach(t => {
+                if (t.onclick && t.onclick.toString().includes(`'${tabName}'`)) {
+                    t.classList.add('active');
+                }
+            });
+            
+            if (tabName === 'roster') loadRoster();
+            if (tabName === 'weekly') loadWeeklyDropdown();
+            if (tabName === 'monthly') loadMonthlyDropdown();
+            if (tabName === 'analytics') loadAnalytics();
         }
-        function filterDaily() { console.log("Filtering daily reports..."); }
-        function filterRoster() { console.log("Filtering roster records..."); }
-        function setToday() { document.getElementById('dailyDate').valueAsDate = new Date(); filterDaily(); }
-        function setPreviousDay() { 
-            const yesterday = new Date(); 
-            yesterday.setDate(yesterday.getDate() - 1); 
-            document.getElementById('dailyDate').valueAsDate = yesterday; 
-            filterDaily(); 
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('studentModal')) {
+                closeModal();
+            }
         }
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#headerStudentSearch') && !e.target.closest('#dropdownResults')) {
+                document.getElementById('dropdownResults').classList.remove('show');
+            }
+        });
+        
+        function scheduleDataFetch() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            const START_HOUR = 8;
+            const END_HOUR = 14; 
+
+            let intervalMs;
+            
+            if (currentHour >= START_HOUR && currentHour < END_HOUR) {
+                intervalMs = 300000;
+                console.log(`⏰ Inside window. Refreshing data in ${intervalMs / 60000} minutes...`);
+                fetchData(); 
+            } else {
+                const nextStart = new Date(now);
+                if (currentHour >= END_HOUR) {
+                    nextStart.setDate(now.getDate() + 1);
+                }
+                nextStart.setHours(START_HOUR, 0, 1, 0); 
+                
+                intervalMs = nextStart.getTime() - now.getTime();
+                console.log(`😴 Outside window. Next refresh check scheduled for 8 AM...`);
+            }
+
+            setTimeout(scheduleDataFetch, intervalMs);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard initializing...');
+            fetchData(); 
+            scheduleDataFetch(); 
+        });
+
     </script>
 </body>
 </html>
