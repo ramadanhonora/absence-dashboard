@@ -737,6 +737,9 @@ function loadSystemData() {
         document.getElementById('loginPassword').disabled = false;
         document.getElementById('btnLogin').disabled = false;
         showToast(LANGS[currentLang].toastLoaded, 'success');
+        
+        // 🔄 AUTO LOGIN CHECK 🔄
+        checkAutoLogin();
       }
     })
     .catch(err => {
@@ -746,6 +749,20 @@ function loadSystemData() {
       showToast(LANGS[currentLang].toastConnErr, 'error');
       console.error(err);
     });
+}
+
+// Check if teacher credentials are saved locally
+function checkAutoLogin() {
+  const savedUser = localStorage.getItem('remembered_username');
+  const savedPass = localStorage.getItem('remembered_password');
+  
+  if (savedUser && savedPass && TEACHERS.length > 0) {
+    const teacher = TEACHERS.find(t => t.username === savedUser && t.password === savedPass);
+    if (teacher) {
+      currentTeacher = teacher;
+      showSubmitScreen();
+    }
+  }
 }
 
 function doLogin() {
@@ -771,10 +788,19 @@ function doLogin() {
 
   errBox.classList.remove('show');
   currentTeacher = teacher;
+  
+  // 💾 SAVE LOGIN CREDENTIALS 💾
+  localStorage.setItem('remembered_username', u);
+  localStorage.setItem('remembered_password', p);
+  
   showSubmitScreen();
 }
 
 function doLogout() {
+  // ❌ ERASE RECORDED LOGIN DETAILS ❌
+  localStorage.removeItem('remembered_username');
+  localStorage.removeItem('remembered_password');
+
   currentTeacher = null;
   selectedAbsent.clear();
   showScreen('screen-login');
@@ -1039,13 +1065,10 @@ function showToast(msg, type) {
   t.textContent = msg;
   t.className = 'toast' + (type ? ' ' + type : '');
   
-  // Cleanly slide it into view
   t.classList.add('show');
   
-  // Clear any existing active animation timers 
   if (window.toastTimer) clearTimeout(window.toastTimer);
   
-  // Force it to disappear and slide away completely after 3.5 seconds
   window.toastTimer = setTimeout(() => {
     t.classList.remove('show');
   }, 3500);
