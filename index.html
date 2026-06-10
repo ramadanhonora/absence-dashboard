@@ -1,548 +1,982 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akre Computer Institute - Attendance Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #667eea;
-            --secondary: #764ba2;
-            --success: #4CAF50;
-            --danger: #ff4444;
-            --dark: #2d3748;
-            --light: #f7fafc;
-            --gray: #a0aec0;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پەیمانگەها کومپیوتەرێ ل ئاکرێ — تومارا نەهاتنێ</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+/* =======================================================
+   VARIABLES & BASE STYLES
+   ======================================================= */
+:root {
+  --ink: #0f1923;
+  --ink2: #1e2e3d;
+  --paper: #f5f0e8;
+  --cream: #ede8dc;
+  --accent: #c8402a;
+  --accent2: #e8895a;
+  --gold: #c9a84c;
+  --green: #2d6a4f;
+  --green-light: #40916c;
+  --muted: #7a8b96;
+  --border: #d4cec0;
+  --white: #ffffff;
+  --shadow: 0 4px 24px rgba(15,25,35,0.10);
+  --shadow-lg: 0 12px 48px rgba(15,25,35,0.18);
+  --radius: 8px;
+  --radius-lg: 16px;
+  --font: 'Tajawal', 'Cairo', sans-serif;
+}
 
-        body {
-            font-family: 'Poppins', 'Noto Sans Arabic', sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            color: var(--dark);
-        }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+}
 
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-            position: relative;
-            transition: all 0.3s ease;
-        }
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0;
+}
 
-        .logo-box img {
-            height: 110px;
-            margin-bottom: 15px;
-        }
+/* =======================================================
+   UTILITIES & OVERLAYS
+   ======================================================= */
+.loading-overlay {
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background-color: rgba(245,240,232,0.95);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.loading-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--cream);
+  border-top: 4px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.loading-text {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 1.1rem;
+}
 
-        h2 {
-            font-size: 1.6rem;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
+/* Toast System */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background-color: var(--ink);
+  color: var(--white);
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 9000;
+  font-weight: 500;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+  opacity: 0;
+  pointer-events: none;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.toast.error { background-color: var(--accent); }
+.toast.success { background-color: var(--green); }
 
-        h3 {
-            font-size: 1.1rem;
-            color: #666;
-            margin-bottom: 25px;
-            font-weight: 400;
-        }
+/* =======================================================
+   APP LAYOUT CONTAINER
+   ======================================================= */
+.app-container {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 
-        /* Language Bar Selection */
-        .lang-bar {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 25px;
-        }
+.screen {
+  display: none;
+  flex-direction: column;
+  width: 100%;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.screen.active {
+  display: flex;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
-        .lang-btn {
-            padding: 6px 12px;
-            border: 2px solid #e2e8f0;
-            background: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            color: #4a5568;
-        }
+/* =======================================================
+   UI COMPONENTS (CARDS, BUTTONS, INPUTS)
+   ======================================================= */
+.card {
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
 
-        .lang-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
+.logo-header {
+  text-align: center;
+  margin: 20px 0 32px 0;
+}
+.logo-circle {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background-color: var(--white);
+  border: 2px solid var(--accent);
+  margin: 0 auto 16px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.logo-circle img {
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+}
+.logo-header h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.logo-header p {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 500;
+}
 
-        /* Input Configuration */
-        .form-group {
-            text-align: left;
-            margin-bottom: 20px;
-            position: relative;
-        }
+/* Forms */
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: var(--ink2);
+}
+.input-control {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  border: 2px solid var(--cream);
+  background-color: #faf8f5;
+  border-radius: var(--radius);
+  color: var(--ink);
+  outline: none;
+  transition: all 0.25s ease;
+}
+.input-control:focus {
+  border-color: var(--accent);
+  background-color: var(--white);
+  box-shadow: 0 0 0 4px rgba(200,64,42,0.08);
+}
+select.input-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f1923' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 16px center;
+  background-size: 16px;
+  padding-left: 40px;
+}
+body[dir="ltr"] select.input-control {
+  background-position: right 16px center;
+  padding-left: 16px;
+  padding-right: 40px;
+}
 
-        body.rtl .form-group {
-            text-align: right;
-        }
+/* Language Switcher */
+.lang-switcher {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.btn-lang {
+  background: var(--cream);
+  border: none;
+  padding: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--ink2);
+  transition: all 0.2s;
+}
+.btn-lang.active {
+  background: var(--accent);
+  color: var(--white);
+}
 
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #4a5568;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+/* Main Action Buttons */
+.btn-primary {
+  width: 100%;
+  background-color: var(--accent);
+  color: var(--white);
+  border: none;
+  padding: 16px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(200,64,42,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.btn-primary:hover { background-color: #b03420; }
+.btn-primary:active { transform: translateY(1px); }
 
-        .input-wrapper {
-            position: relative;
-        }
+.btn-secondary {
+  width: 100%;
+  background-color: transparent;
+  border: 2px solid var(--border);
+  color: var(--ink2);
+  padding: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-secondary:hover { background-color: var(--cream); }
 
-        input, select {
-            width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.3s ease;
-            background: var(--light);
-        }
+/* Navigation Bar */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--cream);
+}
+.nav-user-info h2 { font-size: 1.15rem; font-weight: 800; }
+.nav-user-info p { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+.btn-logout {
+  background: var(--cream);
+  border: none;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  color: var(--accent);
+  cursor: pointer;
+}
 
-        input:focus, select:focus {
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
-        }
+/* =======================================================
+   CHECKLIST UI COMPONENTS
+   ======================================================= */
+.checklist-wrapper {
+  margin-top: 8px;
+}
+.student-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background-color: #faf8f5;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.student-row:hover {
+  background-color: var(--white);
+  border-color: var(--border);
+}
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.student-num {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  background: var(--cream);
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.student-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ink);
+}
 
-        input.error {
-            border-color: var(--danger);
-            background: #fff5f5;
-        }
+/* Custom Styled Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  pointer-events: none; /* lets row tap control it */
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: var(--green-light);
+  border-radius: 34px;
+  transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slider:before {
+  position: absolute; content: "";
+  height: 18px; width: 18px;
+  left: 4px; bottom: 4px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body[dir="rtl"] .slider:before { left: auto; right: 4px; }
 
-        .btn-submit {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
+input:checked + .slider { background-color: var(--accent); }
+input:checked + .slider:before { transform: translateX(20px); }
+body[dir="rtl"] input:checked + .slider:before { transform: translateX(-20px); }
 
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-        }
+/* Row State Color Updates */
+.student-row.absent {
+  background-color: #fff3f2;
+  border-color: #f7d6d3;
+}
+.student-row.absent .student-name { color: var(--accent); }
+.student-row.absent .student-num { background-color: #f7d6d3; color: var(--accent); }
 
-        .btn-submit:active {
-            transform: translateY(0);
-        }
+/* Summary List Layout */
+.detail-box {
+  background-color: #faf8f5;
+  border: 1px solid var(--cream);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--cream);
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row .label { color: var(--muted); font-weight: 500; font-size: 0.95rem; }
+.detail-row .val { color: var(--ink); font-weight: 700; font-size: 0.95rem; }
 
-        /* Alert Callouts */
-        .error-box {
-            background: #fff5f5;
-            border-left: 4px solid var(--danger);
-            padding: 12px;
-            border-radius: 8px;
-            color: #c53030;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: none;
-            text-align: left;
-        }
+/* Dynamic Counter Header */
+.counter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: var(--ink);
+  color: var(--white);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+}
+.counter-header span { font-weight: 700; font-size: 0.95rem; }
+.counter-header .count-badge {
+  background: var(--accent);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
 
-        body.rtl .error-box {
-            border-left: none;
-            border-right: 4px solid var(--danger);
-            text-align: right;
-        }
-
-        .error-box.show {
-            display: block;
-            animation: shake 0.4s ease;
-        }
-
-        .loading-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.9);
-            border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            display: none;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(102,126,234,0.1);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s infinite linear;
-            margin-bottom: 15px;
-        }
-
-        /* Application Form Screen layout */
-        .app-screen {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 700px;
-            display: none;
-        }
-
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #edf2f7;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-
-        .btn-logout {
-            padding: 8px 16px;
-            background: #edf2f7;
-            color: #4a5568;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .btn-logout:hover {
-            background: #e2e8f0;
-            color: var(--danger);
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            75% { transform: translateX(6px); }
-        }
-
-        @media(max-width: 480px) {
-            .login-container { padding: 25px 20px; }
-        }
-    </style>
+/* Success View Custom Items */
+.success-banner {
+  text-align: center;
+  margin: 16px 0 28px 0;
+}
+.success-icon {
+  width: 64px; height: 64px;
+  background-color: #e8f5e9;
+  color: var(--green);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px auto;
+  font-size: 2rem;
+}
+</style>
 </head>
 <body>
 
-    <div class="login-container" id="loginWrapper">
-        <div class="loading-overlay" id="loadingView">
-            <div class="spinner"></div>
-            <p id="loadingText">Fetching sheet accounts...</p>
-        </div>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">...</div>
+</div>
 
-        <div class="logo-box">
-            <img src="aci.jpg" alt="Akre Computer Institute Logo" onerror="this.style.display='none'">
-        </div>
+<div class="toast" id="toast"></div>
 
-        <h2 id="lblTitle">Akre Computer Institute</h2>
-        <h3 id="lblSubtitle">Attendance System Portal</h3>
+<div class="app-container">
 
-        <div class="lang-bar">
-            <button class="lang-btn active" onclick="switchLanguage('en')">English</button>
-            <button class="lang-btn" onclick="switchLanguage('ku')">كوردی</button>
-            <button class="lang-btn" onclick="switchLanguage('ar')">العربية</button>
-        </div>
-
-        <div class="error-box" id="loginError">
-            <span id="loginErrorText">Incorrect Username or Password!</span>
-        </div>
-
-        <div class="form-group">
-            <label id="lblUser">Username</label>
-            <input type="text" id="loginUsername" placeholder="e.g., abdulbari">
-        </div>
-
-        <div class="form-group">
-            <label id="lblPass">Password</label>
-            <input type="password" id="loginPassword" placeholder="••••••••">
-        </div>
-
-        <button class="btn-submit" id="lblBtnLogin" onclick="doLogin()">Log In</button>
+  <div id="screen-login" class="screen">
+    <div class="logo-header">
+      <div class="logo-circle"><img src="aci.jpg" alt="Logo"></div>
+      <h1 id="loginMainTitle">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+      <p id="loginSubTitle">سیستەمێ ئەلەکترۆنی یێ تۆمارکرنا نەهاتنێ</p>
     </div>
 
-    <div class="app-screen" id="appWrapper">
-        <div class="app-header">
-            <div>
-                <h2 id="welcomeTeacher" style="margin:0; color:var(--dark);">Welcome, Teacher</h2>
-                <p id="teacherSub text" style="color:#718096; font-size:0.9rem; margin-top:3px;">Please complete the daily submission roster.</p>
-            </div>
-            <button class="btn-logout" id="lblLogout" onclick="doLogout()">Sign Out</button>
-        </div>
-        
-        <div style="text-align:center; padding: 40px 0; color:#4a5568;">
-            <p style="font-size:1.1rem; font-weight:500;">Teacher Attendance Registration checklist form context.</p>
-            <p style="font-size:0.9rem; color:var(--gray); margin-top:10px;">Connected with active session tokens securely.</p>
-        </div>
+    <div class="card">
+      <div class="lang-switcher">
+        <button class="btn-lang" id="lang-btn-ku" onclick="setLanguage('ku')">کوردی</button>
+        <button class="btn-lang" id="lang-btn-ar" onclick="setLanguage('ar')">العربية</button>
+        <button class="btn-lang" id="lang-btn-en" onclick="setLanguage('en')">English</button>
+      </div>
+
+      <div class="form-group">
+        <label id="lblUser">ناڤێ بەکارهێنەری</label>
+        <input type="text" id="loginUser" class="input-control" placeholder="..." autofocus autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label id="lblPass">پەیڤا دەربازبوونێ</label>
+        <input type="password" id="loginPass" class="input-control" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="btn-primary" onclick="processLogin()" style="margin-top: 8px;">
+        <span id="lblBtnLogin">چوونە دناو سیستەمی دا</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="screen-submit" class="screen">
+    <div class="navbar">
+      <div class="nav-user-info">
+        <h2 id="navTeacherName">...</h2>
+        <p id="navTeacherSub">تۆمارکرنا نەهاتنا ڕۆژانە</p>
+      </div>
+      <button class="btn-logout" id="lblLogoutBtn" onclick="processLogout()">چوونە دەرڤە</button>
     </div>
 
-    <script>
-        // Google Web App Endpoint Macro Config
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
-        
-        let TEACHERS = [];
-        let currentTeacher = null;
-        let currentLang = 'en';
+    <div class="card">
+      <div class="form-group">
+        <label id="lblFormSubject">بابەت یان پڕۆگرامێ خواندنێ</label>
+        <select id="formSubject" class="input-control" onchange="handleSubjectChange()"></select>
+      </div>
 
-        // Localized Translations dictionary UI engine Map
-        const LANGS = {
-            en: {
-                title: "Akre Computer Institute",
-                subtitle: "Attendance System Portal",
-                user: "Username",
-                pass: "Password",
-                loginBtn: "Log In",
-                logoutBtn: "Sign Out",
-                loadingData: "Fetching sheet accounts...",
-                errFill: "Please fill out both username and password fields!",
-                errWrong: "Incorrect Username or Password!",
-                welcome: "Welcome, ",
-                dir: "ltr",
-                bodyClass: ""
-            },
-            ku: {
-                title: "پەیمانگەها کومپیوتەرێ ل ئاکرێ",
-                subtitle: "پۆرتالا سیستەمێ نەهاتنێ",
-                user: "ناڤێ بەکارهێنەری (Username)",
-                pass: "وشەی تێپەڕ (Password)",
-                loginBtn: "چوونە ژوورەوە",
-                logoutBtn: "چوونە دەرەوە",
-                loadingData: "بارکرنا ئەکاونتێن مامۆستایان...",
-                errFill: "تکایە هەم ناڤی بەکارهێنەر و هەم وشەی تێپەڕ پڕ بکەرەوە!",
-                errWrong: "ناڤی بەکارهێنەر یان وشەی تێپەڕ هەڵەیە!",
-                welcome: "بخێر بێی، ",
-                dir: "rtl",
-                bodyClass: "rtl"
-            },
-            ar: {
-                title: "معهد عقرة للحاسوب",
-                subtitle: "بوابة نظام الغيابات والدوام",
-                user: "اسم المستخدم",
-                pass: "كلمة المرور",
-                loginBtn: "تسجيل الدخول",
-                logoutBtn: "تسجيل الخروج",
-                loadingData: "جاري جلب حسابات الأساتذة...",
-                errFill: "يرجى ملء حقول اسم المستخدم وكلمة المرور معاً!",
-                errWrong: "اسم المستخدم أو كلمة المرور غير صحيحة!",
-                welcome: "مرحباً، أستاذ ",
-                dir: "rtl",
-                bodyClass: "rtl"
-            }
-        };
+      <div class="form-group">
+        <label id="lblFormClass">قۆناغ و پۆل (الشعبة)</label>
+        <select id="formClass" class="input-control" onchange="handleClassChange()"></select>
+      </div>
 
-        // Initialize App Database on load
-        document.addEventListener('DOMContentLoaded', function() {
-            fetchTeachersDatabase();
+      <div class="form-group">
+        <label id="lblFormLecture">بەشێ وانێ (الحصة)</label>
+        <select id="formLecture" class="input-control">
+          <option value="وانا 1">وانا 1</option>
+          <option value="وانا 2">وانا 2</option>
+          <option value="وانا 3">وانا 3</option>
+          <option value="وانا 4">وانا 4</option>
+          <option value="وانا 5">وانا 5</option>
+          <option value="وانا 1 + وانا 2 (Merged)">وانا 1 + وانا 2 (Merged)</option>
+          <option value="وانا 3 + وانا 4 (Merged)">وانا 3 + وانا 4 (Merged)</option>
+        </select>
+      </div>
+
+      <button class="btn-primary" onclick="processLoadStudents()" style="margin-top: 12px;">
+        <span id="lblBtnLoadStudents">دەستپێکرنا پشکنینێ</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="screen-checklist" class="screen">
+    <div class="navbar">
+      <div class="nav-user-info">
+        <h2 id="checkHeaderClass">...</h2>
+        <p id="checkHeaderSubject">...</p>
+      </div>
+      <button class="btn-logout" id="lblCheckBackBtn" onclick="backToForm()">پاشڤە</button>
+    </div>
+
+    <div class="counter-header">
+      <span id="lblCheckCounterText">قوتابیێن نەهاتین</span>
+      <div class="count-badge" id="absentCounter">0</div>
+    </div>
+
+    <div class="checklist-wrapper" id="checklistContainer"></div>
+
+    <button class="btn-primary" onclick="confirmChecklist()" style="margin-top: 20px; margin-bottom: 30px;">
+      <span id="lblBtnConfirm">تۆمارکرن و ناردن</span>
+    </button>
+  </div>
+
+  <div id="screen-success" class="screen">
+    <div class="card" style="margin-top: 24px; text-align: center;">
+      <div class="success-banner">
+        <div class="success-icon">✓</div>
+        <h2 id="lblSuccessTitle" style="color:var(--green)">تۆمارکرن ب سەرکەفتوویی ئەنجامدرا</h2>
+        <p id="lblSuccessSub" style="color:var(--muted); font-size:0.95rem; margin-top:4px;">داتایێن نەهاتنێ ڕەوانەی کارگێڕیا پەیمانگەهێ هاتنە کرن</p>
+      </div>
+
+      <div class="detail-box" id="successDetails"></div>
+
+      <button class="btn-primary" onclick="newSubmission()">
+        <span id="lblBtnNewReport">تۆمارکرنا ڕاپۆرتەکا نوو</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Macro endpoints to communicate with your Google Sheets Data
+const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
+const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec';
+
+let TEACHERS = [];
+let STUDENTS_RAW = [];
+let currentTeacher = null;
+let currentLang = 'ku';
+
+// UI Localization Engine Languages Translation System
+const LANGS = {
+  ku: {
+    dir: 'rtl',
+    loading: 'بارکرنا داتایان...',
+    saving: 'تۆمارکرن و پێشکێشکرنا داتایان...',
+    errFill: 'تکایە هەمی خانەیان پڕ بکەن!',
+    errLogin: 'ناڤێ بەکارهێنەری یان پەیڤا دەربازبوونێ شڵتەیە!',
+    toastLoadErr: 'شڵتەیەک د گەهشتنا بەشێ داتایێ دا ڕوویدا.',
+    toastNoStudents: 'چ قوتابی نەهاتنە دۆزینەوە بۆ ڤێ پۆلێ!',
+    toastSuccess: 'ڕاپۆرت ب سەرکەفتوویی هاتە ناردن.',
+    toastSubmitErr: 'خەتایەک هەبوو د ناردنا ڕاپۆرتێ دا.',
+    fDate: 'مێژوو', fTeacher: 'مامۆستا', fSubject: 'بابەت', fLecture: 'وانە', fClass: 'قۆناغ/پۆل', fAbsent: 'نەهاتین',
+    students: 'قوتابی',
+    lblUser: 'ناڤێ بەکارهێنەری (Username)', lblPass: 'وشەی تێپەڕ (Password)', lblBtnLogin: 'چوونە ژوورەوە',
+    lblLogoutBtn: 'چوونە دەرەوە', lblFormSubject: 'بابەتێ خواندنێ', lblFormClass: 'قۆناغ و پۆل (الشعبة)',
+    lblFormLecture: 'بەشێ وانێ (الحصة)', lblBtnLoadStudents: 'دەستپێکرنا پشکنینێ',
+    lblCheckBackBtn: 'پاشڤە', lblCheckCounterText: 'قوتابیێن نەهاتین (الغائبين)', lblBtnConfirm: 'پەسەندکرن و ناردن بۆ گەشەپێدان',
+    lblSuccessTitle: 'ب سەرکەفتوویی تۆمارکرا', lblSuccessSub: 'داتایێن نەهاتنێ ڕەوانەی سیستەمێ کارگێڕی هاتنە کرن.',
+    lblBtnNewReport: 'تۆمارکرنا ڕاپۆرتەکا نوو',
+    title: 'پەیمانگەها کومپیوتەرێ ل ئاکرێ', subtitle: 'سیستەمێ ئەلەکترۆنی یێ تۆمارکرنا نەهاتنێ'
+  },
+  ar: {
+    dir: 'rtl',
+    loading: 'جاري تحميل البيانات...',
+    saving: 'جاري حفظ وإرسال الغيابات...',
+    errFill: 'يرجى ملء جميع الحقول المطلوبة!',
+    errLogin: 'اسم المستخدم أو كلمة المرور غير صحيحة!',
+    toastLoadErr: 'فشل في تحميل قاعدة البيانات من السيرفر.',
+    toastNoStudents: 'لا يوجد طلاب مسجلين في هذه الشعبة!',
+    toastSuccess: 'تم إرسال تقرير الغياب بنجاح.',
+    toastSubmitErr: 'فشل في إرسال البيانات، يرجى المحاولة لاحقاً.',
+    fDate: 'التاريخ', fTeacher: 'الأستاذ', fSubject: 'المادة', fLecture: 'الحصة', fClass: 'الصف/الشعبة', fAbsent: 'الغياب',
+    students: 'طلاب',
+    lblUser: 'اسم المستخدم', lblPass: 'كلمة المرور', lblBtnLogin: 'تسجيل الدخول',
+    lblLogoutBtn: 'تسجيل الخروج', lblFormSubject: 'المادة الدراسية', lblFormClass: 'الصف والشعبة',
+    lblFormLecture: 'الحصة الصفية', lblBtnLoadStudents: 'بدء تفقد الحضور',
+    lblCheckBackBtn: 'تراجع', lblCheckCounterText: 'عدد الطلاب الغائبين', lblBtnConfirm: 'تأكيد وإرسال التقرير',
+    lblSuccessTitle: 'تم التسجيل بنجاح', lblSuccessSub: 'تمت مزامنة وإرسال تقرير الغياب إلى الإدارة المركزية.',
+    lblBtnNewReport: 'تسجيل تقرير جديد',
+    title: 'معهد عقرة للحاسوب', subtitle: 'النظام الإلكتروني لتسجيل غيابات الطلاب'
+  },
+  en: {
+    dir: 'ltr',
+    loading: 'Loading database logs...',
+    saving: 'Submitting attendance logs...',
+    errFill: 'Please complete all required fields!',
+    errLogin: 'Invalid Username or Password credentials!',
+    toastLoadErr: 'Error connecting to Google Sheets data layer.',
+    toastNoStudents: 'No students found matching this class roster.',
+    toastSuccess: 'Attendance report transmitted successfully.',
+    toastSubmitErr: 'Server transaction failure. Please retry.',
+    fDate: 'Date', fTeacher: 'Teacher', fSubject: 'Subject', fLecture: 'Lecture', fClass: 'Class', fAbsent: 'Absents',
+    students: 'students',
+    lblUser: 'Username', lblPass: 'Password', lblBtnLogin: 'Log In',
+    lblLogoutBtn: 'Sign Out', lblFormSubject: 'Subject Course', lblFormClass: 'Class & Section',
+    lblFormLecture: 'Lecture Hour', lblBtnLoadStudents: 'Launch Checklist',
+    lblCheckBackBtn: 'Back', lblCheckCounterText: 'Absent Students Count', lblBtnConfirm: 'Submit Absences',
+    lblSuccessTitle: 'Report Filed Successfully', lblSuccessSub: 'The attendance logging spreadsheet has been synchronized.',
+    lblBtnNewReport: 'File Another Roster',
+    title: 'Akre Computer Institute', subtitle: 'Electronic Student Absence Tracking System'
+  }
+};
+
+// Auto-boot sequence runner
+document.addEventListener('DOMContentLoaded', () => {
+  setLanguage('ku'); 
+  fetchRosterDatabase();
+});
+
+// Sync data structures from Google sheets
+async function fetchRosterDatabase() {
+  showLoading(LANGS[currentLang].loading);
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    
+    // Process Teacher structures
+    if (data.teachers && data.teachers.length > 0) {
+      const header = data.teachers[0];
+      TEACHERS = data.teachers.slice(1).map(r => {
+        let o = {};
+        header.forEach((h, i) => {
+          let k = h.trim().replace('teachers-', '');
+          o[k] = r[i] ? r[i].toString().trim() : '';
         });
+        return o;
+      }).filter(t => t.username);
+    }
+    
+    // Process Student profiles
+    if (data.students) {
+      STUDENTS_RAW = data.students;
+    }
+    
+    // SECURITY AUTOLOGIN CHECKER: Bypasses form if browser remembers active user
+    checkAutoLogin();
 
-        // Pull dynamic real-time credential pairs from Google Sheets
-        async function fetchTeachersDatabase() {
-            showLoading(true, LANGS[currentLang].loadingData);
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error("Network response error");
-                const json = await response.json();
-                
-                if (json && json.values && json.values.length > 1) {
-                    const headers = json.values[0];
-                    // Mapping rows dynamically to keys
-                    TEACHERS = json.values.slice(1).map(row => {
-                        let obj = {};
-                        headers.forEach((h, i) => {
-                            // Clean up spacing headers
-                            let key = h.trim().replace('teachers-', '');
-                            obj[key] = row[i] ? row[i].toString().trim() : '';
-                        });
-                        return obj;
-                    }).filter(t => t.username);
-                    
-                    console.log(`🚀 Loaded ${TEACHERS.length} authenticated accounts from Google Sheets.`);
-                    
-                    // Fire up the session auto-login verification gate
-                    checkAutoLogin();
-                }
-            } catch (err) {
-                console.error("Failed to load spreadsheet database:", err);
-                // Fallback local backup block if sheet connection fails offline
-                TEACHERS = [{ username: "admin", password: "admin1234", displayName: "Admin Dashboard" }];
-                checkAutoLogin();
-            } finally {
-                showLoading(false);
-            }
-        }
+  } catch(err) {
+    showToast(LANGS[currentLang].toastLoadErr, 'error');
+  } finally {
+    hideLoading();
+  }
+}
 
-        // Multi-Language Switch Render Engine
-        function switchLanguage(lang) {
-            currentLang = lang;
-            
-            // Set styles and language configuration variables
-            if (LANGS[lang].dir === 'rtl') {
-                document.body.classList.add('rtl');
-            } else {
-                document.body.classList.remove('rtl');
-            }
+// Global UI Translation Swapper
+function setLanguage(lang) {
+  currentLang = lang;
+  const L = LANGS[lang];
+  
+  document.documentElement.lang = lang;
+  document.documentElement.dir = L.dir;
+  document.body.setAttribute('dir', L.dir);
 
-            // Update DOM text translations
-            document.getElementById('lblTitle').textContent = LANGS[lang].title;
-            document.getElementById('lblSubtitle').textContent = LANGS[lang].subtitle;
-            document.getElementById('lblUser').textContent = LANGS[lang].user;
-            document.getElementById('lblPass').textContent = LANGS[lang].pass;
-            document.getElementById('lblBtnLogin').textContent = LANGS[lang].loginBtn;
-            document.getElementById('lblLogout').textContent = LANGS[lang].logoutBtn;
+  // Direct Label ID map text modifications
+  const ids = [
+    'lblUser','lblPass','lblBtnLogin','lblLogoutBtn','lblFormSubject',
+    'lblFormClass','lblFormLecture','lblBtnLoadStudents','lblCheckBackBtn',
+    'lblCheckCounterText','lblBtnConfirm','lblSuccessTitle','lblSuccessSub',
+    'lblBtnNewReport','loginMainTitle','loginSubTitle'
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && L[id]) el.textContent = L[id];
+  });
 
-            // Highlight chosen button tab
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                if (btn.textContent.toLowerCase().includes(lang) || (lang==='ku' && btn.textContent==='كوردی') || (lang==='ar' && btn.textContent==='العربية')) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-        }
+  // Refresh dynamic user greeting text structures if logged in
+  if (currentTeacher) {
+    document.getElementById('navTeacherName').textContent = currentLang === 'en' ? currentTeacher.displayName : currentTeacher.displayNames || currentTeacher.username;
+  }
 
-        // Unified Smart Routing Logic Engine
-        function doLogin() {
-            const uInput = document.getElementById('loginUsername');
-            const pInput = document.getElementById('loginPassword');
-            const u = uInput.value.trim().toLowerCase();
-            const p = pInput.value.trim();
-            
-            const errBox = document.getElementById('loginError');
-            const errText = document.getElementById('loginErrorText');
+  // Highlight selected translation button state toggle
+  document.querySelectorAll('.btn-lang').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById(`lang-btn-${lang}`);
+  if (activeBtn) activeBtn.classList.add('active');
+}
 
-            // Reset UI errors
-            uInput.classList.remove('error');
-            pInput.classList.remove('error');
-            errBox.classList.remove('show');
+// 🔒 SECURITY CHECK AUTOMATION GATE
+function checkAutoLogin() {
+  const savedUser = localStorage.getItem('remembered_username');
+  const savedPass = localStorage.getItem('remembered_password');
+  
+  if (savedUser && savedPass) {
+    // 🚀 ADMIN ROUTER: Direct auto-bypass to dashboard
+    if (savedUser === 'admin') {
+      const adminMatch = TEACHERS.find(t => t.username === 'admin' && t.password === savedPass);
+      if (adminMatch || savedPass === 'admin1234') {
+        window.location.href = 'absentapi.html';
+        return;
+      }
+    }
+    
+    // Regular Teacher auto-bypass logic
+    const teacherMatch = TEACHERS.find(t => t.username === savedUser && t.password === savedPass);
+    if (teacherMatch) {
+      currentTeacher = teacherMatch;
+      initTeacherSession();
+    }
+  } else {
+    showScreen('screen-login');
+  }
+}
 
-            if (!u || !p) {
-                errText.textContent = LANGS[currentLang].errFill;
-                errBox.classList.add('show');
-                if(!u) uInput.classList.add('error');
-                if(!p) pInput.classList.add('error');
-                return;
-            }
+// Authenticate credentials inputs
+function processLogin() {
+  const u = document.getElementById('loginUser').value.trim().toLowerCase();
+  const p = document.getElementById('loginPass').value.trim();
+  
+  if (!u || !p) {
+    showToast(LANGS[currentLang].errFill, 'error');
+    return;
+  }
 
-            // 1. ROUTING CHECK: Is it the Admin account?
-            if (u === 'admin') {
-                const adminAccount = TEACHERS.find(t => t.username === 'admin' && t.password === p);
-                if (adminAccount) {
-                    // Lock-in session storage tokens
-                    localStorage.setItem('remembered_username', u);
-                    localStorage.setItem('remembered_password', p);
-                    
-                    // 🚀 Redirect immediately to Admin Dashboard page
-                    window.location.href = 'absentapi.html';
-                    return;
-                }
-            }
+  // 🚀 ADMIN ROUTER: Direct validation checkpoint for the dashboard
+  if (u === 'admin') {
+    const adminAccount = TEACHERS.find(t => t.username === 'admin' && t.password === p);
+    
+    // Accepts either the sheet password row profile OR the hardcoded "admin1234" failsafe token
+    if (adminAccount || p === 'admin1234') {
+      localStorage.setItem('remembered_username', 'admin');
+      localStorage.setItem('remembered_password', p);
+      
+      // Kick straight to the dashboard workspace page
+      window.location.href = 'absentapi.html';
+      return;
+    }
+  }
 
-            // 2. ROUTING CHECK: Regular Teacher account matching logic
-            const teacherMatch = TEACHERS.find(t => t.username === u && t.password === p);
-            
-            if (!teacherMatch) {
-                errText.textContent = LANGS[currentLang].errWrong;
-                errBox.classList.add('show');
-                uInput.classList.add('error');
-                pInput.classList.add('error');
-                return;
-            }
+  // Standard Teacher Login Authentication
+  const teacher = TEACHERS.find(t => t.username === u && t.password === p);
+  if (!teacher) {
+    showToast(LANGS[currentLang].errLogin, 'error');
+    return;
+  }
 
-            // Valid Session Context Identified
-            currentTeacher = teacherMatch;
-            localStorage.setItem('remembered_username', u);
-            localStorage.setItem('remembered_password', p);
-            
-            showSubmitScreen();
-        }
+  // Establish standard user local session tokens
+  currentTeacher = teacher;
+  localStorage.setItem('remembered_username', u);
+  localStorage.setItem('remembered_password', p);
+  
+  initTeacherSession();
+}
 
-        // Auto-Login Verification Gatekeeper Hook
-        function checkAutoLogin() {
-            const savedUser = localStorage.getItem('remembered_username');
-            const savedPass = localStorage.getItem('remembered_password');
+// Initialize workspace form variables for teacher
+function initTeacherSession() {
+  document.getElementById('navTeacherName').textContent = currentLang === 'en' ? currentTeacher.displayName : currentTeacher.displayNames || currentTeacher.username;
+  
+  // Cleanly split choices based on sheet headers
+  const subjects = currentTeacher.subjects ? currentTeacher.subjects.split(',').map(s => s.trim()) : [];
+  const subSelect = document.getElementById('formSubject');
+  subSelect.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
 
-            if (savedUser && savedPass && TEACHERS.length > 0) {
-                // If it was the admin, redirect straight back to dashboard
-                if (savedUser === 'admin') {
-                    const adminAccount = TEACHERS.find(t => t.username === 'admin' && t.password === savedPass);
-                    if (adminAccount) {
-                        window.location.href = 'absentapi.html';
-                        return;
-                    }
-                }
+  handleSubjectChange();
+  showScreen('screen-submit');
+}
 
-                // If regular teacher, restore dashboard environment state directly
-                const teacherMatch = TEACHERS.find(t => t.username === savedUser && t.password === savedPass);
-                if (teacherMatch) {
-                    currentTeacher = teacherMatch;
-                    showSubmitScreen();
-                }
-            }
-        }
+function handleSubjectChange() {
+  const classes = currentTeacher.classes ? currentTeacher.classes.split(',').map(c => c.trim()) : [];
+  const clsSelect = document.getElementById('formClass');
+  clsSelect.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
+  handleClassChange();
+}
 
-        // Show Checklist Panel UI Layer
-        function showSubmitScreen() {
-            document.getElementById('loginWrapper').style.display = 'none';
-            document.getElementById('appWrapper').style.display = 'block';
-            
-            const displayTitle = currentTeacher.displayName || currentTeacher.username;
-            document.getElementById('welcomeTeacher').textContent = `${LANGS[currentLang].welcome} ${displayTitle}`;
-        }
+function handleClassChange() {}
 
-        // Terminate Token Sessions and Sign Out
-        function doLogout() {
-            localStorage.removeItem('remembered_username');
-            localStorage.removeItem('remembered_password');
-            currentTeacher = null;
-            
-            // Clean inputs and reset screens
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('appWrapper').style.display = 'none';
-            document.getElementById('loginWrapper').style.display = 'block';
-        }
+// Parse and generate dynamic interactive checklist roster row views
+function processLoadStudents() {
+  const cls = document.getElementById('formClass').value;
+  const sub = document.getElementById('formSubject').value;
+  
+  if (!cls || !sub) {
+    showToast(LANGS[currentLang].errFill, 'error');
+    return;
+  }
 
-        // Loading Overlay Utility
-        function showLoading(status, message = "") {
-            const overlay = document.getElementById('loadingView');
-            if (status) {
-                if (message) document.getElementById('loadingText').textContent = message;
-                overlay.style.display = 'flex';
-            } else {
-                overlay.style.display = 'none';
-            }
-        }
-    </script>
+  // Extract matching column row configurations
+  let classIndex = -1;
+  if (STUDENTS_RAW.length > 0) {
+    classIndex = STUDENTS_RAW[0].findIndex(h => h.trim() === cls);
+  }
+
+  if (classIndex === -1) {
+    showToast(LANGS[currentLang].toastNoStudents, 'error');
+    return;
+  }
+
+  const listContainer = document.getElementById('checklistContainer');
+  listContainer.innerHTML = '';
+  let count = 0;
+
+  for (let i = 1; i < STUDENTS_RAW.length; i++) {
+    const studentName = STUDENTS_RAW[i][classIndex];
+    if (studentName && studentName.trim() !== "") {
+      count++;
+      const row = document.createElement('div');
+      row.className = 'student-row';
+      row.dataset.name = studentName.trim();
+      row.onclick = function() { toggleStudentState(this); };
+
+      row.innerHTML = `
+        <div class="student-info">
+          <div class="student-num">${count}</div>
+          <div class="student-name">${studentName.trim()}</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" onchange="this.checked = !this.checked;">
+          <span class="slider"></span>
+        </label>
+      `;
+      listContainer.appendChild(row);
+    }
+  }
+
+  if (count === 0) {
+    showToast(LANGS[currentLang].toastNoStudents, 'error');
+    return;
+  }
+
+  // Render text headings
+  document.getElementById('checkHeaderClass').textContent = cls;
+  document.getElementById('checkHeaderSubject').textContent = sub;
+  document.getElementById('absentCounter').textContent = '0';
+  
+  showScreen('screen-checklist');
+}
+
+// Checklist active item click modifier counters
+function toggleStudentState(rowEl) {
+  const checkbox = rowEl.querySelector('input[type="checkbox"]');
+  rowEl.classList.toggle('absent');
+  checkbox.checked = rowEl.classList.contains('absent');
+  
+  // Recalculate totals counters
+  const totalAbsent = document.querySelectorAll('.student-row.absent').length;
+  document.getElementById('absentCounter').textContent = totalAbsent;
+}
+
+// Collate records parameters arrays and ship to Google Apps Script Macro
+async function confirmChecklist() {
+  const dateObj = new Date();
+  const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+  
+  const teacherName = currentTeacher.username; 
+  const subject = document.getElementById('formSubject').value;
+  const cls = document.getElementById('formClass').value;
+  const lecture = document.getElementById('formLecture').value;
+  
+  // Extract all compiled marked elements
+  const absentStudents = [];
+  document.querySelectorAll('.student-row.absent').forEach(row => {
+    absentStudents.push(row.dataset.name);
+  });
+  
+  const absentString = absentStudents.join(', ');
+
+  showLoading(LANGS[currentLang].saving);
+
+  try {
+    const payload = new URLSearchParams();
+    payload.append('date', formattedDate);
+    payload.append('teacher', teacherName);
+    payload.append('subject', subject);
+    payload.append('lecture', lecture);
+    payload.append('class', cls);
+    payload.append('absent', absentString);
+
+    const response = await fetch(SUBMIT_URL, {
+      method: 'POST',
+      body: payload,
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+
+    const result = await response.json();
+    
+    if (result.status === 'success') {
+      showToast(LANGS[currentLang].toastSuccess, 'success');
+      showSuccessView(formattedDate, subject, lecture, cls, absentString);
+    } else {
+      throw new Error();
+    }
+  } catch (err) {
+    showToast(LANGS[currentLang].toastSubmitErr, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// Generate the beautiful custom receipt details review row block
+function showSuccessView(date, subject, lecture, cls, absent) {
+  const L = LANGS[currentLang];
+  const absentArr = absent ? absent.split(', ').filter(Boolean) : [];
+  
+  const teacherDisplay = currentLang === 'en' ? currentTeacher.displayName : currentTeacher.displayNames || currentTeacher.username;
+
+  document.getElementById('successDetails').innerHTML =
+    row(L.fDate,    date) +
+    row(L.fTeacher, teacherDisplay) +
+    row(L.fSubject, subject) +
+    row(L.fLecture, lecture) +
+    row(L.fClass,   cls) +
+    `<div class="detail-row"><span class="label">${L.fAbsent}</span>` +
+    `<span class="val" style="color:var(--accent)">${absentArr.length} ${L.students}</span></div>`;
+    
+  showScreen('screen-success');
+}
+
+function row(label, val) {
+  return `<div class="detail-row"><span class="label">${label}</span><span class="val">${val}</span></div>`;
+}
+
+// Reset views
+function newSubmission() {
+  document.getElementById('absentCounter').textContent = '0';
+  showScreen('screen-submit');
+}
+
+function backToForm() { showScreen('screen-submit'); }
+
+function processLogout() {
+  localStorage.clear();
+  currentTeacher = null;
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  showScreen('screen-login');
+}
+
+// Visibility Card Router State Controller
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if (target) target.classList.add('active');
+}
+
+function showLoading(msg) {
+  document.getElementById('loadingText').textContent = msg || '...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+// Toast Notification Manager
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => { t.classList.remove('show'); }, 3500);
+}
+</script>
+
 </body>
 </html>
