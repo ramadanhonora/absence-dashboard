@@ -187,7 +187,7 @@ main {
 
 /* =======================================================
    SUBMIT SCREEN & CARDS
-   ======================================================= */
+   ====================================================== */
 #screen-submit { max-width: 760px; }
 .welcome-banner {
   background: var(--ink); color: var(--white); border-radius: 16px; padding: 20px 28px; margin-bottom: 28px;
@@ -428,7 +428,7 @@ main {
       <div class="avatar" id="welcomeAvatar">م</div>
       <div>
         <h3 id="welcomeName">م</h3>
-        <p data-i18n="welcomeSub">تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
+        <p data-i18n="welcomeSub">تکایە زانياريێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
       </div>
     </div>
 
@@ -677,7 +677,6 @@ function setLang(lang) {
   });
 
   if (currentTeacher && document.getElementById('welcomeName')) {
-    // استخدام الاسم المعروض أو الاسم الفعلي المتوفر في البيانات
     const displayName = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.displaynames || currentTeacher.username;
     document.getElementById('welcomeName').textContent = L.teacherPrefix + displayName;
   }
@@ -741,7 +740,7 @@ function loadSystemData() {
         document.getElementById('btnLogin').disabled = false;
         showToast(LANGS[currentLang].toastLoaded, 'success');
         
-        // التحقق من تسجيل الدخول التلقائي المحفوظ
+        // Check for auto login status
         checkAutoLogin();
       }
     })
@@ -755,11 +754,15 @@ function loadSystemData() {
 }
 
 function checkAutoLogin() {
+  // If the user just arrived via a "Log out" action from the dashboard, don't auto-redirect.
+  if (sessionStorage.getItem('explicit_logout') === '1') {
+    return;
+  }
+
   const savedUser = localStorage.getItem('remembered_username');
   const savedPass = localStorage.getItem('remembered_password');
   
   if (savedUser && savedPass) {
-    // إذا كان الأدمن مسجل مسبقاً، يتم تحويله للوحة التحكم
     if (savedUser === 'admin' && savedPass === '1234') {
       window.location.href = DASHBOARD_URL;
       return;
@@ -787,16 +790,15 @@ function doLogin() {
     return;
   }
 
-  // 🔐 إعادة توجيه الآدمن الفورية إلى لوحة التحكم (Dashboard)
   if (u === 'admin' && p === '1234') {
     errBox.classList.remove('show');
     localStorage.setItem('remembered_username', 'admin');
     localStorage.setItem('remembered_password', '1234');
+    sessionStorage.removeItem('explicit_logout'); // clear logout state on deliberate sign-in
     window.location.href = DASHBOARD_URL;
     return;
   }
 
-  // 📝 مطابقة حساب الأساتذة (مثل ali) بدون التحسس من حالة الأحرف (Capital/Small)
   const teacher = TEACHERS.find(t => t.username.toLowerCase() === u && t.password === p);
   if (!teacher) {
     errText.textContent = LANGS[currentLang].errWrong;
@@ -811,13 +813,18 @@ function doLogin() {
   
   localStorage.setItem('remembered_username', u);
   localStorage.setItem('remembered_password', p);
+  sessionStorage.removeItem('explicit_logout');
   
   showSubmitScreen();
 }
 
 function doLogout() {
+  // Clear persistent global memories completely
   localStorage.removeItem('remembered_username');
   localStorage.removeItem('remembered_password');
+  
+  // Set explicit flag so auto-login loop stops instantly
+  sessionStorage.setItem('explicit_logout', '1');
 
   currentTeacher = null;
   selectedAbsent.clear();
@@ -1105,14 +1112,9 @@ function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast' + (type ? ' ' + type : '');
-  
   t.classList.add('show');
-  
   if (window.toastTimer) clearTimeout(window.toastTimer);
-  
-  window.toastTimer = setTimeout(() => {
-    t.classList.remove('show');
-  }, 3500);
+  window.toastTimer = setTimeout(() => { t.classList.remove('show'); }, 3500);
 }
 </script>
 </body>
