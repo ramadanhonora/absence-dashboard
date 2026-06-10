@@ -496,7 +496,7 @@ body[dir="rtl"] input:checked + .slider:before { transform: translateX(-20px); }
 
       <div class="form-group">
         <label id="lblFormClass">قۆناغ و پۆل (الشعبة)</label>
-        <select id="formClass" class="input-control" onchange="handleClassChange()"></select>
+        <select id="formClass" class="input-control"></select>
       </div>
 
       <div class="form-group">
@@ -617,17 +617,21 @@ async function fetchRosterDatabase() {
     if (!res.ok) throw new Error();
     const data = await res.json();
     
-    // SAFE PARSING: Failsafe column mapping so page never crashes blank
+    // تصحيح قراءة الأعمدة بناءً على الترتيب الفعلي في ملف الـ Google Sheet الخاص بك
     if (data.teachers && data.teachers.length > 0) {
-      const header = data.teachers[0];
+      const header = data.teachers[0].map(h => h.toString().trim().toLowerCase());
+      
       TEACHERS = data.teachers.slice(1).map(r => {
         let o = {};
         header.forEach((h, i) => {
-          let k = h.toString().trim().replace('teachers-', '');
-          o[k] = r[i] ? r[i].toString().trim() : '';
+          // إزالة أي بادئة إذا وجدت وضمان قراءة الحقول المطلوبة
+          let cleanKey = h.replace('teachers-', '');
+          o[cleanKey] = r[i] ? r[i].toString().trim() : '';
         });
         return o;
       }).filter(t => t.username);
+      
+      console.log("Loaded Teachers:", TEACHERS);
     }
     
     if (data.students) {
@@ -639,7 +643,6 @@ async function fetchRosterDatabase() {
   } catch(err) {
     console.error("Database connection failure:", err);
     showToast(LANGS[currentLang].toastLoadErr, 'error');
-    // Fallback to show login screen anyway instead of freezing blank
     showScreen('screen-login');
   } finally {
     hideLoading();
@@ -666,7 +669,7 @@ function setLanguage(lang) {
   });
 
   if (currentTeacher) {
-    document.getElementById('navTeacherName').textContent = currentTeacher.arabicName || currentTeacher.username;
+    document.getElementById('navTeacherName').textContent = currentTeacher.displaynames || currentTeacher.username;
   }
 
   document.querySelectorAll('.btn-lang').forEach(b => b.classList.remove('active'));
@@ -684,7 +687,7 @@ function checkAutoLogin() {
       return;
     }
     
-    const teacherMatch = TEACHERS.find(t => t.username === savedUser && t.password === savedPass);
+    const teacherMatch = TEACHERS.find(t => t.username.toLowerCase() === savedUser.toLowerCase() && t.password === savedPass);
     if (teacherMatch) {
       currentTeacher = teacherMatch;
       initTeacherSession();
@@ -703,7 +706,7 @@ function processLogin() {
     return;
   }
 
-  // 🚀 ADMIN GATEWAY
+  // 🚀 تسجيل دخول الأدمن
   if (u === 'admin' && p === 'admin1234') {
     localStorage.setItem('remembered_username', 'admin');
     localStorage.setItem('remembered_password', 'admin1234');
@@ -711,8 +714,8 @@ function processLogin() {
     return;
   }
 
-  // Teacher validation
-  const teacher = TEACHERS.find(t => t.username === u && t.password === p);
+  // تسجيل دخول الأساتذة والمطابقة الحساسة لحالة الأحرف الصغيرة
+  const teacher = TEACHERS.find(t => t.username.toLowerCase() === u && t.password === p);
   if (!teacher) {
     showToast(LANGS[currentLang].errLogin, 'error');
     return;
@@ -726,7 +729,7 @@ function processLogin() {
 }
 
 function initTeacherSession() {
-  document.getElementById('navTeacherName').textContent = currentTeacher.arabicName || currentTeacher.username;
+  document.getElementById('navTeacherName').textContent = currentTeacher.displaynames || currentTeacher.username;
   
   const subjects = currentTeacher.subjects ? currentTeacher.subjects.split(',').map(s => s.trim()) : [];
   const subSelect = document.getElementById('formSubject');
@@ -741,8 +744,6 @@ function handleSubjectChange() {
   const clsSelect = document.getElementById('formClass');
   clsSelect.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
 }
-
-function handleClassChange() {}
 
 function processLoadStudents() {
   const cls = document.getElementById('formClass').value;
@@ -854,7 +855,7 @@ async function confirmChecklist() {
     }
   } catch (err) {
     showToast(LANGS[currentLang].toastSubmitErr, 'error');
-  } fill: {
+  } finally {
     hideLoading();
   }
 }
@@ -862,7 +863,7 @@ async function confirmChecklist() {
 function showSuccessView(date, subject, lecture, cls, absent) {
   const L = LANGS[currentLang];
   const absentArr = absent ? absent.split(', ').filter(Boolean) : [];
-  const teacherDisplay = currentTeacher.arabicName || currentTeacher.username;
+  const teacherDisplay = currentTeacher.displaynames || currentTeacher.username;
 
   document.getElementById('successDetails').innerHTML =
     row(L.fDate,    date) +
@@ -880,7 +881,6 @@ function row(label, val) {
   return `<div class="detail-row"><span class="label">${label}</span><span class="val">${val}</span></div>`;
 }
 
-// Fixed syntax closure mapping issues
 function newSubmission() {
   document.getElementById('absentCounter').textContent = '0';
   showScreen('screen-submit');
@@ -896,6 +896,7 @@ function processLogout() {
   showScreen('screen-login');
 }
 
+// التحكم في عرض الشاشات والبطاقات
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(screenId);
@@ -907,7 +908,6 @@ function showLoading(msg) {
   document.getElementById('loadingOverlay').classList.add('show');
 }
 function hideLoading() {
-  document.getElementById('loadingOverlay').classList.remove('remove');
   document.getElementById('loadingOverlay').classList.remove('show');
 }
 
