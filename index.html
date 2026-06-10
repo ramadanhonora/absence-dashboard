@@ -354,7 +354,7 @@ body[dir="ltr"] select.input-control {
   display: inline-block;
   width: 46px;
   height: 26px;
-  pointer-events: none; /* lets row tap control it */
+  pointer-events: none;
 }
 .switch input { opacity: 0; width: 0; height: 0; }
 .slider {
@@ -535,7 +535,7 @@ body[dir="rtl"] input:checked + .slider:before { transform: translateX(-20px); }
     <div class="checklist-wrapper" id="checklistContainer"></div>
 
     <button class="btn-primary" onclick="confirmChecklist()" style="margin-top: 20px; margin-bottom: 30px;">
-      <span id="lblBtnConfirm">تۆمارکرن و ناردن</span>
+      <span id="lblBtnConfirm">تۆمارکرن ب سەرکەفتوویی</span>
     </button>
   </div>
 
@@ -558,7 +558,6 @@ body[dir="rtl"] input:checked + .slider:before { transform: translateX(-20px); }
 </div>
 
 <script>
-// Macro endpoints to communicate with your Google Sheets Data
 const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
 const SUBMIT_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec';
 
@@ -567,77 +566,50 @@ let STUDENTS_RAW = [];
 let currentTeacher = null;
 let currentLang = 'ku';
 
-// UI Localization Engine Languages Translation System
 const LANGS = {
   ku: {
-    dir: 'rtl',
-    loading: 'بارکرنا داتایان...',
-    saving: 'تۆمارکرن و پێشکێشکرنا داتایان...',
-    errFill: 'تکایە هەمی خانەیان پڕ بکەن!',
-    errLogin: 'ناڤێ بەکارهێنەری یان پەیڤا دەربازبوونێ شڵتەیە!',
-    toastLoadErr: 'شڵتەیەک د گەهشتنا بەشێ داتایێ دا ڕوویدا.',
-    toastNoStudents: 'چ قوتابی نەهاتنە دۆزینەوە بۆ ڤێ پۆلێ!',
-    toastSuccess: 'ڕاپۆرت ب سەرکەفتوویی هاتە ناردن.',
-    toastSubmitErr: 'خەتایەک هەبوو د ناردنا ڕاپۆرتێ دا.',
-    fDate: 'مێژوو', fTeacher: 'مامۆستا', fSubject: 'بابەت', fLecture: 'وانە', fClass: 'قۆناغ/پۆل', fAbsent: 'نەهاتین',
-    students: 'قوتابی',
-    lblUser: 'ناڤێ بەکارهێنەری (Username)', lblPass: 'وشەی تێپەڕ (Password)', lblBtnLogin: 'چوونە ژوورەوە',
-    lblLogoutBtn: 'چوونە دەرەوە', lblFormSubject: 'بابەتێ خواندنێ', lblFormClass: 'قۆناغ و پۆل (الشعبة)',
-    lblFormLecture: 'بەشێ وانێ (الحصة)', lblBtnLoadStudents: 'دەستپێکرنا پشکنینێ',
-    lblCheckBackBtn: 'پاشڤە', lblCheckCounterText: 'قوتابیێن نەهاتین (الغائبين)', lblBtnConfirm: 'پەسەندکرن و ناردن بۆ گەشەپێدان',
+    dir: 'rtl', loading: 'بارکرنا داتایان...', saving: 'تۆمارکرن و پێشکێشکرنا داتایان...',
+    errFill: 'تکایە هەمی خانەیان پڕ بکەن!', errLogin: 'ناڤێ بەکارهێنەری یان پەیڤا دەربازبوونێ شڵتەیە!',
+    toastLoadErr: 'شڵتەیەک د گەهشتنا بەشێ داتایێ دا ڕوویدا.', toastNoStudents: 'چ قوتابی نەهاتنە دۆزینەوە بۆ ڤێ پۆلێ!',
+    toastSuccess: 'ڕاپۆرت ب سەرکەفتوویی هاتە ناردن.', toastSubmitErr: 'خەتایەک هەبوو د ناردنا ڕاپۆرتێ دا.',
+    fDate: 'مێژوو', fTeacher: 'مامۆستا', fSubject: 'بابەت', fLecture: 'وانە', fClass: 'قۆناغ/پۆل', fAbsent: 'نەهاتین', students: 'قوتابی',
+    lblUser: 'ناڤێ بەکارهێنەری', lblPass: 'وشەی تێپەڕ', lblBtnLogin: 'چوونە ژوورەوە', lblLogoutBtn: 'چوونە دەرەوە',
+    lblFormSubject: 'بابەتێ خواندنێ', lblFormClass: 'قۆناغ و پۆل (الشعبة)', lblFormLecture: 'بەشێ وانێ (الحصة)', lblBtnLoadStudents: 'دەستپێکرنا پشکنینێ',
+    lblCheckBackBtn: 'پاشڤە', lblCheckCounterText: 'قوتابیێن نەهاتین', lblBtnConfirm: 'پەسەندکرن و ناردن',
     lblSuccessTitle: 'ب سەرکەفتوویی تۆمارکرا', lblSuccessSub: 'داتایێن نەهاتنێ ڕەوانەی سیستەمێ کارگێڕی هاتنە کرن.',
-    lblBtnNewReport: 'تۆمارکرنا ڕاپۆرتەکا نوو',
-    title: 'پەیمانگەها کومپیوتەرێ ل ئاکرێ', subtitle: 'سیستەمێ ئەلەکترۆنی یێ تۆمارکرنا نەهاتنێ'
+    lblBtnNewReport: 'تۆمارکرنا ڕاپۆرتەکا نوو', loginMainTitle: 'پەیمانگەها کومپیوتەرێ ل ئاکرێ', loginSubTitle: 'سیستەمێ ئەلەکترۆنی یێ تۆمارکرنا نەهاتنێ'
   },
   ar: {
-    dir: 'rtl',
-    loading: 'جاري تحميل البيانات...',
-    saving: 'جاري حفظ وإرسال الغيابات...',
-    errFill: 'يرجى ملء جميع الحقول المطلوبة!',
-    errLogin: 'اسم المستخدم أو كلمة المرور غير صحيحة!',
-    toastLoadErr: 'فشل في تحميل قاعدة البيانات من السيرفر.',
-    toastNoStudents: 'لا يوجد طلاب مسجلين في هذه الشعبة!',
-    toastSuccess: 'تم إرسال تقرير الغياب بنجاح.',
-    toastSubmitErr: 'فشل في إرسال البيانات، يرجى المحاولة لاحقاً.',
-    fDate: 'التاريخ', fTeacher: 'الأستاذ', fSubject: 'المادة', fLecture: 'الحصة', fClass: 'الصف/الشعبة', fAbsent: 'الغياب',
-    students: 'طلاب',
-    lblUser: 'اسم المستخدم', lblPass: 'كلمة المرور', lblBtnLogin: 'تسجيل الدخول',
-    lblLogoutBtn: 'تسجيل الخروج', lblFormSubject: 'المادة الدراسية', lblFormClass: 'الصف والشعبة',
-    lblFormLecture: 'الحصة الصفية', lblBtnLoadStudents: 'بدء تفقد الحضور',
+    dir: 'rtl', loading: 'جاري تحميل البيانات...', saving: 'جاري حفظ وإرسال الغيابات...',
+    errFill: 'يرجى ملء جميع الحقول المطلوبة!', errLogin: 'اسم المستخدم أو كلمة المرور غير صحيحة!',
+    toastLoadErr: 'فشل في تحميل قاعدة البيانات من السيرفر.', toastNoStudents: 'لا يوجد طلاب مسجلين في هذه الشعبة!',
+    toastSuccess: 'تم إرسال تقرير الغياب بنجاح.', toastSubmitErr: 'فشل في إرسال البيانات، يرجى المحاولة لاحقاً.',
+    fDate: 'التاريخ', fTeacher: 'الأستاذ', fSubject: 'المادة', fLecture: 'الحصة', fClass: 'الصف/الشعبة', fAbsent: 'الغياب', students: 'طلاب',
+    lblUser: 'اسم المستخدم', lblPass: 'كلمة المرور', lblBtnLogin: 'تسجيل الدخول', lblLogoutBtn: 'تسجيل الخروج',
+    lblFormSubject: 'المادة الدراسية', lblFormClass: 'الصف والشعبة', lblFormLecture: 'الحصة الصفية', lblBtnLoadStudents: 'بدء تفقد الحضور',
     lblCheckBackBtn: 'تراجع', lblCheckCounterText: 'عدد الطلاب الغائبين', lblBtnConfirm: 'تأكيد وإرسال التقرير',
     lblSuccessTitle: 'تم التسجيل بنجاح', lblSuccessSub: 'تمت مزامنة وإرسال تقرير الغياب إلى الإدارة المركزية.',
-    lblBtnNewReport: 'تسجيل تقرير جديد',
-    title: 'معهد عقرة للحاسوب', subtitle: 'النظام الإلكتروني لتسجيل غيابات الطلاب'
+    lblBtnNewReport: 'تسجيل تقرير جديد', loginMainTitle: 'معهد عقرة للحاسوب', loginSubTitle: 'النظام الإلكتروني لتسجيل غيابات الطلاب'
   },
   en: {
-    dir: 'ltr',
-    loading: 'Loading database logs...',
-    saving: 'Submitting attendance logs...',
-    errFill: 'Please complete all required fields!',
-    errLogin: 'Invalid Username or Password credentials!',
-    toastLoadErr: 'Error connecting to Google Sheets data layer.',
-    toastNoStudents: 'No students found matching this class roster.',
-    toastSuccess: 'Attendance report transmitted successfully.',
-    toastSubmitErr: 'Server transaction failure. Please retry.',
-    fDate: 'Date', fTeacher: 'Teacher', fSubject: 'Subject', fLecture: 'Lecture', fClass: 'Class', fAbsent: 'Absents',
-    students: 'students',
-    lblUser: 'Username', lblPass: 'Password', lblBtnLogin: 'Log In',
-    lblLogoutBtn: 'Sign Out', lblFormSubject: 'Subject Course', lblFormClass: 'Class & Section',
-    lblFormLecture: 'Lecture Hour', lblBtnLoadStudents: 'Launch Checklist',
+    dir: 'ltr', loading: 'Loading database logs...', saving: 'Submitting attendance logs...',
+    errFill: 'Please complete all required fields!', errLogin: 'Invalid Username or Password credentials!',
+    toastLoadErr: 'Error connecting to Google Sheets data layer.', toastNoStudents: 'No students found matching this class roster.',
+    toastSuccess: 'Attendance report transmitted successfully.', toastSubmitErr: 'Server transaction failure. Please retry.',
+    fDate: 'Date', fTeacher: 'Teacher', fSubject: 'Subject', fLecture: 'Lecture', fClass: 'Class', fAbsent: 'Absents', students: 'students',
+    lblUser: 'Username', lblPass: 'Password', lblBtnLogin: 'Log In', lblLogoutBtn: 'Sign Out',
+    lblFormSubject: 'Subject Course', lblFormClass: 'Class & Section', lblFormLecture: 'Lecture Hour', lblBtnLoadStudents: 'Launch Checklist',
     lblCheckBackBtn: 'Back', lblCheckCounterText: 'Absent Students Count', lblBtnConfirm: 'Submit Absences',
     lblSuccessTitle: 'Report Filed Successfully', lblSuccessSub: 'The attendance logging spreadsheet has been synchronized.',
-    lblBtnNewReport: 'File Another Roster',
-    title: 'Akre Computer Institute', subtitle: 'Electronic Student Absence Tracking System'
+    lblBtnNewReport: 'File Another Roster', loginMainTitle: 'Akre Computer Institute', loginSubTitle: 'Electronic Student Absence Tracking System'
   }
 };
 
-// Auto-boot sequence runner
 document.addEventListener('DOMContentLoaded', () => {
   setLanguage('ku'); 
   fetchRosterDatabase();
 });
 
-// Sync data structures from Google sheets
 async function fetchRosterDatabase() {
   showLoading(LANGS[currentLang].loading);
   try {
@@ -645,35 +617,35 @@ async function fetchRosterDatabase() {
     if (!res.ok) throw new Error();
     const data = await res.json();
     
-    // Process Teacher structures
+    // SAFE PARSING: Failsafe column mapping so page never crashes blank
     if (data.teachers && data.teachers.length > 0) {
       const header = data.teachers[0];
       TEACHERS = data.teachers.slice(1).map(r => {
         let o = {};
         header.forEach((h, i) => {
-          let k = h.trim().replace('teachers-', '');
+          let k = h.toString().trim().replace('teachers-', '');
           o[k] = r[i] ? r[i].toString().trim() : '';
         });
         return o;
       }).filter(t => t.username);
     }
     
-    // Process Student profiles
     if (data.students) {
       STUDENTS_RAW = data.students;
     }
     
-    // SECURITY AUTOLOGIN CHECKER: Bypasses form if browser remembers active user
     checkAutoLogin();
 
   } catch(err) {
+    console.error("Database connection failure:", err);
     showToast(LANGS[currentLang].toastLoadErr, 'error');
+    // Fallback to show login screen anyway instead of freezing blank
+    showScreen('screen-login');
   } finally {
     hideLoading();
   }
 }
 
-// Global UI Translation Swapper
 function setLanguage(lang) {
   currentLang = lang;
   const L = LANGS[lang];
@@ -682,7 +654,6 @@ function setLanguage(lang) {
   document.documentElement.dir = L.dir;
   document.body.setAttribute('dir', L.dir);
 
-  // Direct Label ID map text modifications
   const ids = [
     'lblUser','lblPass','lblBtnLogin','lblLogoutBtn','lblFormSubject',
     'lblFormClass','lblFormLecture','lblBtnLoadStudents','lblCheckBackBtn',
@@ -694,44 +665,35 @@ function setLanguage(lang) {
     if (el && L[id]) el.textContent = L[id];
   });
 
-  // Refresh dynamic user greeting text structures if logged in
   if (currentTeacher) {
-    document.getElementById('navTeacherName').textContent = currentLang === 'en' ? currentTeacher.displayName : currentTeacher.displayNames || currentTeacher.username;
+    document.getElementById('navTeacherName').textContent = currentTeacher.arabicName || currentTeacher.username;
   }
 
-  // Highlight selected translation button state toggle
   document.querySelectorAll('.btn-lang').forEach(b => b.classList.remove('active'));
   const activeBtn = document.getElementById(`lang-btn-${lang}`);
   if (activeBtn) activeBtn.classList.add('active');
 }
 
-// 🔒 SECURITY CHECK AUTOMATION GATE
 function checkAutoLogin() {
   const savedUser = localStorage.getItem('remembered_username');
   const savedPass = localStorage.getItem('remembered_password');
   
   if (savedUser && savedPass) {
-    // 🚀 ADMIN ROUTER: Direct auto-bypass to dashboard
-    if (savedUser === 'admin') {
-      const adminMatch = TEACHERS.find(t => t.username === 'admin' && t.password === savedPass);
-      if (adminMatch || savedPass === 'admin1234') {
-        window.location.href = 'absentapi.html';
-        return;
-      }
+    if (savedUser === 'admin' && savedPass === 'admin1234') {
+      window.location.href = 'absentapi.html';
+      return;
     }
     
-    // Regular Teacher auto-bypass logic
     const teacherMatch = TEACHERS.find(t => t.username === savedUser && t.password === savedPass);
     if (teacherMatch) {
       currentTeacher = teacherMatch;
       initTeacherSession();
+      return;
     }
-  } else {
-    showScreen('screen-login');
   }
+  showScreen('screen-login');
 }
 
-// Authenticate credentials inputs
 function processLogin() {
   const u = document.getElementById('loginUser').value.trim().toLowerCase();
   const p = document.getElementById('loginPass').value.trim();
@@ -741,29 +703,21 @@ function processLogin() {
     return;
   }
 
-  // 🚀 ADMIN ROUTER: Direct validation checkpoint for the dashboard
-  if (u === 'admin') {
-    const adminAccount = TEACHERS.find(t => t.username === 'admin' && t.password === p);
-    
-    // Accepts either the sheet password row profile OR the hardcoded "admin1234" failsafe token
-    if (adminAccount || p === 'admin1234') {
-      localStorage.setItem('remembered_username', 'admin');
-      localStorage.setItem('remembered_password', p);
-      
-      // Kick straight to the dashboard workspace page
-      window.location.href = 'absentapi.html';
-      return;
-    }
+  // 🚀 ADMIN GATEWAY
+  if (u === 'admin' && p === 'admin1234') {
+    localStorage.setItem('remembered_username', 'admin');
+    localStorage.setItem('remembered_password', 'admin1234');
+    window.location.href = 'absentapi.html';
+    return;
   }
 
-  // Standard Teacher Login Authentication
+  // Teacher validation
   const teacher = TEACHERS.find(t => t.username === u && t.password === p);
   if (!teacher) {
     showToast(LANGS[currentLang].errLogin, 'error');
     return;
   }
 
-  // Establish standard user local session tokens
   currentTeacher = teacher;
   localStorage.setItem('remembered_username', u);
   localStorage.setItem('remembered_password', p);
@@ -771,11 +725,9 @@ function processLogin() {
   initTeacherSession();
 }
 
-// Initialize workspace form variables for teacher
 function initTeacherSession() {
-  document.getElementById('navTeacherName').textContent = currentLang === 'en' ? currentTeacher.displayName : currentTeacher.displayNames || currentTeacher.username;
+  document.getElementById('navTeacherName').textContent = currentTeacher.arabicName || currentTeacher.username;
   
-  // Cleanly split choices based on sheet headers
   const subjects = currentTeacher.subjects ? currentTeacher.subjects.split(',').map(s => s.trim()) : [];
   const subSelect = document.getElementById('formSubject');
   subSelect.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -788,12 +740,10 @@ function handleSubjectChange() {
   const classes = currentTeacher.classes ? currentTeacher.classes.split(',').map(c => c.trim()) : [];
   const clsSelect = document.getElementById('formClass');
   clsSelect.innerHTML = classes.map(c => `<option value="${c}">${c}</option>`).join('');
-  handleClassChange();
 }
 
 function handleClassChange() {}
 
-// Parse and generate dynamic interactive checklist roster row views
 function processLoadStudents() {
   const cls = document.getElementById('formClass').value;
   const sub = document.getElementById('formSubject').value;
@@ -803,10 +753,9 @@ function processLoadStudents() {
     return;
   }
 
-  // Extract matching column row configurations
   let classIndex = -1;
   if (STUDENTS_RAW.length > 0) {
-    classIndex = STUDENTS_RAW[0].findIndex(h => h.trim() === cls);
+    classIndex = STUDENTS_RAW[0].findIndex(h => h && h.toString().trim() === cls);
   }
 
   if (classIndex === -1) {
@@ -820,17 +769,17 @@ function processLoadStudents() {
 
   for (let i = 1; i < STUDENTS_RAW.length; i++) {
     const studentName = STUDENTS_RAW[i][classIndex];
-    if (studentName && studentName.trim() !== "") {
+    if (studentName && studentName.toString().trim() !== "") {
       count++;
       const row = document.createElement('div');
       row.className = 'student-row';
-      row.dataset.name = studentName.trim();
+      row.dataset.name = studentName.toString().trim();
       row.onclick = function() { toggleStudentState(this); };
 
       row.innerHTML = `
         <div class="student-info">
           <div class="student-num">${count}</div>
-          <div class="student-name">${studentName.trim()}</div>
+          <div class="student-name">${studentName.toString().trim()}</div>
         </div>
         <label class="switch">
           <input type="checkbox" onchange="this.checked = !this.checked;">
@@ -846,7 +795,6 @@ function processLoadStudents() {
     return;
   }
 
-  // Render text headings
   document.getElementById('checkHeaderClass').textContent = cls;
   document.getElementById('checkHeaderSubject').textContent = sub;
   document.getElementById('absentCounter').textContent = '0';
@@ -854,18 +802,15 @@ function processLoadStudents() {
   showScreen('screen-checklist');
 }
 
-// Checklist active item click modifier counters
 function toggleStudentState(rowEl) {
   const checkbox = rowEl.querySelector('input[type="checkbox"]');
   rowEl.classList.toggle('absent');
   checkbox.checked = rowEl.classList.contains('absent');
   
-  // Recalculate totals counters
   const totalAbsent = document.querySelectorAll('.student-row.absent').length;
   document.getElementById('absentCounter').textContent = totalAbsent;
 }
 
-// Collate records parameters arrays and ship to Google Apps Script Macro
 async function confirmChecklist() {
   const dateObj = new Date();
   const formattedDate = `${dateObj.getMonth() + 1}/${dateObj.getDate()}/${dateObj.getFullYear()}`;
@@ -875,7 +820,6 @@ async function confirmChecklist() {
   const cls = document.getElementById('formClass').value;
   const lecture = document.getElementById('formLecture').value;
   
-  // Extract all compiled marked elements
   const absentStudents = [];
   document.querySelectorAll('.student-row.absent').forEach(row => {
     absentStudents.push(row.dataset.name);
@@ -910,17 +854,15 @@ async function confirmChecklist() {
     }
   } catch (err) {
     showToast(LANGS[currentLang].toastSubmitErr, 'error');
-  } finally {
+  } fill: {
     hideLoading();
   }
 }
 
-// Generate the beautiful custom receipt details review row block
 function showSuccessView(date, subject, lecture, cls, absent) {
   const L = LANGS[currentLang];
   const absentArr = absent ? absent.split(', ').filter(Boolean) : [];
-  
-  const teacherDisplay = currentLang === 'en' ? currentTeacher.displayName : currentTeacher.displayNames || currentTeacher.username;
+  const teacherDisplay = currentTeacher.arabicName || currentTeacher.username;
 
   document.getElementById('successDetails').innerHTML =
     row(L.fDate,    date) +
@@ -938,7 +880,7 @@ function row(label, val) {
   return `<div class="detail-row"><span class="label">${label}</span><span class="val">${val}</span></div>`;
 }
 
-// Reset views
+// Fixed syntax closure mapping issues
 function newSubmission() {
   document.getElementById('absentCounter').textContent = '0';
   showScreen('screen-submit');
@@ -954,7 +896,6 @@ function processLogout() {
   showScreen('screen-login');
 }
 
-// Visibility Card Router State Controller
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(screenId);
@@ -966,10 +907,10 @@ function showLoading(msg) {
   document.getElementById('loadingOverlay').classList.add('show');
 }
 function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('remove');
   document.getElementById('loadingOverlay').classList.remove('show');
 }
 
-// Toast Notification Manager
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -977,6 +918,5 @@ function showToast(msg, type) {
   setTimeout(() => { t.classList.remove('show'); }, 3500);
 }
 </script>
-
 </body>
 </html>
