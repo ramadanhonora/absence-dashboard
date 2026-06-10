@@ -492,7 +492,7 @@
     
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
         <p id="lastUpdate" style="color:#999;font-size:0.9em;"></p>
-        <button onclick="doAdminLogout()" style="background:#c8402a;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:0.9em;font-weight:700;cursor:pointer;">&#x1F6AA; Logout / دەرچوون</button>
+        <button onclick="doAdminLogout()" style="background:#c8402a;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.85em;font-weight:700;cursor:pointer;">🚪 Logout</button>
     </div>
 </div>
 
@@ -630,7 +630,8 @@
 
 <script>
         // ** CONFIGURATION **
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
+        const API_URL    = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
+        const PORTAL_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
         const SCHOOL_START = '9/21/2025';
 
         let allData = [];
@@ -764,7 +765,7 @@
             const rows = json.values.slice(1);
             const data = [];
 
-            rows.forEach(row => {
+            rows.forEach((row, index) => {
                 const obj = {};
                 headers.forEach((h, i) => obj[h] = row[i] || '');
                 
@@ -785,6 +786,7 @@
                 
                 if (date && classGroup) {
                     data.push({
+                        rowNumber: index + 2,
                         date: date,
                         teacher: teacher,
                         subject: subject,
@@ -1023,6 +1025,18 @@
                 }
                 html += `</tr></tbody></table></div>`;
                 
+                // ── Admin delete: submissions list ──
+                const clsRows = filtered.filter(r => r.classGroup === cls);
+                if (clsRows.length > 0) {
+                    html += `<details style="margin-top:8px;"><summary style="cursor:pointer;color:#667eea;font-size:0.85em;font-weight:600;padding:6px 0;">🗑️ Manage submissions for ${cls} (${clsRows.length})</summary>`;
+                    html += `<div style="overflow-x:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:0.82em;"><thead><tr style="background:#f0f0f0;"><th style="padding:7px 10px;text-align:left;">Lecture</th><th style="padding:7px 10px;text-align:left;">Subject</th><th style="padding:7px 10px;text-align:left;">Teacher</th><th style="padding:7px 10px;text-align:center;">Absent</th><th></th></tr></thead><tbody>`;
+                    clsRows.forEach(function(r) {
+                        const cnt = r.absences ? r.absences.length : 0;
+                        const safeInfo = (r.lecture+'|'+r.subject+'|'+r.teacher+'|'+cls).replace(/'/g,"\'");
+                        html += `<tr style="border-bottom:1px solid #eee;"><td style="padding:7px 10px;">${r.lecture||'—'}</td><td style="padding:7px 10px;">${r.subject||'—'}</td><td style="padding:7px 10px;">${r.teacher||'—'}</td><td style="padding:7px 10px;text-align:center;"><span style="background:${cnt>0?'#c8402a':'#2d6a4f'};color:#fff;border-radius:100px;padding:2px 9px;font-size:0.78em;font-weight:700;">${cnt}</span></td><td style="padding:7px 10px;"><button onclick="askAdminDelete(${r.rowNumber},'${safeInfo}')" style="background:none;border:1.5px solid #ffd0ca;color:#c8402a;border-radius:7px;padding:4px 10px;font-size:0.78em;cursor:pointer;">🗑️ Delete</button></td></tr>`;
+                    });
+                    html += `</tbody></table></div></details>`;
+                }
                 html += `</div>`;
             });
             
@@ -1592,21 +1606,50 @@
             setTimeout(scheduleDataFetch, intervalMs);
         }
 
+        let adminPendingRow = null;
+
+        function askAdminDelete(rowNumber, info) {
+            adminPendingRow = rowNumber;
+            document.getElementById('adminConfirmInfo').textContent = info;
+            document.getElementById('adminConfirmOverlay').style.display = 'flex';
+        }
+        function closeAdminConfirm() {
+            document.getElementById('adminConfirmOverlay').style.display = 'none';
+            adminPendingRow = null;
+        }
+        async function executeAdminDelete() {
+            if (!adminPendingRow) return;
+            const rowNum = adminPendingRow;
+            closeAdminConfirm();
+            try {
+                await fetch(PORTAL_URL, {
+                    method: 'POST', mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'deleteRow', rowNumber: rowNum, teacher: 'admin' })
+                });
+                allData = allData.filter(function(r){ return r.rowNumber !== rowNum; });
+                filterDaily();
+                showNotif('✅ Deleted. Ask teacher to resubmit.');
+            } catch(err) { showNotif('❌ Delete failed: ' + err.message); }
+        }
+        function showNotif(msg) {
+            const n = document.createElement('div');
+            n.textContent = msg;
+            n.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 24px;border-radius:100px;font-size:0.88rem;font-weight:600;z-index:600;box-shadow:0 4px 20px rgba(0,0,0,.2);';
+            document.body.appendChild(n);
+            setTimeout(function(){ n.remove(); }, 3500);
+        }
         function doAdminLogout() {
             localStorage.removeItem('remembered_username');
             localStorage.removeItem('remembered_password');
             sessionStorage.setItem('explicit_logout', '1');
             window.location.href = 'index.html';
         }
-
         function checkAdminAccess() {
             const u = localStorage.getItem('remembered_username');
             const p = localStorage.getItem('remembered_password');
-            if (!u || !p) {
-                window.location.href = 'index.html';
-            }
+            if (!u || !p) { window.location.href = 'index.html'; }
         }
-
         document.addEventListener('DOMContentLoaded', function() {
             checkAdminAccess();
             console.log('🚀 Dashboard initializing...');
@@ -1615,5 +1658,17 @@
         });
 
     </script>
+  <div id="adminConfirmOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(15,25,35,0.55);backdrop-filter:blur(3px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:400px;width:90%;box-shadow:0 16px 48px rgba(15,25,35,0.25);text-align:center;">
+      <div style="font-size:2.4rem;margin-bottom:12px;">🗑️</div>
+      <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">Delete this submission?</h3>
+      <div id="adminConfirmInfo" style="font-size:0.84rem;color:#444;margin-bottom:14px;background:#f8f8f8;padding:10px 14px;border-radius:8px;text-align:left;"></div>
+      <p style="font-size:0.82rem;color:#c8402a;margin-bottom:20px;">This cannot be undone. Ask the teacher to resubmit.</p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button onclick="closeAdminConfirm()" style="padding:10px 22px;background:none;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:0.88rem;color:#666;cursor:pointer;">Cancel</button>
+        <button onclick="executeAdminDelete()" style="padding:10px 22px;background:#c8402a;border:none;border-radius:10px;font-family:inherit;font-size:0.88rem;font-weight:700;color:#fff;cursor:pointer;">🗑️ Delete</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
