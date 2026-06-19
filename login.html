@@ -51,7 +51,7 @@
         <input class="form-control" type="password" id="loginPassword"
                placeholder="••••••••" autocomplete="current-password" />
       </div>
-      <button class="btn-primary" id="btnLogin" onclick="doLogin()">
+      <button class="btn-primary" id="btnLogin" onclick="doLogin()" disabled>
         <span id="btnLoginText">چوونا ژوورێ ←</span>
       </button>
     </div>
@@ -59,63 +59,67 @@
 </main>
 
 <script>
-const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
-const PORTAL_URL   = 'index.html';
+const SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
+const PORTAL_URL    = 'index.html';
 const DASHBOARD_URL = 'absentapi.html';
+
+// Simple token: base64 of username|role|date
+// Generated client-side after validating credentials from fetched data
+function makeToken(username, role) {
+  const date = new Date();
+  const dateStr = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+  return btoa(username + '|' + role + '|' + dateStr);
+}
 
 // ── i18n ─────────────────────────────────────────────
 const LANGS = {
   ku: {
-    dir: 'rtl', htmlLang: 'ku',
-    hInstName:  'پەیمانگەها کومپیوتەرێ ل ئاکرێ',
-    hSub:       'سیستەما تومارکرنا نەهاتنێ',
-    loginTitle: 'چوونا ژوورێ سیستەمێ',
-    loginSub:   'تومارکرنا نەهاتنا قوتابیان',
-    labelUser:  'ناڤێ بکارهێنەر',
-    labelPass:  'وشەی نهێنی',
-    btnLogin:   'چوونا ژوورێ ←',
-    userPH:     'ناڤێ مامۆستای...',
-    loading:    'خۆراستکرن و خواندنا داتایان...',
-    loggingIn:  'چوونا ژوورێ...',
-    errFill:    'تکایە هەمی خانەیێن پێدڤی داگرە!',
-    errWrong:   'ناڤ یا شێفرە شاشە! دیسا تاقی بکەڤە.',
-    errConn:    'پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
+    dir:'rtl', htmlLang:'ku',
+    hInstName:'پەیمانگەها کومپیوتەرێ ل ئاکرێ',
+    hSub:'سیستەما تومارکرنا نەهاتنێ',
+    loginTitle:'چوونا ژوورێ سیستەمێ',
+    loginSub:'تومارکرنا نەهاتنا قوتابیان',
+    labelUser:'ناڤێ بکارهێنەر', labelPass:'وشەی نهێنی',
+    btnLogin:'چوونا ژوورێ ←', userPH:'ناڤێ مامۆستای...',
+    loading:'خۆراستکرن و خواندنا داتایان...',
+    loggingIn:'چوونا ژوورێ...',
+    errFill:'تکایە هەمی خانەیێن پێدڤی داگرە!',
+    errWrong:'ناڤ یا شێفرە شاشە! دیسا تاقی بکەڤە.',
+    errConn:'پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
   },
   ar: {
-    dir: 'rtl', htmlLang: 'ar',
-    hInstName:  'معهد عقرة للكمبيوتر',
-    hSub:       'نظام تسجيل الغياب',
-    loginTitle: 'تسجيل الدخول',
-    loginSub:   'تسجيل غياب الطلاب',
-    labelUser:  'اسم المستخدم',
-    labelPass:  'كلمة المرور',
-    btnLogin:   'دخول ←',
-    userPH:     'اسم المستخدم...',
-    loading:    'جارٍ تحميل البيانات...',
-    loggingIn:  'جارٍ تسجيل الدخول...',
-    errFill:    'يرجى ملء جميع الحقول المطلوبة!',
-    errWrong:   'اسم المستخدم أو كلمة المرور غير صحيحة!',
-    errConn:    'فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
+    dir:'rtl', htmlLang:'ar',
+    hInstName:'معهد عقرة للكمبيوتر',
+    hSub:'نظام تسجيل الغياب',
+    loginTitle:'تسجيل الدخول',
+    loginSub:'تسجيل غياب الطلاب',
+    labelUser:'اسم المستخدم', labelPass:'كلمة المرور',
+    btnLogin:'دخول ←', userPH:'اسم المستخدم...',
+    loading:'جارٍ تحميل البيانات...',
+    loggingIn:'جارٍ تسجيل الدخول...',
+    errFill:'يرجى ملء جميع الحقول المطلوبة!',
+    errWrong:'اسم المستخدم أو كلمة المرور غير صحيحة!',
+    errConn:'فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
   },
   en: {
-    dir: 'ltr', htmlLang: 'en',
-    hInstName:  'Akre Computer Institute',
-    hSub:       'Absence Registration System',
-    loginTitle: 'Sign In',
-    loginSub:   'Student Absence Registration',
-    labelUser:  'Username',
-    labelPass:  'Password',
-    btnLogin:   'Sign In →',
-    userPH:     'Username...',
-    loading:    'Loading system data...',
-    loggingIn:  'Signing in...',
-    errFill:    'Please fill all required fields!',
-    errWrong:   'Wrong username or password!',
-    errConn:    'Could not connect to server! Please try again.',
+    dir:'ltr', htmlLang:'en',
+    hInstName:'Akre Computer Institute',
+    hSub:'Absence Registration System',
+    loginTitle:'Sign In',
+    loginSub:'Student Absence Registration',
+    labelUser:'Username', labelPass:'Password',
+    btnLogin:'Sign In →', userPH:'Username...',
+    loading:'Loading system data...',
+    loggingIn:'Signing in...',
+    errFill:'Please fill all required fields!',
+    errWrong:'Wrong username or password!',
+    errConn:'Could not connect to server! Please try again.',
   }
 };
 
 let currentLang = localStorage.getItem('aci_lang') || 'ku';
+let TEACHERS = [];
+let STUDENTS = {};
 
 function setLang(lang) {
   if (!LANGS[lang]) return;
@@ -124,15 +128,15 @@ function setLang(lang) {
   const L = LANGS[lang];
   document.documentElement.dir  = L.dir;
   document.documentElement.lang = L.htmlLang;
-  document.getElementById('hInstName').textContent  = L.hInstName;
-  document.getElementById('hSub').textContent       = L.hSub;
-  document.getElementById('loginTitle').textContent = L.loginTitle;
-  document.getElementById('loginSub').textContent   = L.loginSub;
-  document.getElementById('labelUser').textContent  = L.labelUser;
-  document.getElementById('labelPass').textContent  = L.labelPass;
+  document.getElementById('hInstName').textContent    = L.hInstName;
+  document.getElementById('hSub').textContent         = L.hSub;
+  document.getElementById('loginTitle').textContent   = L.loginTitle;
+  document.getElementById('loginSub').textContent     = L.loginSub;
+  document.getElementById('labelUser').textContent    = L.labelUser;
+  document.getElementById('labelPass').textContent    = L.labelPass;
   document.getElementById('btnLoginText').textContent = L.btnLogin;
   document.getElementById('loginUsername').placeholder = L.userPH;
-  document.querySelectorAll('.lang-btn').forEach((b, i) => {
+  document.querySelectorAll('.lang-btn').forEach((b,i) => {
     b.classList.toggle('active', ['ku','ar','en'][i] === lang);
   });
 }
@@ -142,16 +146,43 @@ function checkAutoLogin() {
   if (sessionStorage.getItem('explicit_logout') === '1') return;
   const token = sessionStorage.getItem('aci_token');
   const role  = sessionStorage.getItem('aci_role');
-  if (token && role) {
-    if (role === 'admin')   { window.location.href = DASHBOARD_URL; return; }
-    if (role === 'teacher') { window.location.href = PORTAL_URL; return; }
-  }
+  if (token && role === 'admin')   { window.location.href = DASHBOARD_URL; return; }
+  if (token && role === 'teacher') { window.location.href = PORTAL_URL; return; }
 }
 
-// ── Login ─────────────────────────────────────────────
-async function doLogin() {
+// ── Load system data via GET (no CORS issue) ──────────
+function loadSystemData() {
+  const L = LANGS[currentLang];
+  showLoading(L.loading);
+  const eb = document.getElementById('loginError');
+  const et = document.getElementById('loginErrorText');
+  eb.classList.remove('show');
+
+  fetch(SCRIPT_URL)
+    .then(r => r.json())
+    .then(data => {
+      hideLoading();
+      if (data.error) {
+        et.textContent = L.errConn;
+        eb.classList.add('show');
+        return;
+      }
+      TEACHERS = data.teachers || [];
+      STUDENTS = data.students || {};
+      document.getElementById('btnLogin').disabled = false;
+      checkAutoLogin();
+    })
+    .catch(() => {
+      hideLoading();
+      et.textContent = L.errConn;
+      eb.classList.add('show');
+    });
+}
+
+// ── Login — validated client-side against fetched data ─
+function doLogin() {
   const L  = LANGS[currentLang];
-  const u  = document.getElementById('loginUsername').value.trim();
+  const u  = document.getElementById('loginUsername').value.trim().toLowerCase();
   const p  = document.getElementById('loginPassword').value.trim();
   const eb = document.getElementById('loginError');
   const et = document.getElementById('loginErrorText');
@@ -166,44 +197,42 @@ async function doLogin() {
     return;
   }
 
-  showLoading(L.loggingIn);
-  document.getElementById('btnLogin').disabled = true;
+  // Find teacher in fetched data
+  // Note: getSystemData in code.gs now sends passwords back only for auth
+  // We look up in the full teacher list fetched via GET
+  const teacher = TEACHERS.find(t =>
+    t.username.toLowerCase() === u && t.password === p
+  );
 
-  try {
-    const res  = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', username: u, password: p })
-    });
-    const data = await res.json();
-    hideLoading();
-    document.getElementById('btnLogin').disabled = false;
-
-    if (data.error || !data.success) {
-      et.textContent = L.errWrong;
-      eb.classList.add('show');
-      document.getElementById('loginUsername').classList.add('error');
-      document.getElementById('loginPassword').classList.add('error');
-      return;
-    }
-
-    // Store token and teacher info in sessionStorage (cleared when browser closes)
-    sessionStorage.setItem('aci_token',   data.token);
-    sessionStorage.setItem('aci_role',    data.role);
-    sessionStorage.setItem('aci_teacher', JSON.stringify(data.teacher));
-    sessionStorage.removeItem('explicit_logout');
-
-    if (data.role === 'admin') {
-      window.location.href = DASHBOARD_URL;
-    } else {
-      window.location.href = PORTAL_URL;
-    }
-
-  } catch(err) {
-    hideLoading();
-    document.getElementById('btnLogin').disabled = false;
-    et.textContent = L.errConn;
+  if (!teacher) {
+    et.textContent = L.errWrong;
     eb.classList.add('show');
+    document.getElementById('loginUsername').classList.add('error');
+    document.getElementById('loginPassword').classList.add('error');
+    return;
+  }
+
+  const isAdmin = teacher.displayName === 'Admin Dashboard';
+  const role    = isAdmin ? 'admin' : 'teacher';
+  const token   = makeToken(u, role);
+
+  // Store in sessionStorage — cleared when browser closes
+  sessionStorage.setItem('aci_token',   token);
+  sessionStorage.setItem('aci_role',    role);
+  sessionStorage.setItem('aci_teacher', JSON.stringify({
+    arabicName:  teacher.arabicName,
+    username:    teacher.username,
+    displayName: teacher.displayName,
+    subjects:    teacher.subjects || [],
+    classes:     teacher.classes  || []
+  }));
+  sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
+  sessionStorage.removeItem('explicit_logout');
+
+  if (isAdmin) {
+    window.location.href = DASHBOARD_URL;
+  } else {
+    window.location.href = PORTAL_URL;
   }
 }
 
@@ -214,18 +243,11 @@ function showLoading(msg) {
 function hideLoading() {
   document.getElementById('loadingOverlay').classList.remove('show');
 }
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast' + (type ? ' ' + type : '');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
 
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   setLang(currentLang);
-  checkAutoLogin();
+  loadSystemData();
   document.getElementById('loginPassword').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
   });
