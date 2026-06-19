@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پەیمانگەها کومپیوتەرێ ل ئاکرێ</title>
+<link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="logo-badge">ACI</div>
+  <div class="header-text">
+    <h1 id="hInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+    <p id="hSub">سیستەما تومارکرنا نەهاتنێ</p>
+  </div>
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
+    <button class="lang-btn" onclick="setLang('ar')">عربي</button>
+    <button class="lang-btn" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p id="loadingText">خۆراستکرن و خواندنا داتایان...</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<main>
+  <div class="login-card">
+    <div class="login-card-top">
+      <div class="aci-logo">ACI</div>
+      <h2 id="loginTitle">چوونا ژوورێ سیستەمێ</h2>
+      <p id="loginSub">تومارکرنا نەهاتنا قوتابیان</p>
+    </div>
+    <div class="login-card-body">
+      <div class="error-msg" id="loginError">
+        ⚠️ <span id="loginErrorText"></span>
+      </div>
+      <div class="form-group">
+        <label><span id="labelUser">ناڤێ بکارهێنەر</span> <span class="req">*</span></label>
+        <input class="form-control" type="text" id="loginUsername"
+               placeholder="ناڤێ مامۆستای..." autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label><span id="labelPass">وشەی نهێنی</span> <span class="req">*</span></label>
+        <input class="form-control" type="password" id="loginPassword"
+               placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="btn-primary" id="btnLogin" onclick="doLogin()">
+        <span id="btnLoginText">چوونا ژوورێ ←</span>
+      </button>
+    </div>
+  </div>
+</main>
+
+<script>
+const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
+const PORTAL_URL   = 'index.html';
+const DASHBOARD_URL = 'absentapi.html';
+
+// ── i18n ─────────────────────────────────────────────
+const LANGS = {
+  ku: {
+    dir: 'rtl', htmlLang: 'ku',
+    hInstName:  'پەیمانگەها کومپیوتەرێ ل ئاکرێ',
+    hSub:       'سیستەما تومارکرنا نەهاتنێ',
+    loginTitle: 'چوونا ژوورێ سیستەمێ',
+    loginSub:   'تومارکرنا نەهاتنا قوتابیان',
+    labelUser:  'ناڤێ بکارهێنەر',
+    labelPass:  'وشەی نهێنی',
+    btnLogin:   'چوونا ژوورێ ←',
+    userPH:     'ناڤێ مامۆستای...',
+    loading:    'خۆراستکرن و خواندنا داتایان...',
+    loggingIn:  'چوونا ژوورێ...',
+    errFill:    'تکایە هەمی خانەیێن پێدڤی داگرە!',
+    errWrong:   'ناڤ یا شێفرە شاشە! دیسا تاقی بکەڤە.',
+    errConn:    'پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
+  },
+  ar: {
+    dir: 'rtl', htmlLang: 'ar',
+    hInstName:  'معهد عقرة للكمبيوتر',
+    hSub:       'نظام تسجيل الغياب',
+    loginTitle: 'تسجيل الدخول',
+    loginSub:   'تسجيل غياب الطلاب',
+    labelUser:  'اسم المستخدم',
+    labelPass:  'كلمة المرور',
+    btnLogin:   'دخول ←',
+    userPH:     'اسم المستخدم...',
+    loading:    'جارٍ تحميل البيانات...',
+    loggingIn:  'جارٍ تسجيل الدخول...',
+    errFill:    'يرجى ملء جميع الحقول المطلوبة!',
+    errWrong:   'اسم المستخدم أو كلمة المرور غير صحيحة!',
+    errConn:    'فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
+  },
+  en: {
+    dir: 'ltr', htmlLang: 'en',
+    hInstName:  'Akre Computer Institute',
+    hSub:       'Absence Registration System',
+    loginTitle: 'Sign In',
+    loginSub:   'Student Absence Registration',
+    labelUser:  'Username',
+    labelPass:  'Password',
+    btnLogin:   'Sign In →',
+    userPH:     'Username...',
+    loading:    'Loading system data...',
+    loggingIn:  'Signing in...',
+    errFill:    'Please fill all required fields!',
+    errWrong:   'Wrong username or password!',
+    errConn:    'Could not connect to server! Please try again.',
+  }
+};
+
+let currentLang = localStorage.getItem('aci_lang') || 'ku';
+
+function setLang(lang) {
+  if (!LANGS[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('aci_lang', lang);
+  const L = LANGS[lang];
+  document.documentElement.dir  = L.dir;
+  document.documentElement.lang = L.htmlLang;
+  document.getElementById('hInstName').textContent  = L.hInstName;
+  document.getElementById('hSub').textContent       = L.hSub;
+  document.getElementById('loginTitle').textContent = L.loginTitle;
+  document.getElementById('loginSub').textContent   = L.loginSub;
+  document.getElementById('labelUser').textContent  = L.labelUser;
+  document.getElementById('labelPass').textContent  = L.labelPass;
+  document.getElementById('btnLoginText').textContent = L.btnLogin;
+  document.getElementById('loginUsername').placeholder = L.userPH;
+  document.querySelectorAll('.lang-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['ku','ar','en'][i] === lang);
+  });
+}
+
+// ── Auto-login check ──────────────────────────────────
+function checkAutoLogin() {
+  if (sessionStorage.getItem('explicit_logout') === '1') return;
+  const token = sessionStorage.getItem('aci_token');
+  const role  = sessionStorage.getItem('aci_role');
+  if (token && role) {
+    if (role === 'admin')   { window.location.href = DASHBOARD_URL; return; }
+    if (role === 'teacher') { window.location.href = PORTAL_URL; return; }
+  }
+}
+
+// ── Login ─────────────────────────────────────────────
+async function doLogin() {
+  const L  = LANGS[currentLang];
+  const u  = document.getElementById('loginUsername').value.trim();
+  const p  = document.getElementById('loginPassword').value.trim();
+  const eb = document.getElementById('loginError');
+  const et = document.getElementById('loginErrorText');
+
+  eb.classList.remove('show');
+  document.getElementById('loginUsername').classList.remove('error');
+  document.getElementById('loginPassword').classList.remove('error');
+
+  if (!u || !p) {
+    et.textContent = L.errFill;
+    eb.classList.add('show');
+    return;
+  }
+
+  showLoading(L.loggingIn);
+  document.getElementById('btnLogin').disabled = true;
+
+  try {
+    const res  = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', username: u, password: p })
+    });
+    const data = await res.json();
+    hideLoading();
+    document.getElementById('btnLogin').disabled = false;
+
+    if (data.error || !data.success) {
+      et.textContent = L.errWrong;
+      eb.classList.add('show');
+      document.getElementById('loginUsername').classList.add('error');
+      document.getElementById('loginPassword').classList.add('error');
+      return;
+    }
+
+    // Store token and teacher info in sessionStorage (cleared when browser closes)
+    sessionStorage.setItem('aci_token',   data.token);
+    sessionStorage.setItem('aci_role',    data.role);
+    sessionStorage.setItem('aci_teacher', JSON.stringify(data.teacher));
+    sessionStorage.removeItem('explicit_logout');
+
+    if (data.role === 'admin') {
+      window.location.href = DASHBOARD_URL;
+    } else {
+      window.location.href = PORTAL_URL;
+    }
+
+  } catch(err) {
+    hideLoading();
+    document.getElementById('btnLogin').disabled = false;
+    et.textContent = L.errConn;
+    eb.classList.add('show');
+  }
+}
+
+function showLoading(msg) {
+  document.getElementById('loadingText').textContent = msg || '...';
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Init ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setLang(currentLang);
+  checkAutoLogin();
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+</script>
+</body>
+</html>
