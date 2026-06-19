@@ -1,1666 +1,971 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ku" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced Absence Dashboard</title>
-<style>
-        /* BASE & LAYOUT */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container { max-width: 1400px; margin: 0 auto; }
-        
-        .header {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-    /* Google-Style Dropdown Search */
-        #dropdownResults {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-        
-        #dropdownResults.show {
-            display: block !important;
-        }
-        
-        .dropdown-result-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .dropdown-result-item:hover {
-            background: #f8f9fa;
-        }
-        
-        .dropdown-result-item:last-child {
-            border-bottom: none;
-        }
-        
-        .dropdown-student-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #667eea;
-            margin-bottom: 5px;
-        }
-        
-        .dropdown-student-info {
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .dropdown-no-results {
-            padding: 30px;
-            text-align: center;
-            color: #999;
-        }
-        
-        .header h1 { color: #667eea; font-size: 2.5em; margin-bottom: 10px; }
-        
-        /* 4. VISUAL IMPROVEMENTS: STATS */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 5px;
-            margin-bottom: 30px;
-        }
-        
-            .header-main-content {
-                display: flex;          /* Enable horizontal alignment for its children */
-                align-items: center;    /* Vertically center the logo with the text */
-                gap: 25px;              /* Adds space between the logo and the titles */
-                margin-bottom: 5px;     
-            }
-
-            .header-titles {
-                /* Ensures the titles are stacked on the left side of the text block */
-                text-align: left; 
-            }
-                    .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            text-align: center;
-            border-bottom: 5px solid;
-        }
-        
-        .stat-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        .stat-card h3 { color: #666; font-size: 0.85em; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
-        .stat-card .number { font-size: 3em; font-weight: bold; }
-        
-        .stat-card.high { border-color: #ff4444; }
-        .stat-card.medium { border-color: #ff8800; }
-        .stat-card.good { border-color: #4CAF50; }
-        .stat-card.total { border-color: #667eea; }
-        
-        .stat-card.high .number { color: #ff4444; }
-        .stat-card.medium .number { color: #ff8800; }
-        .stat-card.good .number { color: #4CAF50; }
-        .stat-card.total .number { color: #667eea; }
-        
-        /* Badges */
-        .badge { 
-            padding: 5px 12px; 
-            border-radius: 15px; 
-            font-size: 0.7em; 
-            font-weight: bold; 
-            display: inline-block; 
-            margin-left: 8px;
-            text-transform: uppercase;
-        }
-        .badge-high { background: #ff4444; color: white; }
-        .badge-medium { background: #ff8800; color: white; }
-        .badge-low { background: #4CAF50; color: white; }
-        
-        /* 3. MOBILE OPTIMIZATION: TABS */
-        .tabs { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-            flex-wrap: wrap; /* Allows wrapping on small screens */
-            justify-content: center;
-        }
-        .tab {
-            background: white;
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 600;
-            color: #666;
-            flex-grow: 1; /* Makes tabs fill available space on mobile */
-            min-width: 100px; /* Minimum width for readability */
-            text-align: center;
-        }
-        .tab:hover { background: #f0f0f0; transform: translateY(-2px); }
-        .tab.active { background: #667eea; color: white; box-shadow: 0 4px 10px rgba(102, 126, 234, 0.4); }
-        
-        .content-section { display: none; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .content-section.active { display: block; animation: fadeIn 0.3s; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* 6. ADVANCED FILTERS & 3. MOBILE OPTIMIZATION: FORMS */
-        .filter-section { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 2px solid #e9ecef; }
-        .filter-row { 
-            display: flex; 
-            gap: 15px; 
-            flex-wrap: wrap; 
-            align-items: flex-end; 
-        }
-        .filter-group { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 5px; 
-            flex: 1; 
-            min-width: 150px; 
-        }
-        .filter-group label { font-size: 0.85em; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .filter-group input, .filter-group select { 
-            padding: 12px; 
-            border: 2px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 1em;
-            transition: border 0.3s;
-            height: 48px; /* Touch friendly height */
-        }
-        .filter-group input:focus, .filter-group select:focus { 
-            border-color: #667eea; 
-            outline: none;
-        }
-        
-        /* Buttons - 3. MOBILE OPTIMIZATION: TOUCH FRIENDLY */
-        .btn, .btn-secondary, .btn-success {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            font-size: 0.95em;
-            height: 48px; /* Match input height */
-            align-self: flex-end; /* Align with inputs */
-        }
-        .btn { background: #667eea; color: white; }
-        .btn:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3); }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-secondary:hover { background: #5a6268; transform: translateY(-2px); }
-        .btn-success { background: #4CAF50; color: white; }
-        .btn-success:hover { background: #45a049; transform: translateY(-2px); }
-        
-        /* Tables - 4. VISUAL IMPROVEMENTS: COLOR CODING & 3. MOBILE OPTIMIZATION */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 14px; text-align: left; border: 1px solid #e9ecef; }
-        th { background: #667eea; color: white; font-weight: 600; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px; white-space: nowrap; }
-        
-        /* Color-coded table rows */
-        tr.row-high { background: #ffe6e6; }
-        tr.row-high:hover { background: #ffd4d4; }
-        tr.row-medium { background: #fff4e6; }
-        tr.row-medium:hover { background: #ffe8cc; }
-        tr.row-low { background: #e6ffe6; }
-        tr.row-low:hover { background: #d4f5d4; }
-        
-        /* 5. STUDENT PROFILES: Clickable student names */
-        .clickable { 
-            cursor: pointer; 
-            color: #667eea; 
-            text-decoration: underline;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .clickable:hover { 
-            color: #5568d3; 
-            transform: scale(1.05);
-            text-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
-        }
-        
-        /* Modal for Student Profile */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            animation: fadeIn 0.3s;
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 3% auto;
-            padding: 40px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 85vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideIn 0.3s;
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        .close { 
-            color: #aaa; 
-            float: right; 
-            font-size: 32px; 
-            font-weight: bold; 
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .close:hover { color: #000; transform: rotate(90deg); }
-        
-        .chart-container { 
-            margin-top: 20px; 
-            padding: 25px; 
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 15px;
-            border: 2px solid #dee2e6;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .student-profile-header {
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .student-profile-header h2 {
-            color: #667eea;
-            font-size: 2em;
-        }
-        
-        .profile-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .profile-stat {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .profile-stat .label {
-            font-size: 0.85em;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-        
-        .profile-stat .value {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-        }
-        
-        /* 3. MOBILE OPTIMIZATION */
-        @media (max-width: 768px) {
-            body { padding: 10px; }
-            .header { padding: 20px; }
-            .header h1 { font-size: 1.5em; }
-            .stat-card { padding: 15px; }
-            .stat-card .number { font-size: 2em; }
-            
-            /* Simplified filter layout for mobile */
-            .filter-row { flex-direction: column; align-items: stretch; }
-            .filter-group { min-width: 100%; }
-            .btn, .btn-secondary, .btn-success { width: 100%; align-self: auto; margin-top: 5px; }
-
-            .tab { font-size: 0.85em; padding: 10px 15px; flex-basis: calc(50% - 5px); } /* Two tabs per row */
-            .content-section { padding: 15px; }
-            .modal-content { padding: 20px; margin: 10% auto; }
-            
-            /* Smaller table text on mobile, force horizontal scroll */
-            .content-section table, .modal-content table { font-size: 0.8em; }
-            th, td { padding: 8px; }
-            
-            /* Ensure tables scroll horizontally */
-            #rosterContent > div, #weeklyContent > div, #monthlyContent > div, #analyticsContent > div {
-                overflow-x: auto;
-            }
-        }
-        
-        /* PRINT STYLES - FIXED FOR CLEAR TEXT */
-        @media print {
-            body { 
-                background: white !important; 
-                padding: 0;
-                color: #000 !important;
-            }
-            
-            .tabs, .stats-grid, .filter-section, .header p, .btn, .btn-secondary, .btn-success { 
-                display: none !important; 
-            }
-            
-            .header { 
-                box-shadow: none;
-                border: 2px solid #000 !important;
-                margin-bottom: 20px;
-            }
-            
-            .header h1, .header h2 {
-                color: #000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            /* Force all text to print in solid black */
-            .content-section h2, .content-section h3, .content-section h4,
-            .chart-container h3, .chart-container h4,
-            table, th, td, p, span, strong, div {
-                color: #000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            /* Make table headers print with black text and gray background */
-            th {
-                background: #d3d3d3 !important;
-                color: #000 !important;
-                border: 1px solid #000 !important;
-                font-weight: bold !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            /* Ensure table cells have visible borders */
-            td {
-                border: 1px solid #000 !important;
-                color: #000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            /* Make sure all text is bold and visible */
-            strong, .number, .value {
-                font-weight: bold !important;
-                color: #000 !important;
-            }
-            
-            /* Remove colored backgrounds for printing, keep white */
-            .chart-container {
-                background: white !important;
-                border: 1px solid #000 !important;
-                box-shadow: none !important;
-                page-break-inside: avoid;
-                margin-bottom: 20px;
-            }
-            
-            /* Keep row backgrounds subtle but visible */
-            tr.row-high {
-                background: #f5f5f5 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            tr.row-medium {
-                background: #fafafa !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            tr.row-low {
-                background: white !important;
-            }
-            
-            /* Ensure badges print clearly */
-            .badge {
-                border: 2px solid #000 !important;
-                color: #000 !important;
-                background: white !important;
-                padding: 3px 8px !important;
-                font-weight: bold !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            
-            /* Make clickable text print as regular text */
-            .clickable {
-                color: #000 !important;
-                text-decoration: none !important;
-                cursor: default;
-            }
-            
-            /* Avoid page breaks inside tables */
-            table { 
-                page-break-inside: avoid; 
-                border: 1px solid #000 !important; 
-            }
-            
-            /* Ensure page breaks happen at appropriate places */
-            .chart-container {
-                page-break-inside: avoid;
-                page-break-after: auto;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پەیمانگەها کومپیوتەرێ ل ئاکرێ — داشبۆرد</title>
+<link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
-    <div class="container">
-<div class="header">
-    <div class="header-main-content">
-        <img src='aci.jpg' alt="Akre Computer Institute Logo" style="height: 140px;">
-        <div class="header-titles">
-            <h1>Akre Computer Institute : پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
-            <h2>تومارا نەهاتنا قوتابیان</h2>
-        </div>
+<div style="max-width:1400px;margin:0 auto;">
+
+<!-- HEADER -->
+<div class="dash-header">
+  <div class="dash-header-top">
+    <img src="aci.jpg" alt="ACI Logo">
+    <div class="dash-titles">
+      <h1 id="dInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+      <h2 id="dSub">تومارا نەهاتنا قوتابیان</h2>
     </div>
-    
-<div style="position: relative; margin-top: 15px;">
-        <input type="text" id="headerStudentSearch" placeholder="🔍 Search student by name..." onkeyup="searchStudentFromHeader()" style="width: 100%; padding: 15px 20px; border: 2px solid #ddd; border-radius: 24px; font-size: 1em; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-        
-        <div id="dropdownResults" style="display: none;"></div>
+  </div>
+
+  <div class="dash-header-controls">
+    <p id="lastUpdate"></p>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
+      <button class="lang-btn" onclick="setLang('ar')">عربي</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
     </div>
-    
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-        <p id="lastUpdate" style="color:#999;font-size:0.9em;"></p>
-        <button onclick="doAdminLogout()" style="background:#c8402a;color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:0.85em;font-weight:700;cursor:pointer;">🚪 Logout</button>
-    </div>
+    <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪 دەرچوون</button>
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="🔍 ناڤێ یەکەم ی قوتابی بنووسە..." oninput="onSearch()">
+    <div id="dropdownResults"></div>
+  </div>
 </div>
 
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <h3>📚 Total Absences</h3>
-                <div class="number" id="totalAbsences">-</div>
-            </div>
-            <div class="stat-card total">
-                <h3>👥 Students Tracked</h3>
-                <div class="number" id="totalStudents">-</div>
-            </div>
-            <div class="stat-card high">
-                <h3>🔴 High Risk</h3>
-                <div class="number" id="highRisk">-</div>
-                <p style="font-size: 0.75em; color: #666; margin-top: 5px;">&ge;15 absences</p>
-            </div>
-            <div class="stat-card medium">
-                <h3>🟠 At Risk</h3>
-                <div class="number" id="atRisk">-</div>
-                <p style="font-size: 0.75em; color: #666; margin-top: 5px;">8-14 absences</p>
-            </div>
-            <div class="stat-card good">
-                <h3>🏫 Active Classes</h3>
-                <div class="number" id="totalClasses">-</div>
-            </div>
-        </div>
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card stat-total"><h3 id="sTotalAbs">📚 کۆی نەهاتن</h3><div class="number" id="totalAbsences">-</div></div>
+  <div class="stat-card stat-total"><h3 id="sStudents">👥 قوتابیان</h3><div class="number" id="totalStudents">-</div></div>
+  <div class="stat-card stat-high"><h3 id="sHighRisk">🔴 مەترسیدار</h3><div class="number" id="highRisk">-</div><p id="sHighRiskSub">≥15 نەهاتن</p></div>
+  <div class="stat-card stat-medium"><h3 id="sAtRisk">🟠 فریادرەس</h3><div class="number" id="atRisk">-</div><p id="sAtRiskSub">8-14 نەهاتن</p></div>
+  <div class="stat-card stat-good"><h3 id="sClasses">🏫 پۆلان</h3><div class="number" id="totalClasses">-</div></div>
+</div>
 
+<!-- TABS -->
 <div class="tabs">
-    <div class="tab active" onclick="showTab('daily')">📅 Daily</div>
-    <div class="tab" onclick="showTab('weekly')">📊 Weekly</div>
-    <div class="tab" onclick="showTab('monthly')">📅 Monthly</div>
-    <div class="tab" onclick="showTab('roster')">📋 Roster</div>
-    <div class="tab" onclick="showTab('analytics')">📈 Analytics</div>
+  <button class="tab active" onclick="showTab('daily')"   id="tab-daily">📅 ڕۆژانە</button>
+  <button class="tab" onclick="showTab('weekly')"  id="tab-weekly">📊 هەفتانە</button>
+  <button class="tab" onclick="showTab('monthly')" id="tab-monthly">📅 مانگانە</button>
+  <button class="tab" onclick="showTab('roster')"  id="tab-roster">📋 لیست</button>
+  <button class="tab" onclick="showTab('analytics')" id="tab-analytics">📈 شیکاری</button>
 </div>
 
-        <div id="daily" class="content-section active">
-            <h2 style="color: #667eea; margin-bottom: 10px;">📅 Daily Absence Report</h2>
-            <p style="color: #666; margin-bottom: 20px;">View detailed absence breakdown by lecture and class</p>
-            
-            <div class="filter-section">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label>📆 Select Date:</label>
-                        <input type="date" id="dailyDate" onchange="filterDaily()">
-                    </div>
-                    <button class="btn" onclick="setToday()">Today</button>
-                    <button class="btn-secondary" onclick="setPreviousDay()">Yesterday</button>
-                </div>
-            </div>
-            <div id="dailyContent"><div style="text-align:center; padding:50px; color:#667eea; font-size:1.2em;">⏳ Loading data...</div></div>
-        </div>
-
-        <div id="roster" class="content-section">
-            <h2 style="color: #667eea; margin-bottom: 10px;">📋 Class Roster - Absence Summary</h2>
-            <p style="color: #666; margin-bottom: 20px;">Click on any student name to view their detailed absence profile</p>
-            
-            <div class="filter-section">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label>🏫 Select Class:</label>
-                        <select id="rosterClass" onchange="filterRoster()"></select>
-                    </div>
-                    <div class="filter-group">
-                        <label>🔢 Min Absences:</label>
-                        <input type="number" id="minAbsences" value="0" min="0" onchange="filterRoster()" placeholder="Filter by count">
-                    </div>
-                    <button class="btn-success" onclick="window.print()">🖨️ Print Report</button>
-                </div>
-            </div>
-            <div id="rosterContent"><div style="text-align:center; padding:50px; color:#999;">Select a class to view roster</div></div>
-        </div>
-
-        <div id="weekly" class="content-section">
-            <h2 style="color: #667eea; margin-bottom: 10px;">📊 Weekly Absence Reports</h2>
-            <p style="color: #666; margin-bottom: 20px;">Comprehensive weekly summaries by class and subject</p>
-            
-            <div class="filter-section">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label>📅 Select Week:</label>
-                        <select id="weekSelect" onchange="loadWeekly()"></select>
-                    </div>
-                    <button class="btn-success" onclick="window.print()">🖨️ Print Report</button>
-                </div>
-            </div>
-            <div id="weeklyContent"><div style="text-align:center; padding:50px; color:#999;">Select a week to view report</div></div>
-        </div>
-
-        <div id="monthly" class="content-section">
-            <h2 style="color: #667eea; margin-bottom: 10px;">📅 Monthly Absence Reports</h2>
-            <p style="color: #666; margin-bottom: 20px;">Monthly trends and patterns across all classes</p>
-            
-            <div class="filter-section">
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label>📆 Select Month:</label>
-                        <select id="monthSelect" onchange="loadMonthly()"></select>
-                    </div>
-                    <button class="btn-success" onclick="window.print()">🖨️ Print Report</button>
-                </div>
-            </div>
-            <div id="monthlyContent"><div style="text-align:center; padding:50px; color:#999;">Select a month to view report</div></div>
-        </div>
-
-        <div id="analytics" class="content-section">
-            <h2 style="color: #667eea; margin-bottom: 10px;">📈 Visual Analytics & Insights</h2>
-            <p style="color: #666; margin-bottom: 20px;">Data-driven insights across classes, subjects, and time periods</p>
-            
-            <div class="filter-section">
-                <h3 style="color: #667eea; margin-bottom: 15px; font-size: 1.2em;">Policy Risk Configuration</h3>
-                <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Configure the rules for calculating a student's expulsion risk based on days missed.</p>
-                <div class="filter-row">
-                    <div class="filter-group">
-                        <label for="lecturesPerDay">Lectures to Count as 1 Day Missed:</label>
-                        <input type="number" id="lecturesPerDay" value="3" min="1" onchange="loadAnalytics()" title="If a student misses this many lectures in one day, it counts as one full day missed." style="min-width: 250px;">
-                    </div>
-                    <div class="filter-group">
-                        <label for="expulsionDays">Days Missed Threshold for Dismissal:</label>
-                        <input type="number" id="expulsionDays" value="21" min="1" onchange="loadAnalytics()" title="If a student accumulates this many calculated 'days missed', they are flagged for dismissal." style="min-width: 250px;">
-                    </div>
-                    <div></div>
-                </div>
-            </div>
-            <div id="analyticsContent"><div style="text-align:center; padding:50px; color:#667eea; font-size:1.2em;">⏳ Loading analytics...</div></div>
-        </div>
+<!-- DAILY -->
+<div id="daily" class="content-section active">
+  <h2 class="section-title" id="dDailyTitle">📅 ڕاپۆرتی ڕۆژانە</h2>
+  <p class="section-sub" id="dDailySub">کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە</p>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label id="dDateLabel">📆 بەروار:</label>
+        <input type="date" id="dailyDate" onchange="filterDaily()">
+      </div>
+      <button class="btn" onclick="setToday()" id="btnToday">ئەمرۆ</button>
+      <button class="btn btn-gray" onclick="setPrevDay()" id="btnYesterday">دووێ</button>
     </div>
+  </div>
+  <div id="dailyContent"><div style="text-align:center;padding:50px;color:#667eea;font-size:1.1em;">⏳ بارکرن...</div></div>
+</div>
 
-    <div id="studentModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div id="modalContent"></div>
-        </div>
+<!-- WEEKLY -->
+<div id="weekly" class="content-section">
+  <h2 class="section-title" id="dWeeklyTitle">📊 ڕاپۆرتی هەفتانە</h2>
+  <p class="section-sub" id="dWeeklySub">کۆی نەهاتنی هەفتەیەک بینە</p>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label id="dWeekLabel">📅 هەفتە:</label>
+        <select id="weekSelect" onchange="loadWeekly()"></select>
+      </div>
+      <button class="btn btn-green" onclick="window.print()" id="btnPrintW">🖨️ چاپکرن</button>
     </div>
+  </div>
+  <div id="weeklyContent"><div style="text-align:center;padding:50px;color:#999;">هەفتەیەک هەلبژێرە</div></div>
+</div>
 
-<script>
-        // ** CONFIGURATION **
-        
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec?api=data';    
-    const PORTAL_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
-        const SCHOOL_START = '9/21/2025';
+<!-- MONTHLY -->
+<div id="monthly" class="content-section">
+  <h2 class="section-title" id="dMonthlyTitle">📅 ڕاپۆرتی مانگانە</h2>
+  <p class="section-sub" id="dMonthlySub">کۆی نەهاتنی مانگێک بینە</p>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label id="dMonthLabel">📆 مانگ:</label>
+        <select id="monthSelect" onchange="loadMonthly()"></select>
+      </div>
+      <button class="btn btn-green" onclick="window.print()" id="btnPrintM">🖨️ چاپکرن</button>
+    </div>
+  </div>
+  <div id="monthlyContent"><div style="text-align:center;padding:50px;color:#999;">مانگێک هەلبژێرە</div></div>
+</div>
 
-        let allData = [];
-        let classes = [];
-        let weeks = [];
-        let months = [];
+<!-- ROSTER -->
+<div id="roster" class="content-section">
+  <h2 class="section-title" id="dRosterTitle">📋 لیستی پۆل</h2>
+  <p class="section-sub" id="dRosterSub">ناڤی قوتابی کلیک بکە پرۆفایلی ببینیت</p>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label id="dClassLabel">🏫 پۆل:</label>
+        <select id="rosterClass" onchange="filterRoster()"></select>
+      </div>
+      <div class="filter-group">
+        <label id="dMinAbsLabel">🔢 کەمترین نەهاتن:</label>
+        <input type="number" id="minAbsences" value="0" min="0" onchange="filterRoster()">
+      </div>
+      <button class="btn btn-green" onclick="window.print()" id="btnPrintR">🖨️ چاپکرن</button>
+    </div>
+  </div>
+  <div id="rosterContent"><div style="text-align:center;padding:50px;color:#999;">پۆلێک هەلبژێرە</div></div>
+</div>
 
-        // --- HELPER FUNCTIONS ---
-        function getThreeNames(fullName) {
-            if (!fullName) return '';
-            const names = fullName.trim().split(/\s+/).filter(Boolean);
-            return names.slice(0, 3).join(' ');
-        }
-
-        function normalizeDate(dateStr) {
-            if (!dateStr) return '';
-            let d;
-            if (dateStr.includes('/')) {
-                const parts = dateStr.split('/');
-                if (parts.length === 3) {
-                    d = new Date(parts[2], parts[0] - 1, parts[1]);
-                } else {
-                    d = new Date(dateStr);
-                }
-            } else {
-                 d = new Date(dateStr);
-            }
-            if (isNaN(d.getTime())) return '';
-            return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-        }
-
-        function formatDate(d) {
-            if (!d || isNaN(d.getTime())) return '';
-            return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-        }
-
-        function getLectureCount(lec) {
-            const s = String(lec).toLowerCase();
-            return (s.includes('and') || s.includes(',') || s.includes('merged') || /\d\s*-\s*\d/.test(s)) ? 2 : 1;
-        }
-
-        function getSeverity(count) {
-            if (count >= 15) return 'high';
-            if (count >= 8) return 'medium';
-            return 'low';
-        }
-
-        function getBadge(count) {
-            const sev = getSeverity(count);
-            const label = sev === 'high' ? 'HIGH RISK' : sev === 'medium' ? 'AT RISK' : 'GOOD';
-            return `<span class="badge badge-${sev}">${label}</span>`;
-        }
-
-        // --- GLOBAL SEARCH FUNCTIONS (Defined early to prevent Scope Errors) ---
-
-        // 1. TRIGGER FROM DROPDOWN: Called when a user clicks a result in the header dropdown
-        function showStudentProfileFromDropdown(nameEncoded) {
-            // Decode the safe string back to the real name
-            const name = decodeURIComponent(nameEncoded);
-            
-            // Close dropdown and clear search
-            document.getElementById('dropdownResults').classList.remove('show');
-            document.getElementById('headerStudentSearch').value = '';
-            
-            // Show the profile modal
-            showStudentProfile(name);
-        }
-
-        // 2. SEARCH LOGIC: Populates the dropdown as you type
-        function searchStudentFromHeader() {
-            const query = document.getElementById('headerStudentSearch').value.toLowerCase().trim();
-            const dropdown = document.getElementById('dropdownResults');
-            
-            if (query.length < 2) {
-                dropdown.classList.remove('show');
-                return;
-            }
-
-            const details = {};
-            
-            allData.forEach(row => {
-                row.absences.forEach(name => {
-                    if (name.toLowerCase().includes(query)) {
-                        if (!details[name]) details[name] = { class: row.classGroup, total: 0, log: [] };
-                        details[name].total += row.lectureCount;
-                        details[name].log.push({ subject: row.subject });
-                    }
-                });
-            });
-
-            dropdown.classList.add('show');
-            
-            if (Object.keys(details).length === 0) {
-                dropdown.innerHTML = '<div class="dropdown-no-results">🔍 No students found matching "<strong>' + query + '</strong>"</div>';
-                return;
-            }
-            
-            let html = '';
-            Object.entries(details).forEach(([name, data]) => {
-                const sev = getSeverity(data.total);
-                const badge = sev === 'high' ? 'high' : sev === 'medium' ? 'medium' : 'low';
-                const badgeText = sev === 'high' ? 'HIGH RISK' : sev === 'medium' ? 'AT RISK' : 'GOOD';
-                const subjects = [...new Set(data.log.map(a => a.subject))];
-                
-                // SAFE STRING: Encode name to prevent quote errors in HTML
-                const safeName = encodeURIComponent(name);
-                
-                html += `
-                    <div class="dropdown-result-item" 
-                         onclick="showStudentProfileFromDropdown('${safeName}')">
-                        <div class="dropdown-student-name">
-                            ${name}
-                            <span class="badge badge-${badge}">${badgeText}</span>
-                        </div>
-                        <div class="dropdown-student-info">
-                            Class ${data.class || 'N/A'} • ${data.total} absences • ${subjects.length} subjects affected
-                        </div>
-                    </div>
-                `;
-            });
-
-            dropdown.innerHTML = html;
-        }
-
-        // --- CORE LOGIC ---
-
-        function parseData(json) {
-            if (!json?.values || json.values.length < 2) return [];
-
-            // New simple 7-column format:
-            // [0] Timestamp | [1] Date | [2] Teacher | [3] Subject
-            // [4] Lecture   | [5] Class | [6] Absent Students
-            const rows = json.values.slice(1);
-            const data = [];
-
-            rows.forEach((row, index) => {
-                const date       = row[1] ? String(row[1]).trim() : '';
-                const teacher    = row[2] ? String(row[2]).trim() : 'Unknown';
-                const subject    = row[3] ? String(row[3]).trim() : 'Unknown';
-                const lecture    = row[4] ? String(row[4]).trim() : 'Lecture 1';
-                const classGroup = row[5] ? String(row[5]).trim() : '';
-                const absentRaw  = row[6] ? String(row[6]).trim() : '';
-
-                if (!date || !classGroup) return;
-
-                const absences = absentRaw
-                    ? absentRaw.split(',').map(s => s.trim()).filter(Boolean).map(getThreeNames)
-                    : [];
-
-                data.push({
-                    rowNumber:    index + 2,
-                    date:         date,
-                    teacher:      teacher,
-                    subject:      subject,
-                    lecture:      lecture,
-                    lectureCount: getLectureCount(lecture),
-                    classGroup:   classGroup,
-                    absences:     [...new Set(absences)]
-                });
-            });
-
-            console.log(`✅ Parsed ${data.length} records`);
-            return data;
-        }
-
-        async function fetchData() {
-            document.getElementById('lastUpdate').innerHTML = '<span style="color:#667eea;">⏳ Fetching latest data...</span>';
-            
-            try {
-                console.log('📥 Fetching from API...');
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const json = await response.json();
-                allData = parseData(json).map(row => ({
-                    ...row,
-                    date: normalizeDate(row.date)
-                })).filter(row => row.date);
-                
-                classes = [...new Set(allData.map(r => r.classGroup).filter(Boolean))].sort();
-                weeks = getWeeks();
-                months = getMonths();
-                
-                console.log(`✅ Loaded ${allData.length} records, ${classes.length} classes`);
-                
-                updateDashboard();
-                loadDaily();
-                if(document.getElementById('roster').classList.contains('active')) loadRoster();
-                if(document.getElementById('weekly').classList.contains('active')) loadWeeklyDropdown();
-                if(document.getElementById('monthly').classList.contains('active')) loadMonthlyDropdown();
-                if(document.getElementById('analytics').classList.contains('active')) loadAnalytics();
-                
-                document.getElementById('lastUpdate').innerHTML = `<span style="color:#4CAF50;">✅ Last updated: ${new Date().toLocaleTimeString()}</span>`;
-            } catch (error) {
-                console.error('❌ Error:', error);
-                document.getElementById('lastUpdate').innerHTML = `<span style="color:#ff4444;">❌ Error: ${error.message} (Check Sheet ID/API Key)</span>`;
-            }
-        }
-
-        function updateDashboard() {
-            let totalAbs = 0;
-            const students = {};
-            
-            allData.forEach(row => {
-                const count = row.lectureCount * row.absences.length;
-                totalAbs += count;
-                
-                row.absences.forEach(name => {
-                    const key = name.toLowerCase();
-                    students[key] = (students[key] || 0) + row.lectureCount;
-                });
-            });
-            
-            let high = 0, medium = 0;
-            Object.values(students).forEach(count => {
-                if (count >= 15) high++;
-                else if (count >= 8) medium++;
-            });
-            
-            document.getElementById('totalAbsences').textContent = totalAbs;
-            document.getElementById('totalStudents').textContent = Object.keys(students).length;
-            document.getElementById('highRisk').textContent = high;
-            document.getElementById('atRisk').textContent = medium;
-            document.getElementById('totalClasses').textContent = classes.length;
-        }
-
-        function getWeeks() {
-            const start = new Date(SCHOOL_START);
-            if (isNaN(start.getTime())) return [];
-            
-            const arr = [];
-            let current = new Date(start);
-            current.setDate(current.getDate() - current.getDay()); 
-            
-            const now = new Date();
-            let num = 1;
-            
-            while (current <= now) {
-                const wStart = new Date(current);
-                const wEnd = new Date(current);
-                wEnd.setDate(wEnd.getDate() + 6);
-                
-                if (wStart <= now) {
-                    arr.push({ number: num++, start: wStart, end: wEnd });
-                }
-                current.setDate(current.getDate() + 7);
-            }
-            return arr.reverse();
-        }
-
-        function getMonths() {
-            const start = new Date(SCHOOL_START);
-            if (isNaN(start.getTime())) return [];
-            
-            const arr = [];
-            let current = new Date(start.getFullYear(), start.getMonth(), 1);
-            const now = new Date();
-            
-            while (current <= now) {
-                const mStart = new Date(current);
-                const mEnd = new Date(current.getFullYear(), current.getMonth() + 1, 0);
-                
-                if (mStart <= now) {
-                    arr.push({ 
-                        name: mStart.toLocaleString('default', { month: 'long', year: 'numeric' }),
-                        start: mStart, 
-                        end: mEnd 
-                    });
-                }
-                current.setMonth(current.getMonth() + 1);
-            }
-            return arr.reverse();
-        }
-
-        // --- DAILY TAB ---
-        function setToday() {
-            const now = new Date();
-            document.getElementById('dailyDate').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            filterDaily();
-        }
-
-        function setPreviousDay() {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            document.getElementById('dailyDate').value = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-            filterDaily();
-        }
-
-        function loadDaily() {
-            if (!document.getElementById('dailyDate').value) setToday();
-            else filterDaily();
-        }
-
-        function filterDaily() {
-            const val = document.getElementById('dailyDate').value;
-            if (!val) return;
-            
-            const selectedDate = new Date(val);
-            const dayOfWeek = selectedDate.getDay();
-            
-            if (dayOfWeek === 5 || dayOfWeek === 6) {
-                const dayName = dayOfWeek === 5 ? 'Friday' : 'Saturday';
-                document.getElementById('dailyContent').innerHTML = `
-                    <div style="text-align:center; padding:80px 20px;">
-                        <div style="font-size:5em; margin-bottom:20px;">🏖️</div>
-                        <h2 style="color:#667eea; font-size:2em; margin-bottom:15px;">Weekend - No School</h2>
-                        <p style="color:#666; font-size:1.2em; margin-bottom:10px;">
-                            <strong>${dayName}, ${formatDate(selectedDate)}</strong>
-                        </p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const filterDate = normalizeDate(val);
-            const filtered = allData.filter(r => r.date === filterDate);
-            
-            const byClass = {};
-            classes.forEach(cls => {
-                byClass[cls] = {};
-            });
-            
-            filtered.forEach(row => {
-                if (!row.classGroup) return;
-                if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
-                
-                const nums = String(row.lecture).match(/\d+/g) || ['1'];
-                nums.forEach(n => {
-                    const num = parseInt(n);
-                    if (num >= 1 && num <= 6) {
-                        if (!byClass[row.classGroup][num]) {
-                            byClass[row.classGroup][num] = { subject: row.subject, teacher: row.teacher, students: [] };
-                        }
-                        row.absences.forEach(s => {
-                            if (!byClass[row.classGroup][num].students.includes(s)) {
-                                byClass[row.classGroup][num].students.push(s);
-                            }
-                        });
-                    }
-                });
-            });
-            
-            let html = '';
-            Object.keys(byClass).sort().forEach(cls => {
-                const lectures = byClass[cls];
-                
-                html += `<div class="chart-container">
-                    <h3 style="color:#667eea; font-size:1.4em;">🏫 Class ${cls}</h3>
-                    <p style="color:#666; margin:10px 0;">📅 ${filterDate}</p>`;
-                
-                html += `<div style="overflow-x:auto;">
-                    <table><thead><tr>`;
-                
-                for (let i = 1; i <= 6; i++) html += `<th style="text-align:center;">Lec ${i}</th>`;
-                html += `</tr></thead><tbody><tr style="background:#f8f9fa;">`;
-                
-                for (let i = 1; i <= 6; i++) {
-                    const lec = lectures[i];
-                    html += `<td style="text-align:center; font-weight:bold; padding:14px;">${lec ? lec.subject : ''}</td>`;
-                }
-                html += `</tr><tr>`;
-                
-                for (let i = 1; i <= 6; i++) {
-                    const lec = lectures[i];
-                    if (lec && lec.students.length > 0) {
-                        html += `<td style="vertical-align:top; padding:10px;">
-                            <div style="color:#c33; font-weight:500; text-align:right; direction:rtl;"> 
-                                ${lec.students.map(s => `• ${s}`).join('<br>')}
-                            </div>
-                        </td>`;
-                    } else if (lec) {
-                        html += `<td style="text-align:center; color:#4CAF50; padding:10px; font-weight:600;">none</td>`;
-                    } else {
-                        html += `<td style="text-align:center; color:#999; padding:10px;"></td>`;
-                    }
-                }
-                html += `</tr><tr style="background:#f8f9fa;">`;
-                
-                for (let i = 1; i <= 6; i++) {
-                    const lec = lectures[i];
-                    html += `<td style="text-align:center; font-style:italic; color:#666; padding:10px; font-size:0.9em;">${lec ? lec.teacher : ''}</td>`;
-                }
-                html += `</tr></tbody></table></div>`;
-                
-                // ── Admin delete: submissions list ──
-                const clsRows = filtered.filter(r => r.classGroup === cls);
-                if (clsRows.length > 0) {
-                    html += `<details style="margin-top:8px;"><summary style="cursor:pointer;color:#667eea;font-size:0.85em;font-weight:600;padding:6px 0;">🗑️ Manage submissions for ${cls} (${clsRows.length})</summary>`;
-                    html += `<div style="overflow-x:auto;margin-top:8px;"><table style="width:100%;border-collapse:collapse;font-size:0.82em;"><thead><tr style="background:#f0f0f0;"><th style="padding:7px 10px;text-align:left;">Lecture</th><th style="padding:7px 10px;text-align:left;">Subject</th><th style="padding:7px 10px;text-align:left;">Teacher</th><th style="padding:7px 10px;text-align:center;">Absent</th><th></th></tr></thead><tbody>`;
-                    clsRows.forEach(function(r) {
-                        const cnt = r.absences ? r.absences.length : 0;
-                        const safeInfo = (r.lecture+'|'+r.subject+'|'+r.teacher+'|'+cls).replace(/'/g,"\'");
-                        html += `<tr style="border-bottom:1px solid #eee;"><td style="padding:7px 10px;">${r.lecture||'—'}</td><td style="padding:7px 10px;">${r.subject||'—'}</td><td style="padding:7px 10px;">${r.teacher||'—'}</td><td style="padding:7px 10px;text-align:center;"><span style="background:${cnt>0?'#c8402a':'#2d6a4f'};color:#fff;border-radius:100px;padding:2px 9px;font-size:0.78em;font-weight:700;">${cnt}</span></td><td style="padding:7px 10px;"><button onclick="askAdminDelete(${r.rowNumber},'${safeInfo}')" style="background:none;border:1.5px solid #ffd0ca;color:#c8402a;border-radius:7px;padding:4px 10px;font-size:0.78em;cursor:pointer;">🗑️ Delete</button></td></tr>`;
-                    });
-                    html += `</tbody></table></div></details>`;
-                }
-                html += `</div>`;
-            });
-            
-            document.getElementById('dailyContent').innerHTML = html;
-        }
-
-        // --- ROSTER TAB ---
-        function loadRoster() {
-            const sel = document.getElementById('rosterClass');
-            const currentClass = sel.value;
-            sel.innerHTML = '<option value="">-- Select Class --</option>';
-            classes.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c;
-                opt.textContent = c;
-                sel.appendChild(opt);
-            });
-            
-            if (classes.includes(currentClass)) {
-                sel.value = currentClass;
-            } else if (classes.length > 0) {
-                sel.value = classes[0];
-            }
-            filterRoster();
-        }
-
-        function filterRoster() {
-            const cls = document.getElementById('rosterClass').value;
-            const minAbs = parseInt(document.getElementById('minAbsences').value) || 0;
-            
-            if (!cls) {
-                document.getElementById('rosterContent').innerHTML = '<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">Select a class to view roster</div>';
-                return;
-            }
-            
-            const summary = {};
-            const subjects = new Set();
-            
-            allData.filter(r => r.classGroup === cls).forEach(row => {
-                row.absences.forEach(name => {
-                    if (!summary[name]) summary[name] = { total: 0, subjects: {} };
-                    summary[name].total += row.lectureCount;
-                    summary[name].subjects[row.subject] = (summary[name].subjects[row.subject] || 0) + row.lectureCount;
-                    subjects.add(row.subject);
-                });
-            });
-            
-            const sorted = Object.entries(summary)
-                .filter(([_, data]) => data.total >= minAbs)
-                .sort((a, b) => b[1].total - a[1].total);
-            
-            if (sorted.length === 0) {
-                document.getElementById('rosterContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
-                    <p style="font-size:3em;">✅</p>
-                    <p>No students with ${minAbs}+ absences in Class ${cls}</p>
-                </div>`;
-                return;
-            }
-            
-            const subArr = Array.from(subjects).sort();
-            
-            let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:10px;">🏫 Class ${cls} - Absence Summary</h3>
-                        <p style="color: #666; margin-bottom: 20px;">Click on any student name to view their detailed profile</p>
-                        <div style="overflow-x:auto;"><table><thead><tr><th>Student Name</th>`;
-            subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
-            html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
-            
-            sorted.forEach(([name, data]) => {
-                const sev = getSeverity(data.total);
-                // SAFE STRING: Use encodeURIComponent for onclick
-                const safeName = encodeURIComponent(name);
-                
-                html += `<tr class="row-${sev}"><td class="clickable" onclick="showStudentProfileFromDropdown('${safeName}')">${name}</td>`;
-                
-                subArr.forEach(sub => {
-                    const count = data.subjects[sub] || 0;
-                    const color = count >= 3 ? '#c33' : count > 0 ? '#667eea' : '#999';
-                    html += `<td style="text-align:center; color:${color}; font-weight:bold; font-size:1.1em;">${count || '-'}</td>`;
-                });
-                
-                html += `<td style="text-align:center;"><strong style="font-size:1.2em;">${data.total}</strong> ${getBadge(data.total)}</td></tr>`;
-            });
-            
-            html += '</tbody></table></div>';
-            document.getElementById('rosterContent').innerHTML = html;
-        }
-
-        // --- WEEKLY TAB ---
-        function loadWeeklyDropdown() {
-            const sel = document.getElementById('weekSelect');
-            sel.innerHTML = '<option value="">-- Select Week --</option>';
-            weeks.forEach((w, i) => {
-                const opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = `Week ${w.number}: ${formatDate(w.start)} - ${formatDate(w.end)}`;
-                sel.appendChild(opt);
-            });
-            if (weeks.length > 0) {
-                sel.value = 0;
-                loadWeekly();
-            }
-        }
-
-        function loadWeekly() {
-            const idx = parseInt(document.getElementById('weekSelect').value);
-            if (isNaN(idx) || !weeks[idx]) return;
-            
-            const week = weeks[idx];
-            const data = allData.filter(r => {
-                const d = new Date(r.date);
-                return d >= week.start && d <= week.end;
-            });
-            
-            if (data.length === 0) {
-                 document.getElementById('weeklyContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
-                    <p style="font-size:3em;">📭</p>
-                    <p>No absences for Week ${week.number}</p>
-                </div>`;
-                return;
-            }
-            
-            const byClass = {};
-            data.forEach(row => {
-                if (!row.classGroup) return;
-                if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
-                
-                row.absences.forEach(name => {
-                    if (!byClass[row.classGroup][name]) {
-                        byClass[row.classGroup][name] = { total: 0, subjects: {} };
-                    }
-                    byClass[row.classGroup][name].total += row.lectureCount;
-                    byClass[row.classGroup][name].subjects[row.subject] = 
-                        (byClass[row.classGroup][name].subjects[row.subject] || 0) + row.lectureCount;
-                });
-            });
-            
-            let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:20px;">📊 Week ${week.number}: ${formatDate(week.start)} - ${formatDate(week.end)}</h3>`;
-            
-            Object.keys(byClass).sort().forEach(cls => {
-                const students = byClass[cls];
-                const sorted = Object.entries(students).sort((a, b) => b[1].total - a[1].total);
-                
-                const subjects = new Set();
-                Object.values(students).forEach(s => Object.keys(s.subjects).forEach(sub => subjects.add(sub)));
-                const subArr = Array.from(subjects).sort();
-                
-                html += `<div class="chart-container">
-                    <h4 style="color:#667eea; font-size:1.2em; margin-bottom:15px;">🏫 CLASS ${cls}</h4>
-                    <div style="overflow-x:auto;">
-                        <table><thead><tr><th>Student</th>`;
-                
-                subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
-                html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
-                
-                sorted.forEach(([name, data]) => {
-                    const sev = getSeverity(data.total);
-                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
-                    
-                    subArr.forEach(sub => {
-                        const count = data.subjects[sub] || 0;
-                        const color = count >= 3 ? '#c33' : count > 0 ? '#667eea' : '#999';
-                        html += `<td style="text-align:center; color:${color}; font-weight:bold;">${count || '-'}</td>`;
-                    });
-                    
-                    html += `<td style="text-align:center;"><strong style="font-size:1.1em;">${data.total}</strong> ${getBadge(data.total)}</td></tr>`;
-                });
-                
-                html += `</tbody></table></div></div>`;
-            });
-            
-            document.getElementById('weeklyContent').innerHTML = html;
-        }
-
-        // --- MONTHLY TAB ---
-        function loadMonthlyDropdown() {
-            const sel = document.getElementById('monthSelect');
-            sel.innerHTML = '<option value="">-- Select Month --</option>';
-            months.forEach((m, i) => {
-                const opt = document.createElement('option');
-                opt.value = i;
-                opt.textContent = `${m.name} (${formatDate(m.start)} - ${formatDate(m.end)})`;
-                sel.appendChild(opt);
-            });
-            if (months.length > 0) {
-                sel.value = 0;
-                loadMonthly();
-            }
-        }
-
-        function loadMonthly() {
-            const idx = parseInt(document.getElementById('monthSelect').value);
-            if (isNaN(idx) || !months[idx]) return;
-            
-            const month = months[idx];
-            const data = allData.filter(r => {
-                const d = new Date(r.date);
-                return d >= month.start && d <= month.end;
-            });
-            
-            if (data.length === 0) {
-                 document.getElementById('monthlyContent').innerHTML = `<div style="text-align:center; padding:50px; color:#999; font-size:1.1em;">
-                    <p style="font-size:3em;">📭</p>
-                    <p>No absences for ${month.name}</p>
-                </div>`;
-                return;
-            }
-            
-            const byClass = {};
-            data.forEach(row => {
-                if (!row.classGroup) return;
-                if (!byClass[row.classGroup]) byClass[row.classGroup] = {};
-                
-                row.absences.forEach(name => {
-                    if (!byClass[row.classGroup][name]) {
-                        byClass[row.classGroup][name] = { total: 0, subjects: {} };
-                    }
-                    byClass[row.classGroup][name].total += row.lectureCount;
-                    byClass[row.classGroup][name].subjects[row.subject] = 
-                        (byClass[row.classGroup][name].subjects[row.subject] || 0) + row.lectureCount;
-                });
-            });
-            
-            let html = `<h3 style="color:#667eea; font-size:1.4em; margin-bottom:20px;">📅 Monthly Report: ${month.name}</h3>`;
-            
-            Object.keys(byClass).sort().forEach(cls => {
-                const students = byClass[cls];
-                const sorted = Object.entries(students).sort((a, b) => b[1].total - a[1].total);
-                
-                const subjects = new Set();
-                Object.values(students).forEach(s => Object.keys(s.subjects).forEach(sub => subjects.add(sub)));
-                const subArr = Array.from(subjects).sort();
-                
-                html += `<div class="chart-container">
-                    <h4 style="color:#667eea; font-size:1.2em; margin-bottom:15px;">🏫 CLASS ${cls}</h4>
-                    <div style="overflow-x:auto;">
-                        <table><thead><tr><th>Student</th>`;
-                
-                subArr.forEach(s => html += `<th style="text-align:center;" title="${s}">${s.length > 12 ? s.substring(0, 10) + '...' : s}</th>`);
-                html += `<th style="text-align:center;">TOTAL</th></tr></thead><tbody>`;
-                
-                sorted.forEach(([name, data]) => {
-                    const sev = getSeverity(data.total);
-                    html += `<tr class="row-${sev}"><td><strong>${name}</strong></td>`;
-                    
-                    subArr.forEach(sub => {
-                        const count =data.subjects[sub] || 0;
-                        const color = count >= 6 ? '#c33' : count >= 3 ? '#ff8800' : count > 0 ? '#667eea' : '#999';
-                        html += `<td style="text-align:center; color:${color}; font-weight:bold;">${count || '-'}</td>`;
-                    });
-                    
-                    html += `<td style="text-align:center;"><strong style="font-size:1.1em;">${data.total}</strong> ${getBadge(data.total)}</td></tr>`;
-                });
-                
-                html += `</tbody></table></div></div>`;
-            });
-            
-            document.getElementById('monthlyContent').innerHTML = html;
-        }
-
-        // --- ANALYTICS TAB ---
-        function getPolicyThresholds() {
-            const lecturesInput = parseInt(document.getElementById('lecturesPerDay')?.value);
-            const daysInput = parseInt(document.getElementById('expulsionDays')?.value);
-            return {
-                lecturesPerDay: (lecturesInput > 0) ? lecturesInput : 3, 
-                expulsionDays: (daysInput > 0) ? daysInput : 21 
-            };
-        }
-
-        function calculateExpulsionRisk() {
-            const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
-            const studentDailyLectures = {};
-
-            allData.forEach(entry => {
-                entry.absences.forEach(name => {
-                    if (!studentDailyLectures[name]) {
-                        studentDailyLectures[name] = {};
-                    }
-                    studentDailyLectures[name][entry.date] = (studentDailyLectures[name][entry.date] || 0) + entry.lectureCount;
-                });
-            });
-
-            const studentRiskSummary = {};
-            for (const name in studentDailyLectures) {
-                let totalDaysMissed = 0;
-                for (const date in studentDailyLectures[name]) {
-                    const lecturesMissed = studentDailyLectures[name][date];
-                    if (lecturesMissed >= lecturesPerDay) {
-                        totalDaysMissed += 1;
-                    }
-                }
-                studentRiskSummary[name] = {
-                    totalDaysMissed: totalDaysMissed,
-                    isExpelled: totalDaysMissed >= expulsionDays,
-                };
-            }
-            return studentRiskSummary;
-        }
-
-        function loadAnalytics() {
-            const riskSummary = calculateExpulsionRisk();
-            const { lecturesPerDay, expulsionDays } = getPolicyThresholds();
-            const studentsByClass = {};
-            
-            Object.entries(riskSummary).forEach(([name, data]) => {
-                let studentClass = 'Unknown';
-                for (const row of allData) {
-                    if (row.absences.includes(name)) {
-                        studentClass = row.classGroup || 'Unknown';
-                        break;
-                    }
-                }
-                if (!studentsByClass[studentClass]) studentsByClass[studentClass] = [];
-                studentsByClass[studentClass].push({ name, ...data });
-            });
-            
-            const sortedClasses = Object.keys(studentsByClass).sort();
-            
-            let html = `
-                <div class="chart-container" style="margin-top: 20px;">
-                    <h3 style="color:#ff4444; margin-bottom:15px; font-size:1.5em;">⚠️ Expulsion Risk Report</h3>
-                    <p style="color:#666; margin-bottom:20px;">
-                        Tracking students with <strong>${lecturesPerDay}</strong> or more lectures missed in a day counting as 1 day missed, 
-                        with a dismissal threshold of <strong>${expulsionDays}</strong> total days.
-                    </p>
-            `;
-            
-            sortedClasses.forEach(className => {
-                const students = studentsByClass[className];
-                students.sort((a, b) => b.totalDaysMissed - a.totalDaysMissed);
-                
-                html += `
-                    <div style="margin-bottom: 30px;">
-                        <h4 style="color:#667eea; margin-bottom:15px; font-size:1.3em;">🏫 Class ${className}</h4>
-                        <div style="overflow-x:auto;">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Student Name</th>
-                                        <th style="text-align:center;">Total Days Missed</th>
-                                        <th style="text-align:center;">Days Remaining</th>
-                                        <th style="text-align:center;">Risk Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                `;
-                
-                students.forEach(student => {
-                    const isExpelled = student.totalDaysMissed >= expulsionDays;
-                    const riskPercent = student.totalDaysMissed / expulsionDays;
-                    
-                    let rowClass = 'row-low';
-                    let statusText = 'LOW RISK';
-                    let statusColor = '#4CAF50';
-                    
-                    if (isExpelled) {
-                        rowClass = 'row-high';
-                        statusText = 'DISMISSED';
-                        statusColor = '#ff4444';
-                    } else if (riskPercent >= 0.75) {
-                        rowClass = 'row-medium';
-                        statusText = 'HIGH RISK';
-                        statusColor = '#ff8800';
-                    }
-                    
-                    const daysRemaining = Math.max(0, expulsionDays - student.totalDaysMissed);
-                    const safeName = encodeURIComponent(student.name);
-
-                    html += `
-                        <tr class="${rowClass}">
-                            <td><span class="clickable" onclick="showStudentProfileFromDropdown('${safeName}')">${student.name}</span></td>
-                            <td style="text-align:center; font-weight:bold;">${student.totalDaysMissed}</td>
-                            <td style="text-align:center;">${daysRemaining}</td>
-                            <td style="text-align:center; font-weight:bold; color: ${statusColor};">${statusText}</td>
-                        </tr>
-                    `;
-                });
-                
-                html += `</tbody></table></div></div>`;
-            });
-            
-            html += `</div>`;
-            
-            // --- Legacy Analytics (Subject breakdown etc) ---
-            const byClass = {};
-            classes.forEach(c => byClass[c] = 0);
-            
-            allData.forEach(row => {
-                if (row.classGroup && byClass.hasOwnProperty(row.classGroup)) {
-                    byClass[row.classGroup] += row.absences.length * row.lectureCount;
-                }
-            });
-
-            const byLecture = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
-            allData.forEach(row => {
-                const match = String(row.lecture).match(/\d+/); 
-                const lec = match ? parseInt(match[0]) : 0;
-                
-                if (lec >= 1 && lec <= 6) {
-                    byLecture[lec] += row.absences.length * row.lectureCount;
-                }
-            });
-
-            const bySubject = {};
-            allData.forEach(row => {
-                if (row.subject) {
-                    bySubject[row.subject] = (bySubject[row.subject] || 0) + (row.absences.length * row.lectureCount);
-                }
-            });
-
-            let oldAnalyticsHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px; margin-top: 30px;">';
-            
-            // Absences by Class
-            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">📊 Absences by Class</h3><div style="overflow-x:auto;"><table><thead><tr><th>Class</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-            Object.entries(byClass).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([cls, count]) => {
-                oldAnalyticsHtml += `<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-            });
-            oldAnalyticsHtml += '</tbody></table></div></div>';
-
-            // Absences by Lecture Time
-            oldAnalyticsHtml += '<div class="chart-container"><h3 style="color:#667eea; margin-bottom:15px;">⏰ Absences by Lecture Time</h3><div style="overflow-x:auto;"><table><thead><tr><th>Lecture Period</th><th style="text-align:center;">Total Absences</th></tr></thead><tbody>';
-            Object.entries(byLecture).forEach(([lec, count]) => {
-                oldAnalyticsHtml += `<tr><td><strong>Lecture ${lec}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td></tr>`;
-            });
-            oldAnalyticsHtml += '</tbody></table></div></div>';
-
-            // Absences by Subject
-            oldAnalyticsHtml += '<div class="chart-container" style="grid-column:1/-1;"><h3 style="color:#667eea; margin-bottom:15px;">📚 Absences by Subject</h3><div style="overflow-x:auto;"><table><thead><tr><th>Subject</th><th style="text-align:center;">Total Absences</th><th style="text-align:center;">Percentage</th></tr></thead><tbody>';
-            const totalSubjectAbsences = Object.values(bySubject).reduce((a, b) => a + b, 0);
-            Object.entries(bySubject).filter(([, count]) => count > 0).sort((a, b) => b[1] - a[1]).forEach(([subj, count]) => {
-                const pct = ((count / totalSubjectAbsences) * 100).toFixed(1);
-                oldAnalyticsHtml += `<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea; font-size:1.2em;">${count}</strong></td><td style="text-align:center;"><span style="color:#ff8800; font-weight:600;">${pct}%</span></td></tr>`;
-            });
-            oldAnalyticsHtml += '</tbody></table></div></div>';
-
-            oldAnalyticsHtml += '</div>';
-
-            document.getElementById('analyticsContent').innerHTML = html + oldAnalyticsHtml;
-        }
-
-        // --- STUDENT PROFILE MODAL ---
-        function showStudentProfile(name) {
-            const details = { class: '', total: 0, log: [] };
-            
-            allData.forEach(row => {
-                row.absences.forEach(studentName => {
-                    if (studentName.toLowerCase() === name.toLowerCase()) {
-                        details.class = row.classGroup || details.class;
-                        details.total += row.lectureCount;
-                        details.log.push({
-                            date: row.date,
-                            teacher: row.teacher,
-                            subject: row.subject,
-                            lecture: row.lecture,
-                            count: row.lectureCount
-                        });
-                    }
-                });
-            });
-            
-            details.log.sort((a, b) => new Date(b.date) - new Date(a.date));
-            const subjects = [...new Set(details.log.map(a => a.subject))];
-            const sev = getSeverity(details.total);
-            
-            let html = `<div class="student-profile-header">
-                <h2>👤 ${name}</h2> <div style="margin-top:10px;">${getBadge(details.total)}</div>
-            </div>
-            
-            <div class="profile-stats">
-                <div class="profile-stat">
-                    <div class="label">🏫 Class</div>
-                    <div class="value" style="font-size:1.8em;">${details.class || 'N/A'}</div>
-                </div>
-                <div class="profile-stat">
-                    <div class="label">📚 Total Absences</div>
-                    <div class="value" style="color:${sev === 'high' ? '#ff4444' : sev === 'medium' ? '#ff8800' : '#4CAF50'};">${details.total}</div>
-                </div>
-                <div class="profile-stat">
-                    <div class="label">📖 Subjects Affected</div>
-                    <div class="value" style="font-size:1.8em;">${subjects.length}</div>
-                </div>
-                <div class="profile-stat">
-                    <div class="label">📋 Total Entries</div>
-                    <div class="value" style="font-size:1.8em;">${details.log.length}</div>
-                </div>
-            </div>
-            
-            <div style="margin:25px 0; padding:15px; background:#f8f9fa; border-radius:8px;">
-                <strong style="color:#667eea;">Subjects Missed:</strong><br>
-                <span style="color:#666;">${subjects.join(', ')}</span>
-            </div>
-            
-            <h3 style="color:#667eea; margin:25px 0 15px 0;">📋 Complete Absence History</h3>
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Date</th><th>Lecture</th><th>Subject</th><th>Teacher</th></tr></thead>
-                    <tbody>`;
-            
-            details.log.forEach(a => {
-                html += `<tr><td>${a.date}</td><td>${a.lecture}</td><td>${a.subject}</td><td>${a.teacher}</td></tr>`;
-            });
-            
-            html += `</tbody></table></div>`;
-            
-            document.getElementById('modalContent').innerHTML = html;
-            document.getElementById('studentModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('studentModal').style.display = 'none';
-        }
-
-        // --- NAVIGATION & INIT ---
-        function showTab(tabName) {
-            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            
-            document.getElementById(tabName).classList.add('active');
-            document.querySelectorAll('.tab').forEach(t => {
-                if (t.onclick && t.onclick.toString().includes(`'${tabName}'`)) {
-                    t.classList.add('active');
-                }
-            });
-            
-            if (tabName === 'roster') loadRoster();
-            if (tabName === 'weekly') loadWeeklyDropdown();
-            if (tabName === 'monthly') loadMonthlyDropdown();
-            if (tabName === 'analytics') loadAnalytics();
-        }
-
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('studentModal')) {
-                closeModal();
-            }
-        }
-        
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('#headerStudentSearch') && !e.target.closest('#dropdownResults')) {
-                document.getElementById('dropdownResults').classList.remove('show');
-            }
-        });
-        
-        function scheduleDataFetch() {
-            const now = new Date();
-            const currentHour = now.getHours();
-            
-            const START_HOUR = 8;
-            const END_HOUR = 14; 
-
-            let intervalMs;
-            
-            if (currentHour >= START_HOUR && currentHour < END_HOUR) {
-                intervalMs = 300000;
-                console.log(`⏰ Inside window. Refreshing data in ${intervalMs / 60000} minutes...`);
-                fetchData(); 
-            } else {
-                const nextStart = new Date(now);
-                if (currentHour >= END_HOUR) {
-                    nextStart.setDate(now.getDate() + 1);
-                }
-                nextStart.setHours(START_HOUR, 0, 1, 0); 
-                
-                intervalMs = nextStart.getTime() - now.getTime();
-                console.log(`😴 Outside window. Next refresh check scheduled for 8 AM...`);
-            }
-
-            setTimeout(scheduleDataFetch, intervalMs);
-        }
-
-        let adminPendingRow = null;
-
-        function askAdminDelete(rowNumber, info) {
-            adminPendingRow = rowNumber;
-            document.getElementById('adminConfirmInfo').textContent = info;
-            document.getElementById('adminConfirmOverlay').style.display = 'flex';
-        }
-        function closeAdminConfirm() {
-            document.getElementById('adminConfirmOverlay').style.display = 'none';
-            adminPendingRow = null;
-        }
-        async function executeAdminDelete() {
-            if (!adminPendingRow) return;
-            const rowNum = adminPendingRow;
-            closeAdminConfirm();
-            try {
-                await fetch(PORTAL_URL, {
-                    method: 'POST', mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'deleteRow', rowNumber: rowNum, teacher: 'admin' })
-                });
-                allData = allData.filter(function(r){ return r.rowNumber !== rowNum; });
-                filterDaily();
-                showNotif('✅ Deleted. Ask teacher to resubmit.');
-            } catch(err) { showNotif('❌ Delete failed: ' + err.message); }
-        }
-        function showNotif(msg) {
-            const n = document.createElement('div');
-            n.textContent = msg;
-            n.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 24px;border-radius:100px;font-size:0.88rem;font-weight:600;z-index:600;box-shadow:0 4px 20px rgba(0,0,0,.2);';
-            document.body.appendChild(n);
-            setTimeout(function(){ n.remove(); }, 3500);
-        }
-        function doAdminLogout() {
-            localStorage.removeItem('remembered_username');
-            localStorage.removeItem('remembered_password');
-            sessionStorage.setItem('explicit_logout', '1');
-            window.location.href = 'index.html';
-        }
-        function checkAdminAccess() {
-            const u = localStorage.getItem('remembered_username');
-            const p = localStorage.getItem('remembered_password');
-            if (!u || !p) { window.location.href = 'index.html'; }
-        }
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAdminAccess();
-            console.log('🚀 Dashboard initializing...');
-            fetchData();
-            scheduleDataFetch();
-        });
-
-    </script>
-  <div id="adminConfirmOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(15,25,35,0.55);backdrop-filter:blur(3px);align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:400px;width:90%;box-shadow:0 16px 48px rgba(15,25,35,0.25);text-align:center;">
-      <div style="font-size:2.4rem;margin-bottom:12px;">🗑️</div>
-      <h3 style="font-size:1rem;font-weight:700;margin-bottom:8px;">Delete this submission?</h3>
-      <div id="adminConfirmInfo" style="font-size:0.84rem;color:#444;margin-bottom:14px;background:#f8f8f8;padding:10px 14px;border-radius:8px;text-align:left;"></div>
-      <p style="font-size:0.82rem;color:#c8402a;margin-bottom:20px;">This cannot be undone. Ask the teacher to resubmit.</p>
-      <div style="display:flex;gap:10px;justify-content:center;">
-        <button onclick="closeAdminConfirm()" style="padding:10px 22px;background:none;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:0.88rem;color:#666;cursor:pointer;">Cancel</button>
-        <button onclick="executeAdminDelete()" style="padding:10px 22px;background:#c8402a;border:none;border-radius:10px;font-family:inherit;font-size:0.88rem;font-weight:700;color:#fff;cursor:pointer;">🗑️ Delete</button>
+<!-- ANALYTICS -->
+<div id="analytics" class="content-section">
+  <h2 class="section-title" id="dAnalyticsTitle">📈 شیکاری</h2>
+  <p class="section-sub" id="dAnalyticsSub">ئامارێن بەرفراوان ل سەر نەهاتنا قوتابیان</p>
+  <div class="filter-section">
+    <h3 style="color:#667eea;margin-bottom:12px;font-size:1.1em;" id="dPolicyTitle">ڕێکخستنا سیاسەتی دەرکرن</h3>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label id="dLecPerDay">ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:</label>
+        <input type="number" id="lecturesPerDay" value="3" min="1" onchange="loadAnalytics()">
+      </div>
+      <div class="filter-group">
+        <label id="dExpDays">ژمارەی ڕۆژانی دابراون بۆ دەرکرن:</label>
+        <input type="number" id="expulsionDays" value="21" min="1" onchange="loadAnalytics()">
       </div>
     </div>
   </div>
+  <div id="analyticsContent"><div style="text-align:center;padding:50px;color:#667eea;font-size:1.1em;">⏳ بارکرن...</div></div>
+</div>
+
+</div><!-- /container -->
+
+<!-- STUDENT MODAL -->
+<div class="modal" id="studentModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- ADMIN DELETE CONFIRM -->
+<div class="admin-confirm" id="adminConfirm">
+  <div class="admin-confirm-box">
+    <div class="icon">🗑️</div>
+    <h3 id="adminConfTitle">تومارکرن بسڕەوە؟</h3>
+    <div class="admin-confirm-info" id="adminConfInfo"></div>
+    <p id="adminConfWarning">ئەم کارە نابێتە پووچەلکرن.</p>
+    <div class="admin-confirm-btns">
+      <button class="btn-cancel-sm" onclick="closeAdminConfirm()" id="adminCancelBtn">هەڵوەستان</button>
+      <button class="btn-delete-sm" onclick="executeAdminDelete()" id="adminDeleteBtn">🗑️ بسڕەوە</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
+const LOGIN_URL   = 'login.html';
+const SCHOOL_START = '9/21/2025';
+
+// ── i18n ─────────────────────────────────────────────
+const LANGS = {
+  ku: {
+    dir:'rtl', htmlLang:'ku',
+    dInstName:'پەیمانگەها کومپیوتەرێ ل ئاکرێ', dSub:'تومارا نەهاتنا قوتابیان',
+    btnLogout:'🚪 دەرچوون', searchPH:'🔍 ناڤێ یەکەم ی قوتابی بنووسە...',
+    sTotalAbs:'📚 کۆی نەهاتن', sStudents:'👥 قوتابیان', sHighRisk:'🔴 مەترسیدار',
+    sAtRisk:'🟠 ئاگاداربە', sClasses:'🏫 پۆلان',
+    sHighRiskSub:'≥15 نەهاتن', sAtRiskSub:'8-14 نەهاتن',
+    tabDaily:'📅 ڕۆژانە', tabWeekly:'📊 هەفتانە', tabMonthly:'📅 مانگانە',
+    tabRoster:'📋 لیست', tabAnalytics:'📈 شیکاری',
+    dDailyTitle:'📅 ڕاپۆرتی ڕۆژانە', dDailySub:'کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە',
+    dDateLabel:'📆 بەروار:', btnToday:'ئەمرۆ', btnYesterday:'دووێ',
+    dWeeklyTitle:'📊 ڕاپۆرتی هەفتانە', dWeeklySub:'کۆی نەهاتنی هەفتەیەک',
+    dWeekLabel:'📅 هەفتە:', btnPrint:'🖨️ چاپکرن',
+    dMonthlyTitle:'📅 ڕاپۆرتی مانگانە', dMonthlySub:'کۆی نەهاتنی مانگێک',
+    dMonthLabel:'📆 مانگ:',
+    dRosterTitle:'📋 لیستی پۆل', dRosterSub:'ناڤی قوتابی کلیک بکە پرۆفایلی ببینیت',
+    dClassLabel:'🏫 پۆل:', dMinAbsLabel:'🔢 کەمترین نەهاتن:',
+    dAnalyticsTitle:'📈 شیکاری', dAnalyticsSub:'ئامارێن بەرفراوان',
+    dPolicyTitle:'ڕێکخستنا سیاسەتی دەرکرن',
+    dLecPerDay:'ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:',
+    dExpDays:'ژمارەی ڕۆژانی دابراون بۆ دەرکرن:',
+    weekend:'🏖️ دەرفەت — مکتەب نییە',
+    noAbsences:'هیچ نەهاتنێک نینە',
+    selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە',
+    selectClass:'پۆلێک هەلبژێرە',
+    weekLabel:'هەفتە', manageLabel:'🗑️ رێکخستنی تومارکرنان',
+    noneAbsent:'هیچ', classLabel:'پۆل', totalLabel:'کۆ',
+    studentLabel:'قوتابی', subjectLabel:'بابەت',
+    badgeHigh:'مەترسیدار', badgeMedium:'ئاگاداربە', badgeLow:'باشە',
+    profileClass:'🏫 پۆل', profileTotal:'📚 کۆی نەهاتن',
+    profileSubjects:'📖 بابەتان', profileEntries:'📋 تومارکرن',
+    profileHistory:'📋 مێژووی نەهاتن',
+    colDate:'بەروار', colLecture:'وانە', colSubject:'بابەت', colTeacher:'مامۆستە',
+    riskDismissed:'دەرکراو', riskHigh:'مەترسیدار', riskLow:'باشە',
+    colDaysMissed:'ڕۆژانی دابراو', colRemaining:'ماوەی مایە', colStatus:'دۆخ',
+    expulsionReport:'⚠️ ڕاپۆرتی مەترسی دەرکرن',
+    expulsionDesc:'قوتابیانێ کە ب مەترسیدا ر',
+    absByClass:'📊 نەهاتن بە پۆل', absByLec:'⏰ نەهاتن بە وانە', absBySubj:'📚 نەهاتن بە بابەت',
+    pctLabel:'%', noResults:'هیچ قوتابیێک نەدۆزرایەوە',
+    adminConfTitle:'تومارکرن بسڕەوە؟', adminConfWarning:'ئەم کارە نابێتە پووچەلکرن.',
+    adminCancelBtn:'هەڵوەستان', adminDeleteBtn:'🗑️ بسڕەوە',
+    toastDeleted:'✅ سڕایەوە. مامۆستا دوبارە تومار بکات.',
+    toastDeleteFail:'❌ سڕینەوە سەرنەکەفت!',
+    lastUpdated:'✅ دوایین نوێکرنەوە:',
+    loading:'⏳ بارکرن...',
+  },
+  ar: {
+    dir:'rtl', htmlLang:'ar',
+    dInstName:'معهد عقرة للكمبيوتر', dSub:'تسجيل غياب الطلاب',
+    btnLogout:'🚪 تسجيل الخروج', searchPH:'🔍 ابحث باسم الطالب الأول...',
+    sTotalAbs:'📚 إجمالي الغياب', sStudents:'👥 الطلاب', sHighRisk:'🔴 خطر عالٍ',
+    sAtRisk:'🟠 تحت المراقبة', sClasses:'🏫 الشعب',
+    sHighRiskSub:'≥15 غياب', sAtRiskSub:'8-14 غياب',
+    tabDaily:'📅 يومي', tabWeekly:'📊 أسبوعي', tabMonthly:'📅 شهري',
+    tabRoster:'📋 كشف', tabAnalytics:'📈 تحليلات',
+    dDailyTitle:'📅 التقرير اليومي', dDailySub:'عرض الغياب حصة بحصة',
+    dDateLabel:'📆 التاريخ:', btnToday:'اليوم', btnYesterday:'أمس',
+    dWeeklyTitle:'📊 التقرير الأسبوعي', dWeeklySub:'ملخص غياب الأسبوع',
+    dWeekLabel:'📅 الأسبوع:', btnPrint:'🖨️ طباعة',
+    dMonthlyTitle:'📅 التقرير الشهري', dMonthlySub:'ملخص غياب الشهر',
+    dMonthLabel:'📆 الشهر:',
+    dRosterTitle:'📋 كشف الصف', dRosterSub:'انقر على اسم الطالب لعرض ملفه',
+    dClassLabel:'🏫 الشعبة:', dMinAbsLabel:'🔢 الحد الأدنى للغياب:',
+    dAnalyticsTitle:'📈 التحليلات', dAnalyticsSub:'إحصاءات الغياب التفصيلية',
+    dPolicyTitle:'إعداد سياسة الفصل',
+    dLecPerDay:'عدد الحصص الغائبة لتحتسب يوماً:',
+    dExpDays:'عدد الأيام لاتخاذ قرار الفصل:',
+    weekend:'🏖️ عطلة — لا دوام',
+    noAbsences:'لا يوجد غياب',
+    selectWeek:'اختر أسبوعاً', selectMonth:'اختر شهراً', selectClass:'اختر شعبة',
+    weekLabel:'أسبوع', manageLabel:'🗑️ إدارة التسجيلات',
+    noneAbsent:'لا غياب', classLabel:'الشعبة', totalLabel:'الإجمالي',
+    studentLabel:'الطالب', subjectLabel:'المادة',
+    badgeHigh:'خطر', badgeMedium:'مراقبة', badgeLow:'جيد',
+    profileClass:'🏫 الشعبة', profileTotal:'📚 إجمالي الغياب',
+    profileSubjects:'📖 المواد المتأثرة', profileEntries:'📋 عدد السجلات',
+    profileHistory:'📋 سجل الغياب الكامل',
+    colDate:'التاريخ', colLecture:'الحصة', colSubject:'المادة', colTeacher:'الأستاذ',
+    riskDismissed:'مفصول', riskHigh:'خطر', riskLow:'جيد',
+    colDaysMissed:'أيام الغياب', colRemaining:'المتبقي', colStatus:'الحالة',
+    expulsionReport:'⚠️ تقرير خطر الفصل',
+    expulsionDesc:'تتبع الطلاب المعرضين لخطر الفصل',
+    absByClass:'📊 الغياب حسب الشعبة', absByLec:'⏰ الغياب حسب الحصة', absBySubj:'📚 الغياب حسب المادة',
+    pctLabel:'%', noResults:'لا يوجد طلاب مطابقون',
+    adminConfTitle:'حذف التسجيل؟', adminConfWarning:'لا يمكن التراجع عن هذا.',
+    adminCancelBtn:'إلغاء', adminDeleteBtn:'🗑️ حذف',
+    toastDeleted:'✅ تم الحذف. اطلب من الأستاذ إعادة التسجيل.',
+    toastDeleteFail:'❌ فشل الحذف!',
+    lastUpdated:'✅ آخر تحديث:',
+    loading:'⏳ جارٍ التحميل...',
+  },
+  en: {
+    dir:'ltr', htmlLang:'en',
+    dInstName:'Akre Computer Institute', dSub:'Student Absence Dashboard',
+    btnLogout:'🚪 Logout', searchPH:'🔍 Search by first name...',
+    sTotalAbs:'📚 Total Absences', sStudents:'👥 Students', sHighRisk:'🔴 High Risk',
+    sAtRisk:'🟠 At Risk', sClasses:'🏫 Classes',
+    sHighRiskSub:'≥15 absences', sAtRiskSub:'8-14 absences',
+    tabDaily:'📅 Daily', tabWeekly:'📊 Weekly', tabMonthly:'📅 Monthly',
+    tabRoster:'📋 Roster', tabAnalytics:'📈 Analytics',
+    dDailyTitle:'📅 Daily Absence Report', dDailySub:'View absence breakdown by lecture and class',
+    dDateLabel:'📆 Date:', btnToday:'Today', btnYesterday:'Yesterday',
+    dWeeklyTitle:'📊 Weekly Report', dWeeklySub:'Weekly absence summaries',
+    dWeekLabel:'📅 Week:', btnPrint:'🖨️ Print',
+    dMonthlyTitle:'📅 Monthly Report', dMonthlySub:'Monthly absence trends',
+    dMonthLabel:'📆 Month:',
+    dRosterTitle:'📋 Class Roster', dRosterSub:'Click a student name to view their profile',
+    dClassLabel:'🏫 Class:', dMinAbsLabel:'🔢 Min Absences:',
+    dAnalyticsTitle:'📈 Analytics', dAnalyticsSub:'Data-driven insights across classes',
+    dPolicyTitle:'Policy Risk Configuration',
+    dLecPerDay:'Lectures missed to count as 1 day:',
+    dExpDays:'Days missed threshold for dismissal:',
+    weekend:'🏖️ Weekend — No School',
+    noAbsences:'No absences recorded',
+    selectWeek:'Select a week', selectMonth:'Select a month', selectClass:'Select a class',
+    weekLabel:'Week', manageLabel:'🗑️ Manage Submissions',
+    noneAbsent:'None', classLabel:'Class', totalLabel:'TOTAL',
+    studentLabel:'Student', subjectLabel:'Subject',
+    badgeHigh:'HIGH RISK', badgeMedium:'AT RISK', badgeLow:'GOOD',
+    profileClass:'🏫 Class', profileTotal:'📚 Total Absences',
+    profileSubjects:'📖 Subjects Affected', profileEntries:'📋 Total Entries',
+    profileHistory:'📋 Complete Absence History',
+    colDate:'Date', colLecture:'Lecture', colSubject:'Subject', colTeacher:'Teacher',
+    riskDismissed:'DISMISSED', riskHigh:'HIGH RISK', riskLow:'LOW RISK',
+    colDaysMissed:'Days Missed', colRemaining:'Days Left', colStatus:'Status',
+    expulsionReport:'⚠️ Expulsion Risk Report',
+    expulsionDesc:'Students flagged based on configured policy',
+    absByClass:'📊 Absences by Class', absByLec:'⏰ Absences by Lecture', absBySubj:'📚 Absences by Subject',
+    pctLabel:'%', noResults:'No students found',
+    adminConfTitle:'Delete this submission?', adminConfWarning:'This cannot be undone. Ask the teacher to resubmit.',
+    adminCancelBtn:'Cancel', adminDeleteBtn:'🗑️ Delete',
+    toastDeleted:'✅ Deleted. Ask teacher to resubmit.',
+    toastDeleteFail:'❌ Delete failed!',
+    lastUpdated:'✅ Last updated:',
+    loading:'⏳ Loading...',
+  }
+};
+
+let currentLang = localStorage.getItem('aci_lang') || 'ku';
+let allData = [], classes = [], weeks = [], months = [];
+let adminToken = null;
+let adminPendingRow = null;
+
+// ── Auth ──────────────────────────────────────────────
+function checkAuth() {
+  const token = sessionStorage.getItem('aci_token');
+  const role  = sessionStorage.getItem('aci_role');
+  if (!token || role !== 'admin') {
+    window.location.href = LOGIN_URL;
+    return false;
+  }
+  adminToken = token;
+  return true;
+}
+
+function doLogout() {
+  sessionStorage.clear();
+  sessionStorage.setItem('explicit_logout', '1');
+  window.location.href = LOGIN_URL;
+}
+
+// ── i18n ─────────────────────────────────────────────
+function setLang(lang) {
+  if (!LANGS[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('aci_lang', lang);
+  const L = LANGS[lang];
+  document.documentElement.dir  = L.dir;
+  document.documentElement.lang = L.htmlLang;
+
+  const ids = ['dInstName','dSub','btnLogout','sTotalAbs','sStudents','sHighRisk','sAtRisk',
+    'sClasses','sHighRiskSub','sAtRiskSub','dDailyTitle','dDailySub','dDateLabel',
+    'btnToday','btnYesterday','dWeeklyTitle','dWeeklySub','dWeekLabel','dMonthlyTitle',
+    'dMonthlySub','dMonthLabel','dRosterTitle','dRosterSub','dClassLabel','dMinAbsLabel',
+    'dAnalyticsTitle','dAnalyticsSub','dPolicyTitle','dLecPerDay','dExpDays',
+    'adminConfTitle','adminConfWarning','adminCancelBtn','adminDeleteBtn'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && L[id]) el.textContent = L[id];
+  });
+
+  // Tab labels
+  ['daily','weekly','monthly','roster','analytics'].forEach(t => {
+    const key = 'tab'+t.charAt(0).toUpperCase()+t.slice(1);
+    const el  = document.getElementById('tab-'+t);
+    if (el && L[key]) el.textContent = L[key];
+  });
+
+  // Print buttons
+  ['btnPrintW','btnPrintM','btnPrintR'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = L.btnPrint;
+  });
+
+  document.getElementById('searchInput').placeholder = L.searchPH;
+
+  document.querySelectorAll('.lang-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['ku','ar','en'][i] === lang);
+  });
+
+  // Re-render active tab
+  const active = document.querySelector('.content-section.active');
+  if (active) {
+    const id = active.id;
+    if (id==='daily')     filterDaily();
+    if (id==='weekly')    loadWeekly();
+    if (id==='monthly')   loadMonthly();
+    if (id==='roster')    filterRoster();
+    if (id==='analytics') loadAnalytics();
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────
+function getFirstName(fullName) {
+  if (!fullName) return '';
+  return fullName.trim().split(/\s+/)[0];
+}
+function getThreeNames(fullName) {
+  if (!fullName) return '';
+  return fullName.trim().split(/\s+/).slice(0,3).join(' ');
+}
+function normalizeDate(s) {
+  if (!s) return '';
+  const parts = s.split('/');
+  if (parts.length===3) {
+    const d = new Date(parts[2], parts[0]-1, parts[1]);
+    if (!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+  }
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+  return '';
+}
+function formatDate(d) {
+  if (!d||isNaN(d.getTime())) return '';
+  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+}
+function getLectureCount(lec) {
+  const s = String(lec).toLowerCase();
+  return (s.includes('merged')||s.includes('and')||/\d\s*-\s*\d/.test(s)) ? 2 : 1;
+}
+function getSeverity(n) { return n>=15?'high':n>=8?'medium':'low'; }
+function getBadge(n) {
+  const L = LANGS[currentLang];
+  const s = getSeverity(n);
+  const t = s==='high'?L.badgeHigh:s==='medium'?L.badgeMedium:L.badgeLow;
+  return `<span class="badge badge-${s}">${t}</span>`;
+}
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className='toast'+(type?' '+type:'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── Search — first name only ───────────────────────────
+function onSearch() {
+  const query    = document.getElementById('searchInput').value.trim().toLowerCase();
+  const dropdown = document.getElementById('dropdownResults');
+  const L        = LANGS[currentLang];
+
+  if (query.length < 2) { dropdown.classList.remove('show'); return; }
+
+  const details = {};
+  allData.forEach(row => {
+    row.absences.forEach(name => {
+      const firstName = getFirstName(name).toLowerCase();
+      if (firstName.startsWith(query)) {
+        if (!details[name]) details[name] = { cls: row.classGroup, total:0, subjects:new Set() };
+        details[name].total += row.lectureCount;
+        details[name].subjects.add(row.subject);
+      }
+    });
+  });
+
+  dropdown.classList.add('show');
+  if (!Object.keys(details).length) {
+    dropdown.innerHTML = `<div class="dropdown-empty">🔍 ${L.noResults} "<strong>${query}</strong>"</div>`;
+    return;
+  }
+
+  let html = '';
+  Object.entries(details).sort((a,b)=>b[1].total-a[1].total).forEach(([name,d]) => {
+    const sev  = getSeverity(d.total);
+    const badge= sev==='high'?L.badgeHigh:sev==='medium'?L.badgeMedium:L.badgeLow;
+    const safe = encodeURIComponent(name);
+    html += `<div class="dropdown-item" onclick="openProfileFromDropdown('${safe}')">
+      <div class="dropdown-name">${name} <span class="badge badge-${sev}">${badge}</span></div>
+      <div class="dropdown-info">${L.classLabel} ${d.cls||'?'} • ${d.total} ${L.sTotalAbs||'abs'} • ${d.subjects.size} ${L.subjectLabel||'subj'}</div>
+    </div>`;
+  });
+  dropdown.innerHTML = html;
+}
+
+function openProfileFromDropdown(encoded) {
+  const name = decodeURIComponent(encoded);
+  document.getElementById('dropdownResults').classList.remove('show');
+  document.getElementById('searchInput').value = '';
+  showStudentProfile(name);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#searchInput') && !e.target.closest('#dropdownResults'))
+    document.getElementById('dropdownResults').classList.remove('show');
+});
+
+// ── Data fetch ────────────────────────────────────────
+function parseData(json) {
+  if (!json?.values || json.values.length < 2) return [];
+  const rows = json.values.slice(1);
+  const data = [];
+  rows.forEach((row, idx) => {
+    const date       = row[1] ? String(row[1]).trim() : '';
+    const teacher    = row[2] ? String(row[2]).trim() : 'Unknown';
+    const subject    = row[3] ? String(row[3]).trim() : 'Unknown';
+    const lecture    = row[4] ? String(row[4]).trim() : 'Lecture 1';
+    const classGroup = row[5] ? String(row[5]).trim() : '';
+    const absentRaw  = row[6] ? String(row[6]).trim() : '';
+    if (!date||!classGroup) return;
+    const absences = absentRaw
+      ? absentRaw.split(',').map(s=>s.trim()).filter(Boolean).map(getThreeNames)
+      : [];
+    data.push({
+      rowNumber: idx+2, date, teacher, subject, lecture,
+      lectureCount: getLectureCount(lecture),
+      classGroup, absences: [...new Set(absences)]
+    });
+  });
+  return data;
+}
+
+async function fetchData() {
+  const L = LANGS[currentLang];
+  document.getElementById('lastUpdate').innerHTML = `<span style="color:#667eea;">${L.loading}</span>`;
+  try {
+    const url  = SCRIPT_URL + '?api=data&token=' + encodeURIComponent(adminToken);
+    const json = await (await fetch(url)).json();
+    if (json.error) throw new Error(json.error);
+
+    allData = parseData(json).map(r=>({...r, date:normalizeDate(r.date)})).filter(r=>r.date);
+    classes = [...new Set(allData.map(r=>r.classGroup).filter(Boolean))].sort();
+    weeks   = getWeeks();
+    months  = getMonths();
+
+    updateStats();
+    loadDaily();
+    if (document.getElementById('roster').classList.contains('active'))    loadRosterDropdown();
+    if (document.getElementById('weekly').classList.contains('active'))    loadWeeklyDropdown();
+    if (document.getElementById('monthly').classList.contains('active'))   loadMonthlyDropdown();
+    if (document.getElementById('analytics').classList.contains('active')) loadAnalytics();
+
+    document.getElementById('lastUpdate').innerHTML =
+      `<span style="color:#4CAF50;">${L.lastUpdated} ${new Date().toLocaleTimeString()}</span>`;
+  } catch(err) {
+    document.getElementById('lastUpdate').innerHTML = `<span style="color:#ff4444;">❌ ${err.message}</span>`;
+  }
+}
+
+function updateStats() {
+  let totalAbs=0; const students={};
+  allData.forEach(r=>{
+    totalAbs += r.lectureCount * r.absences.length;
+    r.absences.forEach(n=>{ const k=n.toLowerCase(); students[k]=(students[k]||0)+r.lectureCount; });
+  });
+  let high=0,medium=0;
+  Object.values(students).forEach(c=>{ if(c>=15)high++; else if(c>=8)medium++; });
+  document.getElementById('totalAbsences').textContent = totalAbs;
+  document.getElementById('totalStudents').textContent = Object.keys(students).length;
+  document.getElementById('highRisk').textContent      = high;
+  document.getElementById('atRisk').textContent        = medium;
+  document.getElementById('totalClasses').textContent  = classes.length;
+}
+
+// ── Week/Month builders ───────────────────────────────
+function getWeeks() {
+  const start = new Date(SCHOOL_START);
+  if (isNaN(start.getTime())) return [];
+  const arr=[]; let cur=new Date(start); let num=1;
+  cur.setDate(cur.getDate()-cur.getDay());
+  const now=new Date();
+  while(cur<=now){
+    const ws=new Date(cur), we=new Date(cur);
+    we.setDate(we.getDate()+6);
+    if(ws<=now) arr.push({number:num++,start:ws,end:we});
+    cur.setDate(cur.getDate()+7);
+  }
+  return arr.reverse();
+}
+function getMonths() {
+  const start=new Date(SCHOOL_START); if(isNaN(start.getTime())) return [];
+  const arr=[]; let cur=new Date(start.getFullYear(),start.getMonth(),1); const now=new Date();
+  while(cur<=now){
+    const ms=new Date(cur), me=new Date(cur.getFullYear(),cur.getMonth()+1,0);
+    arr.push({name:ms.toLocaleString('default',{month:'long',year:'numeric'}),start:ms,end:me});
+    cur.setMonth(cur.getMonth()+1);
+  }
+  return arr.reverse();
+}
+
+// ── DAILY ─────────────────────────────────────────────
+function setToday(){
+  const n=new Date();
+  document.getElementById('dailyDate').value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+  filterDaily();
+}
+function setPrevDay(){
+  const d=new Date(); d.setDate(d.getDate()-1);
+  document.getElementById('dailyDate').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  filterDaily();
+}
+function loadDaily(){ if(!document.getElementById('dailyDate').value) setToday(); else filterDaily(); }
+
+function filterDaily() {
+  const L   = LANGS[currentLang];
+  const val = document.getElementById('dailyDate').value;
+  if(!val) return;
+  const sel = new Date(val);
+  if(sel.getDay()===5||sel.getDay()===6){
+    document.getElementById('dailyContent').innerHTML=`<div style="text-align:center;padding:80px 20px;"><div style="font-size:5em;margin-bottom:20px;">🏖️</div><h2 style="color:#667eea;font-size:1.8em;">${L.weekend}</h2></div>`;
+    return;
+  }
+  const fDate    = normalizeDate(val);
+  const filtered = allData.filter(r=>r.date===fDate);
+  const byClass  = {};
+  classes.forEach(c=>{byClass[c]={};});
+  filtered.forEach(row=>{
+    if(!row.classGroup) return;
+    if(!byClass[row.classGroup]) byClass[row.classGroup]={};
+    const nums=String(row.lecture).match(/\d+/g)||['1'];
+    nums.forEach(n=>{
+      const num=parseInt(n);
+      if(num>=1&&num<=6){
+        if(!byClass[row.classGroup][num]) byClass[row.classGroup][num]={subject:row.subject,teacher:row.teacher,students:[]};
+        row.absences.forEach(s=>{ if(!byClass[row.classGroup][num].students.includes(s)) byClass[row.classGroup][num].students.push(s); });
+      }
+    });
+  });
+
+  let html='';
+  Object.keys(byClass).sort().forEach(cls=>{
+    const lecs=byClass[cls];
+    html+=`<div class="chart-box"><h3 style="color:#667eea;font-size:1.3em;margin-bottom:10px;">🏫 ${L.classLabel} ${cls}</h3><p style="color:#666;margin-bottom:10px;">📅 ${fDate}</p>`;
+    html+=`<div class="table-wrap"><table><thead><tr>`;
+    for(let i=1;i<=6;i++) html+=`<th style="text-align:center;">Lec ${i}</th>`;
+    html+=`</tr></thead><tbody><tr style="background:#f8f9fa;">`;
+    for(let i=1;i<=6;i++){ const l=lecs[i]; html+=`<td style="text-align:center;font-weight:bold;padding:12px;">${l?l.subject:''}</td>`; }
+    html+=`</tr><tr>`;
+    for(let i=1;i<=6;i++){
+      const l=lecs[i];
+      if(l&&l.students.length>0){
+        html+=`<td style="vertical-align:top;padding:10px;"><div style="color:#c33;font-weight:500;text-align:${document.documentElement.dir==='rtl'?'right':'left'};direction:rtl;">${l.students.map(s=>`• ${s}`).join('<br>')}</div></td>`;
+      } else if(l){
+        html+=`<td style="text-align:center;color:#4CAF50;padding:10px;font-weight:600;">${L.noneAbsent}</td>`;
+      } else {
+        html+=`<td style="text-align:center;color:#999;padding:10px;"></td>`;
+      }
+    }
+    html+=`</tr><tr style="background:#f8f9fa;">`;
+    for(let i=1;i<=6;i++){ const l=lecs[i]; html+=`<td style="text-align:center;font-style:italic;color:#666;padding:10px;font-size:0.88em;">${l?l.teacher:''}</td>`; }
+    html+=`</tr></tbody></table></div>`;
+
+    // Admin delete panel
+    const clsRows=filtered.filter(r=>r.classGroup===cls);
+    if(clsRows.length>0){
+      html+=`<details style="margin-top:10px;"><summary style="cursor:pointer;color:#667eea;font-size:0.85em;font-weight:600;padding:6px 0;">${L.manageLabel} ${cls} (${clsRows.length})</summary>`;
+      html+=`<div class="table-wrap" style="margin-top:8px;"><table style="font-size:0.82em;"><thead><tr style="background:#f0f0f0;"><th>Lec</th><th>Subject</th><th>Teacher</th><th>Absent</th><th></th></tr></thead><tbody>`;
+      clsRows.forEach(r=>{
+        const cnt=r.absences?r.absences.length:0;
+        const info=(r.lecture+'|'+r.subject+'|'+r.teacher+'|'+cls).replace(/'/g,"\\'");
+        html+=`<tr><td>${r.lecture||'—'}</td><td>${r.subject||'—'}</td><td>${r.teacher||'—'}</td>
+          <td style="text-align:center;"><span style="background:${cnt>0?'#c8402a':'#2d6a4f'};color:#fff;border-radius:100px;padding:2px 8px;font-size:0.78em;font-weight:700;">${cnt}</span></td>
+          <td><button onclick="askAdminDelete(${r.rowNumber},'${info}')" style="background:none;border:1.5px solid #ffd0ca;color:#c8402a;border-radius:7px;padding:4px 10px;font-size:0.78em;cursor:pointer;">🗑️</button></td></tr>`;
+      });
+      html+=`</tbody></table></div></details>`;
+    }
+    html+=`</div>`;
+  });
+
+  if(!html) html=`<div style="text-align:center;padding:60px;color:#999;font-size:1.1em;">📭 ${L.noAbsences}</div>`;
+  document.getElementById('dailyContent').innerHTML=html;
+}
+
+// ── WEEKLY ────────────────────────────────────────────
+function loadWeeklyDropdown(){
+  const sel=document.getElementById('weekSelect');
+  const cur=sel.value;
+  sel.innerHTML='';
+  const L=LANGS[currentLang];
+  weeks.forEach((w,i)=>{
+    const o=document.createElement('option'); o.value=i;
+    o.textContent=`${L.weekLabel} ${w.number}: ${formatDate(w.start)} - ${formatDate(w.end)}`;
+    sel.appendChild(o);
+  });
+  sel.value=cur||0;
+  loadWeekly();
+}
+function loadWeekly(){
+  const L=LANGS[currentLang];
+  const idx=parseInt(document.getElementById('weekSelect').value);
+  if(isNaN(idx)||!weeks[idx]){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectWeek}</div>`;return;}
+  const week=weeks[idx];
+  const data=allData.filter(r=>{const d=new Date(r.date);return d>=week.start&&d<=week.end;});
+  if(!data.length){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;}
+  document.getElementById('weeklyContent').innerHTML=buildClassTable(data,`${L.weekLabel} ${week.number}: ${formatDate(week.start)} - ${formatDate(week.end)}`,L);
+}
+
+// ── MONTHLY ───────────────────────────────────────────
+function loadMonthlyDropdown(){
+  const sel=document.getElementById('monthSelect');
+  const cur=sel.value;
+  sel.innerHTML='';
+  months.forEach((m,i)=>{
+    const o=document.createElement('option'); o.value=i;
+    o.textContent=`${m.name} (${formatDate(m.start)} - ${formatDate(m.end)})`;
+    sel.appendChild(o);
+  });
+  sel.value=cur||0;
+  loadMonthly();
+}
+function loadMonthly(){
+  const L=LANGS[currentLang];
+  const idx=parseInt(document.getElementById('monthSelect').value);
+  if(isNaN(idx)||!months[idx]){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectMonth}</div>`;return;}
+  const month=months[idx];
+  const data=allData.filter(r=>{const d=new Date(r.date);return d>=month.start&&d<=month.end;});
+  if(!data.length){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;}
+  document.getElementById('monthlyContent').innerHTML=buildClassTable(data,`${month.name}`,L);
+}
+
+function buildClassTable(data, title, L){
+  const byClass={};
+  data.forEach(row=>{
+    if(!row.classGroup) return;
+    if(!byClass[row.classGroup]) byClass[row.classGroup]={};
+    row.absences.forEach(name=>{
+      if(!byClass[row.classGroup][name]) byClass[row.classGroup][name]={total:0,subjects:{}};
+      byClass[row.classGroup][name].total+=row.lectureCount;
+      byClass[row.classGroup][name].subjects[row.subject]=(byClass[row.classGroup][name].subjects[row.subject]||0)+row.lectureCount;
+    });
+  });
+  let html=`<h3 style="color:#667eea;margin-bottom:20px;font-size:1.3em;">${title}</h3>`;
+  Object.keys(byClass).sort().forEach(cls=>{
+    const students=byClass[cls];
+    const sorted=Object.entries(students).sort((a,b)=>b[1].total-a[1].total);
+    const subjects=new Set(); Object.values(students).forEach(s=>Object.keys(s.subjects).forEach(sub=>subjects.add(sub)));
+    const subArr=[...subjects].sort();
+    html+=`<div class="chart-box"><h4 style="color:#667eea;margin-bottom:14px;">🏫 ${L.classLabel} ${cls}</h4><div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>`;
+    subArr.forEach(s=>html+=`<th style="text-align:center;" title="${s}">${s.length>12?s.slice(0,10)+'…':s}</th>`);
+    html+=`<th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
+    sorted.forEach(([name,d])=>{
+      const sev=getSeverity(d.total);
+      const safe=encodeURIComponent(name);
+      html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`;
+      subArr.forEach(sub=>{
+        const cnt=d.subjects[sub]||0;
+        const col=cnt>=6?'#c33':cnt>=3?'#ff8800':cnt>0?'#667eea':'#bbb';
+        html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;
+      });
+      html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  return html;
+}
+
+// ── ROSTER ────────────────────────────────────────────
+function loadRosterDropdown(){
+  const sel=document.getElementById('rosterClass');
+  const cur=sel.value;
+  const L=LANGS[currentLang];
+  sel.innerHTML=`<option value="">${L.selectClass}</option>`;
+  classes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  if(classes.includes(cur)) sel.value=cur;
+  else if(classes.length) sel.value=classes[0];
+  filterRoster();
+}
+function filterRoster(){
+  const L=LANGS[currentLang];
+  const cls=document.getElementById('rosterClass').value;
+  const min=parseInt(document.getElementById('minAbsences').value)||0;
+  if(!cls){document.getElementById('rosterContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectClass}</div>`;return;}
+  const summary={};const subjects=new Set();
+  allData.filter(r=>r.classGroup===cls).forEach(row=>{
+    row.absences.forEach(name=>{
+      if(!summary[name]) summary[name]={total:0,subjects:{}};
+      summary[name].total+=row.lectureCount;
+      summary[name].subjects[row.subject]=(summary[name].subjects[row.subject]||0)+row.lectureCount;
+      subjects.add(row.subject);
+    });
+  });
+  const sorted=Object.entries(summary).filter(([,d])=>d.total>=min).sort((a,b)=>b[1].total-a[1].total);
+  if(!sorted.length){document.getElementById('rosterContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;"><p style="font-size:3em;">✅</p><p>${L.noAbsences}</p></div>`;return;}
+  const subArr=[...subjects].sort();
+  let html=`<h3 style="color:#667eea;margin-bottom:14px;">🏫 ${L.classLabel} ${cls}</h3><div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>`;
+  subArr.forEach(s=>html+=`<th style="text-align:center;" title="${s}">${s.length>12?s.slice(0,10)+'…':s}</th>`);
+  html+=`<th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
+  sorted.forEach(([name,d])=>{
+    const sev=getSeverity(d.total); const safe=encodeURIComponent(name);
+    html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`;
+    subArr.forEach(sub=>{const cnt=d.subjects[sub]||0;const col=cnt>=3?'#c33':cnt>0?'#667eea':'#bbb';html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;});
+    html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  document.getElementById('rosterContent').innerHTML=html;
+}
+
+// ── ANALYTICS ─────────────────────────────────────────
+function loadAnalytics(){
+  const L=LANGS[currentLang];
+  const lpd=parseInt(document.getElementById('lecturesPerDay').value)||3;
+  const expD=parseInt(document.getElementById('expulsionDays').value)||21;
+
+  // Build daily lecture counts per student
+  const dailyMap={};
+  allData.forEach(entry=>{
+    entry.absences.forEach(name=>{
+      if(!dailyMap[name]) dailyMap[name]={};
+      dailyMap[name][entry.date]=(dailyMap[name][entry.date]||0)+entry.lectureCount;
+    });
+  });
+
+  // Calculate risk
+  const risk={};
+  Object.entries(dailyMap).forEach(([name,days])=>{
+    let daysMissed=0;
+    Object.values(days).forEach(cnt=>{ if(cnt>=lpd) daysMissed++; });
+    risk[name]={daysMissed, dismissed:daysMissed>=expD};
+  });
+
+  // Group by class
+  const byClass={};
+  Object.entries(risk).forEach(([name,d])=>{
+    let cls='?';
+    for(const row of allData){ if(row.absences.includes(name)){cls=row.classGroup||'?';break;} }
+    if(!byClass[cls]) byClass[cls]=[];
+    byClass[cls].push({name,...d});
+  });
+
+  let html=`<div class="chart-box" style="margin-bottom:24px;">
+    <h3 style="color:#ff4444;margin-bottom:12px;font-size:1.4em;">${L.expulsionReport}</h3>
+    <p style="color:#666;margin-bottom:16px;">${L.expulsionDesc} — <strong>${lpd}</strong> lec/day → 1 day • threshold: <strong>${expD}</strong> days</p>`;
+
+  Object.keys(byClass).sort().forEach(cls=>{
+    const students=byClass[cls].sort((a,b)=>b.daysMissed-a.daysMissed);
+    html+=`<div style="margin-bottom:24px;"><h4 style="color:#667eea;margin-bottom:12px;">🏫 ${L.classLabel} ${cls}</h4>
+      <div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>
+      <th style="text-align:center;">${L.colDaysMissed}</th>
+      <th style="text-align:center;">${L.colRemaining}</th>
+      <th style="text-align:center;">${L.colStatus}</th></tr></thead><tbody>`;
+    students.forEach(s=>{
+      const pct=s.daysMissed/expD;
+      let rowCls='row-low', status=L.riskLow, col='#4CAF50';
+      if(s.dismissed){rowCls='row-high';status=L.riskDismissed;col='#ff4444';}
+      else if(pct>=0.75){rowCls='row-medium';status=L.riskHigh;col='#ff8800';}
+      const rem=Math.max(0,expD-s.daysMissed);
+      const safe=encodeURIComponent(s.name);
+      html+=`<tr class="${rowCls}"><td><span class="clickable" onclick="openProfileFromDropdown('${safe}')">${s.name}</span></td>
+        <td style="text-align:center;font-weight:bold;">${s.daysMissed}</td>
+        <td style="text-align:center;">${rem}</td>
+        <td style="text-align:center;font-weight:bold;color:${col};">${status}</td></tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  });
+  html+=`</div>`;
+
+  // Legacy: by class, lecture, subject
+  const byClassAbs={};classes.forEach(c=>byClassAbs[c]=0);
+  allData.forEach(r=>{if(r.classGroup&&byClassAbs.hasOwnProperty(r.classGroup)) byClassAbs[r.classGroup]+=r.absences.length*r.lectureCount;});
+  const byLec={1:0,2:0,3:0,4:0,5:0,6:0};
+  allData.forEach(r=>{const m=String(r.lecture).match(/\d+/);const l=m?parseInt(m[0]):0;if(l>=1&&l<=6)byLec[l]+=r.absences.length*r.lectureCount;});
+  const bySubj={};
+  allData.forEach(r=>{if(r.subject) bySubj[r.subject]=(bySubj[r.subject]||0)+r.absences.length*r.lectureCount;});
+  const totalSubj=Object.values(bySubj).reduce((a,b)=>a+b,0);
+
+  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+    <div class="chart-box"><h3 style="color:#667eea;margin-bottom:12px;">${L.absByClass}</h3><div class="table-wrap"><table><thead><tr><th>${L.classLabel}</th><th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
+  Object.entries(byClassAbs).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([cls,cnt])=>{
+    html+=`<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`;
+  });
+  html+=`</tbody></table></div></div>
+    <div class="chart-box"><h3 style="color:#667eea;margin-bottom:12px;">${L.absByLec}</h3><div class="table-wrap"><table><thead><tr><th>Lecture</th><th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
+  Object.entries(byLec).forEach(([l,cnt])=>{
+    html+=`<tr><td><strong>Lecture ${l}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`;
+  });
+  html+=`</tbody></table></div></div>
+    <div class="chart-box" style="grid-column:1/-1;"><h3 style="color:#667eea;margin-bottom:12px;">${L.absBySubj}</h3><div class="table-wrap"><table><thead><tr><th>${L.subjectLabel}</th><th style="text-align:center;">${L.totalLabel}</th><th style="text-align:center;">${L.pctLabel}</th></tr></thead><tbody>`;
+  Object.entries(bySubj).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([subj,cnt])=>{
+    const pct=((cnt/totalSubj)*100).toFixed(1);
+    html+=`<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td><td style="text-align:center;color:#ff8800;font-weight:600;">${pct}%</td></tr>`;
+  });
+  html+=`</tbody></table></div></div></div>`;
+
+  document.getElementById('analyticsContent').innerHTML=html;
+}
+
+// ── STUDENT PROFILE ───────────────────────────────────
+function showStudentProfile(name){
+  const L=LANGS[currentLang];
+  const d={cls:'',total:0,log:[]};
+  allData.forEach(row=>{
+    row.absences.forEach(n=>{
+      if(n.toLowerCase()===name.toLowerCase()){
+        d.cls=row.classGroup||d.cls; d.total+=row.lectureCount;
+        d.log.push({date:row.date,teacher:row.teacher,subject:row.subject,lecture:row.lecture});
+      }
+    });
+  });
+  d.log.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const subjects=[...new Set(d.log.map(a=>a.subject))];
+  const sev=getSeverity(d.total);
+  const col=sev==='high'?'#ff4444':sev==='medium'?'#ff8800':'#4CAF50';
+
+  let html=`<div class="profile-header"><h2>👤 ${name}</h2><div style="margin-top:8px;">${getBadge(d.total)}</div></div>
+    <div class="profile-stats">
+      <div class="profile-stat"><div class="label">${L.profileClass}</div><div class="value" style="font-size:1.6em;">${d.cls||'?'}</div></div>
+      <div class="profile-stat"><div class="label">${L.profileTotal}</div><div class="value" style="color:${col};">${d.total}</div></div>
+      <div class="profile-stat"><div class="label">${L.profileSubjects}</div><div class="value" style="font-size:1.6em;">${subjects.length}</div></div>
+      <div class="profile-stat"><div class="label">${L.profileEntries}</div><div class="value" style="font-size:1.6em;">${d.log.length}</div></div>
+    </div>
+    <div style="margin:20px 0;padding:14px;background:#f8f9fa;border-radius:8px;">
+      <strong style="color:#667eea;">${L.subjectLabel}:</strong><br>
+      <span style="color:#666;">${subjects.join(', ')||'—'}</span>
+    </div>
+    <h3 style="color:#667eea;margin:20px 0 12px;">${L.profileHistory}</h3>
+    <div class="table-wrap"><table><thead><tr>
+      <th>${L.colDate}</th><th>${L.colLecture}</th><th>${L.colSubject}</th><th>${L.colTeacher}</th>
+    </tr></thead><tbody>`;
+  d.log.forEach(a=>{html+=`<tr><td>${a.date}</td><td>${a.lecture}</td><td>${a.subject}</td><td>${a.teacher}</td></tr>`;});
+  html+=`</tbody></table></div>`;
+  document.getElementById('modalContent').innerHTML=html;
+  document.getElementById('studentModal').classList.add('open');
+}
+function closeModal(){ document.getElementById('studentModal').classList.remove('open'); }
+
+// ── ADMIN DELETE ──────────────────────────────────────
+function askAdminDelete(rowNumber, info){
+  adminPendingRow=rowNumber;
+  document.getElementById('adminConfInfo').textContent=info;
+  document.getElementById('adminConfirm').classList.add('show');
+}
+function closeAdminConfirm(){
+  document.getElementById('adminConfirm').classList.remove('show');
+  adminPendingRow=null;
+}
+async function executeAdminDelete(){
+  if(!adminPendingRow) return;
+  const rowNum=adminPendingRow;
+  closeAdminConfirm();
+  const L=LANGS[currentLang];
+  try {
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'deleteRow',rowNumber:rowNum,teacher:'admin',token:adminToken})
+    });
+    allData=allData.filter(r=>r.rowNumber!==rowNum);
+    filterDaily();
+    showToast(L.toastDeleted,'success');
+  } catch(err){ showToast(L.toastDeleteFail,'error'); }
+}
+
+// ── TAB NAVIGATION ────────────────────────────────────
+function showTab(name){
+  document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='roster')    loadRosterDropdown();
+  if(name==='weekly')    loadWeeklyDropdown();
+  if(name==='monthly')   loadMonthlyDropdown();
+  if(name==='analytics') loadAnalytics();
+}
+
+// ── Scheduling ────────────────────────────────────────
+function scheduleRefresh(){
+  const h=new Date().getHours();
+  if(h>=8&&h<14){
+    fetchData();
+    setTimeout(scheduleRefresh, 300000); // every 5 min during school hours
+  } else {
+    const next=new Date(); next.setDate(next.getDate()+(h>=14?1:0)); next.setHours(8,0,1,0);
+    setTimeout(scheduleRefresh, next.getTime()-Date.now());
+  }
+}
+
+// ── Init ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!checkAuth()) return;
+  setLang(currentLang);
+  fetchData();
+  scheduleRefresh();
+});
+</script>
 </body>
 </html>
