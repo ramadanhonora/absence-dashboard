@@ -630,7 +630,7 @@
 
 <script>
         // ** CONFIGURATION **
-        // const API_URL    = 'https://script.google.com/macros/s/AKfycbx1Qvcn36WEvHrjivpd-ClArM3LNGPMQIWYxocBqzhkZzMHojNJSCPFxvqiEL91SuEV/exec?api=data';
+        
     const API_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec?api=data';    
     const PORTAL_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
         const SCHOOL_START = '9/21/2025';
@@ -761,46 +761,37 @@
 
         function parseData(json) {
             if (!json?.values || json.values.length < 2) return [];
-            
-            const headers = json.values[0];
+
+            // New simple 7-column format:
+            // [0] Timestamp | [1] Date | [2] Teacher | [3] Subject
+            // [4] Lecture   | [5] Class | [6] Absent Students
             const rows = json.values.slice(1);
             const data = [];
 
             rows.forEach((row, index) => {
-                const obj = {};
-                headers.forEach((h, i) => obj[h] = row[i] || '');
-                
-                const date = obj['   Q1: Date  '] || obj['Q1: Date'] || obj[headers.find(h => h.includes('Date'))] || '';
-                const teacher = obj['   Q2: Teacher Name'] || obj['Q2: Teacher Name'] || obj[headers.find(h => h.includes('Teacher Name'))] || 'Unknown';
-                const subject = obj['  Q3: Subject  '] || obj['Q3: Subject'] || obj[headers.find(h => h.includes('Subject'))] || 'Unknown';
-                const lecture = obj['  Q4: Lecture No.  '] || obj['Q4: Lecture No.'] || obj[headers.find(h => h.includes('Lecture No.'))] || 'Lecture 1';
-                const classGroup = obj['  Q5: Class Group  '] || obj['Q5: Class Group'] || obj[headers.find(h => h.includes('Class Group'))] || '';
-                
-                let absences = [];
-                for (const [k, v] of Object.entries(obj)) {
-                    if (k.toLowerCase().includes('absent') && v && v.trim()) {
-                        absences.push(...v.split(',').map(s => s.trim()).filter(Boolean));
-                    }
-                }
-                
-                const processedAbsences = absences.map(getThreeNames);
-                
-                if (date && classGroup) {
-                    data.push({
-                        rowNumber: index + 2,
-                        date: date,
-                        teacher: teacher,
-                        subject: subject,
-                        lecture: lecture,
-                        lectureCount: getLectureCount(lecture),
-                        classGroup: classGroup,
-                        absences: processedAbsences
-                    });
-                }
-            });
-            
-            data.forEach(entry => {
-                entry.absences = [...new Set(entry.absences)];
+                const date       = row[1] ? String(row[1]).trim() : '';
+                const teacher    = row[2] ? String(row[2]).trim() : 'Unknown';
+                const subject    = row[3] ? String(row[3]).trim() : 'Unknown';
+                const lecture    = row[4] ? String(row[4]).trim() : 'Lecture 1';
+                const classGroup = row[5] ? String(row[5]).trim() : '';
+                const absentRaw  = row[6] ? String(row[6]).trim() : '';
+
+                if (!date || !classGroup) return;
+
+                const absences = absentRaw
+                    ? absentRaw.split(',').map(s => s.trim()).filter(Boolean).map(getThreeNames)
+                    : [];
+
+                data.push({
+                    rowNumber:    index + 2,
+                    date:         date,
+                    teacher:      teacher,
+                    subject:      subject,
+                    lecture:      lecture,
+                    lectureCount: getLectureCount(lecture),
+                    classGroup:   classGroup,
+                    absences:     [...new Set(absences)]
+                });
             });
 
             console.log(`✅ Parsed ${data.length} records`);
