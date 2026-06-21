@@ -10,6 +10,16 @@
 <div style="max-width:1400px;margin:0 auto;">
 
 <!-- HEADER -->
+    <div class="dash-header-controls">
+    <p id="lastUpdate"></p>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
+      <button class="lang-btn" onclick="setLang('ar')">عربي</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪 دەرچوون</button>
+  </div>
+  
 <div class="dash-header">
   <div class="dash-header-top">
     <img src="aci.jpg" alt="ACI Logo" class="logo-right">
@@ -21,15 +31,7 @@
     <img src="new-left-logo.jpg" alt="New Left Logo" class="logo-left">
   </div>
   
-  <div class="dash-header-controls">
-    <p id="lastUpdate"></p>
-    <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
-      <button class="lang-btn" onclick="setLang('ar')">عربي</button>
-      <button class="lang-btn" onclick="setLang('en')">EN</button>
-    </div>
-    <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪 دەرچوون</button>
-  </div>
+
 
   <div class="search-wrap">
     <input type="text" id="searchInput" placeholder="🔍 ناڤێ یەکەم ی قوتابی بنووسە..." oninput="onSearch()">
