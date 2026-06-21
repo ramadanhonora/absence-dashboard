@@ -116,63 +116,78 @@ main {
 .welcome-banner h3 { font-size: 1rem; font-weight: 700; }
 .welcome-banner p  { font-size: 0.8rem; color: var(--accent2); margin-top: 3px; }
 
-/* ── SUBMISSIONS BUTTON ─────────────────────────────── */
-.subs-btn {
-  background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.25);
-  color: var(--white); border-radius: 8px; padding: 7px 14px;
-  font-size: 0.82rem; font-weight: 700; cursor: pointer;
-  font-family: inherit; transition: all 0.2s; white-space: nowrap;
-  display: flex; align-items: center; gap: 6px;
+/* ── RECENT SUBMISSIONS CARD ────────────────────────── */
+.recent-card { animation: fadeUp 0.4s ease both; }
+
+.recent-card-header {
+  display: flex; align-items: center; gap: 10px;
 }
-.subs-btn:hover { background: rgba(255,255,255,0.22); }
-.subs-badge {
+.recent-card-icon { font-size: 1.1rem; }
+.recent-count-badge {
+  margin-inline-start: auto;
   background: var(--accent); color: #fff; border-radius: 100px;
-  padding: 1px 7px; font-size: 0.72rem; font-weight: 800;
+  padding: 2px 12px; font-size: 0.78rem; font-weight: 800;
 }
 
-/* ── SUBMISSIONS PANEL ──────────────────────────────── */
-.subs-panel {
-  display: none; background: var(--white); border-radius: 16px;
-  border: 1px solid var(--border); box-shadow: var(--shadow);
-  margin-bottom: 20px; overflow: hidden; animation: fadeUp 0.3s ease both;
-}
-.subs-panel.open { display: block; }
-.subs-panel-head {
-  background: var(--ink2); color: var(--white); padding: 14px 22px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.subs-panel-head h3 { font-size: 0.92rem; font-weight: 700; }
-.subs-panel-close {
-  background: none; border: none; color: rgba(255,255,255,0.55);
-  font-size: 1.1rem; cursor: pointer; padding: 0 4px; font-family: inherit;
-}
-.subs-panel-close:hover { color: #fff; }
-.subs-panel-body { padding: 16px 20px; }
-.subs-state { text-align: center; padding: 28px 16px; color: var(--muted); font-size: 0.88rem; }
-.subs-state-icon { font-size: 2rem; display: block; margin-bottom: 8px; }
+.recent-card-body { padding: 0; }
 
-.subs-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
-.subs-table th {
+.recent-table-wrap { overflow-x: auto; }
+.recent-table {
+  width: 100%; border-collapse: collapse; font-size: 0.84rem;
+}
+.recent-table th {
   background: var(--cream); color: var(--ink2); font-weight: 700;
-  font-size: 0.77rem; padding: 9px 12px; text-align: start;
+  font-size: 0.77rem; padding: 10px 14px; text-align: start;
   border-bottom: 2px solid var(--border);
+  white-space: nowrap;
 }
-.subs-table td { padding: 9px 12px; border-bottom: 1px solid var(--cream); vertical-align: middle; }
-.subs-table tr:last-child td { border-bottom: none; }
-.subs-table tr:hover td { background: #fafaf8; }
-
-.absent-badge {
-  background: var(--accent); color: #fff; border-radius: 100px;
-  padding: 2px 10px; font-size: 0.74rem; font-weight: 700; display: inline-block;
+.recent-table td {
+  padding: 11px 14px; border-bottom: 1px solid var(--cream);
+  vertical-align: top;
 }
-.absent-badge.zero { background: var(--green); }
+.recent-table tr:last-child td { border-bottom: none; }
+.recent-table tbody tr:hover td { background: #fafaf8; }
 
-.btn-del-row {
-  background: none; border: 1.5px solid #ffd0ca; color: var(--accent);
-  border-radius: 7px; padding: 5px 10px; font-size: 0.77rem;
+.rt-lecture {
+  display: inline-block;
+  background: var(--ink2); color: #fff;
+  border-radius: 6px; padding: 2px 10px;
+  font-size: 0.78rem; font-weight: 700; white-space: nowrap;
+}
+.rt-class {
+  display: inline-block;
+  background: var(--cream); color: var(--ink2);
+  border-radius: 6px; padding: 2px 10px;
+  font-size: 0.8rem; font-weight: 700; white-space: nowrap;
+  border: 1px solid var(--border);
+}
+
+/* Student name pills inside the recent table */
+.rt-pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.rt-name-pill {
+  background: #fff0ee; color: var(--accent);
+  border: 1px solid #ffd0ca;
+  border-radius: 100px; padding: 2px 10px;
+  font-size: 0.74rem; font-weight: 600; white-space: nowrap;
+}
+.rt-none {
+  color: var(--muted); font-size: 0.8rem; font-style: italic;
+}
+
+/* Action buttons per row */
+.rt-actions { display: flex; gap: 6px; align-items: center; }
+.btn-rt-edit {
+  background: none; border: 1.5px solid #b8d4ff; color: #2563eb;
+  border-radius: 7px; padding: 5px 11px; font-size: 0.77rem; font-weight: 700;
   cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap;
 }
-.btn-del-row:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-rt-edit:hover { background: #2563eb; color: #fff; border-color: #2563eb; }
+.btn-rt-delete {
+  background: none; border: 1.5px solid #ffd0ca; color: var(--accent);
+  border-radius: 7px; padding: 5px 11px; font-size: 0.77rem; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap;
+}
+.btn-rt-delete:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 /* ── CARDS ──────────────────────────────────────────── */
 .card {
@@ -385,9 +400,9 @@ main {
     gap: 24px; align-items: start;
   }
   .welcome-banner { grid-column: 1 / -1; margin-bottom: 0; }
-  .subs-panel     { grid-column: 1 / -1; }
   .card           { margin-bottom: 0; }
   .action-row     { grid-column: 1 / -1; margin-top: 0; }
+  .recent-card    { grid-column: 1 / -1; margin-bottom: 0; }
 }
 
 /* ── MOBILE ─────────────────────────────────────────── */
