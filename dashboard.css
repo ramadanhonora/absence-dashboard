@@ -40,8 +40,8 @@ body {
   width: 100%; /* Ensures the content stretches completely */
 }
 .dash-header-top img { 
-  width: 90px; 
-  height: 90px; 
+  width: 130px; 
+  height: 130px; 
   border-radius: 50%; 
   object-fit: cover; 
 }
