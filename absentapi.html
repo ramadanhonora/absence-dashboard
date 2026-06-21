@@ -623,7 +623,7 @@ function filterDaily() {
   let html='';
   Object.keys(byClass).sort().forEach(cls=>{
     const lecs=byClass[cls];
-    html+=`<div class="chart-box"><h3 style="color:#667eea;font-size:1.3em;margin-bottom:10px;">🏫 ${L.classLabel} ${cls}</h3><p style="color:#666;margin-bottom:10px;">📅 ${fDate}</p>`;
+    html+=`<div class="chart-box"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="color:#667eea;font-size:1.3em;margin:0;">🏫 ${L.classLabel} ${cls}</h3><p style="color:#666;margin:0;font-size:0.9em;">📅 ${fDate}</p></div>`;
     html+=`<div class="table-wrap"><table><thead><tr>`;
     for(let i=1;i<=6;i++) html+=`<th style="text-align:center;">Lec ${i}</th>`;
     html+=`</tr></thead><tbody><tr style="background:#f8f9fa;">`;
