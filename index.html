@@ -37,26 +37,12 @@
   <!-- SUBMISSION FORM -->
   <div class="form-wrap" id="screenSubmit" style="display:none">
 
+    <!-- WELCOME BANNER (no subs button anymore) -->
     <div class="welcome-banner">
       <div class="avatar" id="welcomeAvatar">م</div>
       <div style="flex:1">
         <h3 id="welcomeName"></h3>
         <p id="welcomeSub">تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
-      </div>
-      <button class="subs-btn" onclick="toggleSubsPanel()">
-        <span class="subs-badge" id="subsBadge">0</span>
-        <span id="btnMySubsText">📋 تومارێن ئەمرۆ</span>
-      </button>
-    </div>
-
-    <!-- TODAY'S SUBMISSIONS PANEL -->
-    <div class="subs-panel" id="subsPanel">
-      <div class="subs-panel-head">
-        <h3 id="mySubsTitle">تومارکرنێن ئەمرۆ</h3>
-        <button class="subs-panel-close" onclick="toggleSubsPanel()">✕</button>
-      </div>
-      <div class="subs-panel-body" id="subsPanelBody">
-        <div class="subs-state"><span class="subs-state-icon">⏳</span><span id="mySubsLoading">چاوەروانبە...</span></div>
       </div>
     </div>
 
@@ -150,6 +136,19 @@
         <span id="btnSubmitText">📤 شاندن و پاشەکەفتکرن</span>
       </button>
     </div>
+
+    <!-- RECENT SUBMISSIONS CARD — hidden until at least one row exists -->
+    <div class="card recent-card" id="recentCard" style="display:none">
+      <div class="card-header recent-card-header">
+        <span class="recent-card-icon">📋</span>
+        <h3 id="recentTitle">تومارکرنێن ئەمرۆ</h3>
+        <span class="recent-count-badge" id="recentCountBadge">0</span>
+      </div>
+      <div class="card-body recent-card-body" id="recentCardBody">
+        <!-- filled by renderRecentRows() -->
+      </div>
+    </div>
+
   </div>
 
   <!-- SUCCESS SCREEN -->
@@ -188,13 +187,17 @@ const LANGS = {
     toastWeekend:'🚫 هەینی و شەممە روژێن دەرفەتê ne! تومارکرن نابێت.',
     toastDuplicate:'⚠️ ئەم دەرسێ پێش ئێڤارێ تومار کراوە!',
     toastError:'❌ پەيوەندی ب سێرڤەری نەهاتە کرن!',
-    btnMySubs:'📋 تومارێن ئەمرۆ', mySubsTitle:'تومارکرنێن ئەمرۆ',
-    mySubsLoading:'چاوەروانبە...', mySubsEmpty:'هیچ تومارکرنێک ئەمرۆ نین',
-    thLecture:'دەرس', thSubject:'بابەت', thClass:'پۆل', thAbsent:'نەهاتی',
+    recentTitle:'تومارکرنێن ئەمرۆ',
+    thLecture:'دەرس', thSubject:'بابەت', thClass:'پۆل', thAbsentStudents:'قوتابیێن نەهاتی',
+    thActions:'کارەکان',
+    btnEdit:'✏️ دەستکاری', confirmDelete:'🗑️ بسڕەوە',
     confirmTitle:'تومارکرن بسڕەوە؟', confirmMsg:'ئەم کارە نابێتە پووچەلکرن.',
-    confirmCancel:'هەڵوەستان', confirmDelete:'🗑️ بسڕەوە',
+    confirmCancel:'هەڵوەستان',
     toastDelOk:'✅ تومارکرن هاتە سڕینەوە.', toastDelFail:'❌ سڕینەوە سەرنەکەفت!',
     loadingDel:'سڕینەوەی تومارکرن...',
+    loadingEdit:'ئامادەکرنا دەستکاریکرنێ...',
+    toastEditReady:'✏️ زانیاری هاتە داخلکرن — دەستکاری بکە و دوبارە بنێرە.',
+    noneAbsent:'هیچ نەهاتنێک نەبوو',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -214,13 +217,17 @@ const LANGS = {
     toastWeekend:'🚫 الجمعة والسبت أيام عطلة! لا يمكن التسجيل.',
     toastDuplicate:'⚠️ تم تسجيل هذا الدرس مسبقاً!',
     toastError:'❌ فشل الاتصال بالخادم!',
-    btnMySubs:'📋 سجلات اليوم', mySubsTitle:'سجلاتي اليوم',
-    mySubsLoading:'جارٍ التحميل...', mySubsEmpty:'لا توجد سجلات اليوم',
-    thLecture:'المحاضرة', thSubject:'المادة', thClass:'المجموعة', thAbsent:'الغائبون',
+    recentTitle:'سجلات اليوم',
+    thLecture:'المحاضرة', thSubject:'المادة', thClass:'المجموعة', thAbsentStudents:'الطلاب الغائبون',
+    thActions:'الإجراءات',
+    btnEdit:'✏️ تعديل', confirmDelete:'🗑️ حذف',
     confirmTitle:'حذف السجل؟', confirmMsg:'لا يمكن التراجع عن هذا.',
-    confirmCancel:'إلغاء', confirmDelete:'🗑️ حذف',
+    confirmCancel:'إلغاء',
     toastDelOk:'✅ تم حذف السجل.', toastDelFail:'❌ فشل الحذف!',
     loadingDel:'جارٍ حذف السجل...',
+    loadingEdit:'جارٍ تحضير التعديل...',
+    toastEditReady:'✏️ تم تحميل البيانات — عدّل وأعد الإرسال.',
+    noneAbsent:'لا غياب',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -240,22 +247,27 @@ const LANGS = {
     toastWeekend:'🚫 Friday & Saturday are holidays! No submissions.',
     toastDuplicate:'⚠️ This lesson was already submitted!',
     toastError:'❌ Connection failed! Please try again.',
-    btnMySubs:"📋 Today's Records", mySubsTitle:"Today's Submissions",
-    mySubsLoading:'Loading...', mySubsEmpty:'No submissions today yet',
-    thLecture:'Lecture', thSubject:'Subject', thClass:'Class', thAbsent:'Absent',
+    recentTitle:"Today's Submissions",
+    thLecture:'Lecture', thSubject:'Subject', thClass:'Class', thAbsentStudents:'Absent Students',
+    thActions:'Actions',
+    btnEdit:'✏️ Edit', confirmDelete:'🗑️ Delete',
     confirmTitle:'Delete submission?', confirmMsg:'This cannot be undone.',
-    confirmCancel:'Cancel', confirmDelete:'🗑️ Delete',
+    confirmCancel:'Cancel',
     toastDelOk:'✅ Submission deleted.', toastDelFail:'❌ Delete failed!',
     loadingDel:'Deleting submission...',
+    loadingEdit:'Preparing edit...',
+    toastEditReady:'✏️ Data loaded — fix and resubmit.',
+    noneAbsent:'No absences',
   }
 };
 
-let currentLang    = localStorage.getItem('aci_lang') || 'ku';
-let currentTeacher = null;
-let STUDENTS       = {};
-let selectedAbsent = new Set();
-let todayRows      = [];
+let currentLang      = localStorage.getItem('aci_lang') || 'ku';
+let currentTeacher   = null;
+let STUDENTS         = {};
+let selectedAbsent   = new Set();
+let todayRows        = [];
 let pendingDeleteRow = null;
+let pendingEditRow   = null; // holds the full row object during edit flow
 
 // ── i18n apply ───────────────────────────────────────
 function setLang(lang) {
@@ -265,32 +277,29 @@ function setLang(lang) {
   const L = LANGS[lang];
   document.documentElement.dir  = L.dir;
   document.documentElement.lang = L.htmlLang;
-  document.getElementById('hInstName').textContent     = L.hInstName;
-  document.getElementById('hSub').textContent          = L.hSub;
-  document.getElementById('step1').textContent         = L.step1;
-  document.getElementById('step2').textContent         = L.step2;
-  document.getElementById('labelDate').textContent     = L.labelDate;
-  document.getElementById('labelLecture').textContent  = L.labelLecture;
-  document.getElementById('labelSubject').textContent  = L.labelSubject;
-  document.getElementById('labelClass').textContent    = L.labelClass;
-  document.getElementById('welcomeSub').textContent    = L.welcomeSub;
-  document.getElementById('btnReset').textContent      = L.btnReset;
-  document.getElementById('btnSubmitText').textContent = L.btnSubmit;
-  document.getElementById('successTitle').textContent  = L.successTitle;
-  document.getElementById('successSub').textContent    = L.successSub;
-  document.getElementById('btnNew').textContent        = L.btnNew;
-  document.getElementById('btnLogout').textContent     = L.btnLogout;
-  document.getElementById('btnMySubsText').textContent = L.btnMySubs;
-  document.getElementById('mySubsTitle').textContent   = L.mySubsTitle;
-  document.getElementById('mySubsLoading').textContent = L.mySubsLoading;
+  document.getElementById('hInstName').textContent      = L.hInstName;
+  document.getElementById('hSub').textContent           = L.hSub;
+  document.getElementById('step1').textContent          = L.step1;
+  document.getElementById('step2').textContent          = L.step2;
+  document.getElementById('labelDate').textContent      = L.labelDate;
+  document.getElementById('labelLecture').textContent   = L.labelLecture;
+  document.getElementById('labelSubject').textContent   = L.labelSubject;
+  document.getElementById('labelClass').textContent     = L.labelClass;
+  document.getElementById('welcomeSub').textContent     = L.welcomeSub;
+  document.getElementById('btnReset').textContent       = L.btnReset;
+  document.getElementById('btnSubmitText').textContent  = L.btnSubmit;
+  document.getElementById('successTitle').textContent   = L.successTitle;
+  document.getElementById('successSub').textContent     = L.successSub;
+  document.getElementById('btnNew').textContent         = L.btnNew;
+  document.getElementById('btnLogout').textContent      = L.btnLogout;
+  document.getElementById('recentTitle').textContent    = L.recentTitle;
   document.getElementById('noStudentsText').textContent = L.noStudents;
   document.getElementById('absentPreviewTitle').textContent = L.absentPreview;
-  document.getElementById('confirmTitle').textContent  = L.confirmTitle;
-  document.getElementById('confirmMsg').textContent    = L.confirmMsg;
-  document.getElementById('confirmCancelBtn').textContent = L.confirmCancel;
-  document.getElementById('confirmDeleteBtn').textContent = L.confirmDelete;
+  document.getElementById('confirmTitle').textContent   = L.confirmTitle;
+  document.getElementById('confirmMsg').textContent     = L.confirmMsg;
+  document.getElementById('confirmCancelBtn').textContent  = L.confirmCancel;
+  document.getElementById('confirmDeleteBtn').textContent  = L.confirmDelete;
 
-  // select placeholders
   document.querySelectorAll('select.form-control option[value=""]').forEach(o => {
     o.textContent = L.placeholder;
   });
@@ -304,6 +313,9 @@ function setLang(lang) {
   document.querySelectorAll('.lang-btn').forEach((b, i) => {
     b.classList.toggle('active', ['ku','ar','en'][i] === lang);
   });
+
+  // Re-render recent rows with new language
+  if (todayRows.length) renderRecentRows();
 }
 
 // ── Auth check ───────────────────────────────────────
@@ -330,12 +342,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!checkAuth()) return;
   setLang(currentLang);
 
-  // Load students from sessionStorage (already fetched on login)
   const raw = sessionStorage.getItem('aci_students');
   if (raw) {
     STUDENTS = JSON.parse(raw);
   } else {
-    // Fallback: fetch system data to get students
     fetch(SCRIPT_URL)
       .then(r => r.json())
       .then(d => {
@@ -349,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('welcomeAvatar').textContent = tName.charAt(0);
   document.getElementById('headerUserName').textContent = tName;
 
-  // Populate subject & class dropdowns
   const subjSel = document.getElementById('fSubject');
   (currentTeacher.subjects || []).forEach(s => {
     const o = document.createElement('option'); o.value = s; o.textContent = s; subjSel.appendChild(o);
@@ -362,6 +371,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fDate').valueAsDate = new Date();
   document.getElementById('screenSubmit').style.display = '';
   restoreFormState();
+
+  // Auto-load today's submissions on page open
+  loadTodayRows();
 });
 
 // ── Students ──────────────────────────────────────────
@@ -373,7 +385,8 @@ function onClassChange() {
   saveFormState();
 }
 
-function renderStudents(cls) {
+function renderStudents(cls, preSelected) {
+  // preSelected: optional Set of names to check automatically (edit flow)
   const L   = LANGS[currentLang];
   const con = document.getElementById('studentsContainer');
   if (!cls || !STUDENTS[cls]) {
@@ -385,9 +398,10 @@ function renderStudents(cls) {
   document.getElementById('studentsAreaTitle').textContent = `📋 ${cls} — ${list.length} ${L.students}`;
   let html = '<div class="students-grid">';
   list.forEach(name => {
-    const safe = name.replace(/'/g, "\\'");
-    html += `<label class="student-check" onclick="toggleStudent(event,'${safe}')">
-      <input type="checkbox" value="${name}" onchange="toggleStudent(event,'${safe}')">
+    const safe    = name.replace(/'/g, "\\'");
+    const checked = preSelected && preSelected.has(name);
+    html += `<label class="student-check${checked ? ' checked' : ''}" onclick="toggleStudent(event,'${safe}')">
+      <input type="checkbox" value="${name}" ${checked ? 'checked' : ''} onchange="toggleStudent(event,'${safe}')">
       <span class="sname">${name}</span></label>`;
   });
   html += '</div>';
@@ -492,8 +506,12 @@ async function doSubmit() {
   if (!date || !subject || !lecture || !cls) { showToast(L.toastFill, 'error'); return; }
   if (new Date().getDay() === 5 || new Date().getDay() === 6) { showToast(L.toastWeekend, 'error'); return; }
 
-  const key = date + '|' + cls + '|' + subject + '|' + lecture;
-  if (sessionStorage.getItem(key)) { showToast(L.toastDuplicate, 'error'); return; }
+  // Only check duplicate if this is NOT an edit (edit already deleted the old row)
+  if (!pendingEditRow) {
+    const key = date + '|' + cls + '|' + subject + '|' + lecture;
+    if (sessionStorage.getItem(key)) { showToast(L.toastDuplicate, 'error'); return; }
+  }
+  pendingEditRow = null; // clear edit flag after check
 
   showLoading(L.loadingSubmit);
   const now = new Date();
@@ -514,10 +532,12 @@ async function doSubmit() {
       })
     });
     hideLoading();
+    const key = date + '|' + cls + '|' + subject + '|' + lecture;
     sessionStorage.setItem(key, '1');
     sessionStorage.removeItem('formState');
-    bumpSubsBadge();
     showSuccess(fmtDate, subject, lecture, cls, [...selectedAbsent].join(', '));
+    // Reload recent submissions to show the new row
+    loadTodayRows();
   } catch(err) {
     hideLoading();
     showToast(L.toastError, 'error');
@@ -542,67 +562,83 @@ function newSubmission() {
   document.getElementById('screenSubmit').style.display = '';
 }
 
-// ── Today's Submissions Panel ─────────────────────────
-function toggleSubsPanel() {
-  const p = document.getElementById('subsPanel');
-  if (p.classList.contains('open')) { p.classList.remove('open'); }
-  else { p.classList.add('open'); loadTodayRows(); }
-}
-
+// ── Load today's rows (auto on page open) ────────────
 async function loadTodayRows() {
-  const L    = LANGS[currentLang];
-  const body = document.getElementById('subsPanelBody');
-  body.innerHTML = `<div class="subs-state"><span class="subs-state-icon">⏳</span>${L.mySubsLoading}</div>`;
   try {
     const url  = SCRIPT_URL + '?action=getTodayRows&teacher=' + encodeURIComponent(currentTeacher.displayName) + '&token=' + encodeURIComponent(sessionStorage.getItem('aci_token'));
     const data = await (await fetch(url)).json();
     if (data.error) throw new Error(data.error);
     todayRows = data.rows || [];
-    renderTodayRows();
+    renderRecentRows();
   } catch(err) {
-    document.getElementById('subsPanelBody').innerHTML =
-      `<div class="subs-state"><span class="subs-state-icon">⚠️</span>${err.message}</div>`;
+    // Silent fail on auto-load — teacher can still submit
+    console.warn('Could not load today rows:', err.message);
   }
 }
 
-function renderTodayRows() {
-  const L     = LANGS[currentLang];
-  const body  = document.getElementById('subsPanelBody');
-  const badge = document.getElementById('subsBadge');
-  badge.textContent = todayRows.length;
+// ── Render recent submissions card ───────────────────
+function renderRecentRows() {
+  const L    = LANGS[currentLang];
+  const card = document.getElementById('recentCard');
+  const body = document.getElementById('recentCardBody');
+  const badge = document.getElementById('recentCountBadge');
+
   if (!todayRows.length) {
-    body.innerHTML = `<div class="subs-state"><span class="subs-state-icon">📭</span>${L.mySubsEmpty}</div>`;
+    card.style.display = 'none';
     return;
   }
-  let html = `<div style="overflow-x:auto"><table class="subs-table"><thead><tr>
-    <th>${L.thLecture}</th><th>${L.thSubject}</th><th>${L.thClass}</th><th>${L.thAbsent}</th><th></th>
+
+  card.style.display = '';
+  badge.textContent  = todayRows.length;
+
+  let html = `<div class="recent-table-wrap"><table class="recent-table">
+    <thead><tr>
+      <th>${L.thLecture}</th>
+      <th>${L.thSubject}</th>
+      <th>${L.thClass}</th>
+      <th>${L.thAbsentStudents}</th>
+      <th>${L.thActions}</th>
     </tr></thead><tbody>`;
+
   todayRows.forEach(r => {
-    const cnt = r.absentStudents ? r.absentStudents.split(',').filter(Boolean).length : 0;
-    html += `<tr><td><strong>${r.lectureNo||'—'}</strong></td><td>${r.subject||'—'}</td>
-      <td><strong>${r.classGroup||'—'}</strong></td>
-      <td><span class="absent-badge${cnt===0?' zero':''}">${cnt} ${L.absentLabel}</span></td>
-      <td><button class="btn-del-row" onclick="askDelete(${r.rowNumber})">${L.confirmDelete}</button></td></tr>`;
+    const names = r.absentStudents
+      ? r.absentStudents.split(',').map(n => n.trim()).filter(Boolean)
+      : [];
+
+    const pillsHtml = names.length
+      ? names.map(n => `<span class="rt-name-pill">${n}</span>`).join('')
+      : `<span class="rt-none">${L.noneAbsent}</span>`;
+
+    html += `<tr>
+      <td><strong class="rt-lecture">${r.lectureNo || '—'}</strong></td>
+      <td>${r.subject || '—'}</td>
+      <td><span class="rt-class">${r.classGroup || '—'}</span></td>
+      <td><div class="rt-pills">${pillsHtml}</div></td>
+      <td>
+        <div class="rt-actions">
+          <button class="btn-rt-edit"   onclick="askEdit(${r.rowNumber})">${L.btnEdit}</button>
+          <button class="btn-rt-delete" onclick="askDelete(${r.rowNumber})">${L.confirmDelete}</button>
+        </div>
+      </td>
+    </tr>`;
   });
+
   html += '</tbody></table></div>';
   body.innerHTML = html;
 }
 
-function bumpSubsBadge() {
-  const b = document.getElementById('subsBadge');
-  if (b) b.textContent = parseInt(b.textContent || '0') + 1;
-  const p = document.getElementById('subsPanel');
-  if (p && p.classList.contains('open')) loadTodayRows();
-}
-
+// ── Delete flow ───────────────────────────────────────
 function askDelete(rowNumber) {
   pendingDeleteRow = rowNumber;
+  pendingEditRow   = null;
   document.getElementById('confirmOverlay').classList.add('show');
 }
+
 function closeConfirm() {
   document.getElementById('confirmOverlay').classList.remove('show');
   pendingDeleteRow = null;
 }
+
 async function executeDelete() {
   if (!pendingDeleteRow) return;
   const rowNum = pendingDeleteRow;
@@ -617,11 +653,84 @@ async function executeDelete() {
     });
     hideLoading();
     todayRows = todayRows.filter(r => r.rowNumber !== rowNum);
-    renderTodayRows();
+    renderRecentRows();
     showToast(L.toastDelOk, 'success');
   } catch(err) {
     hideLoading();
     showToast(L.toastDelFail, 'error');
+  }
+}
+
+// ── Edit flow (Option A) ──────────────────────────────
+// 1. Find the row in todayRows
+// 2. Delete it on the server
+// 3. Remove from todayRows, re-render recent card
+// 4. Auto-fill form fields + pre-select absent students
+// 5. Scroll to top + toast hint
+async function askEdit(rowNumber) {
+  const r = todayRows.find(x => x.rowNumber === rowNumber);
+  if (!r) return;
+
+  const L = LANGS[currentLang];
+  showLoading(L.loadingEdit);
+
+  try {
+    // Delete the old row on the server
+    await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'deleteRow', rowNumber:rowNumber, teacher:currentTeacher.displayName, token:sessionStorage.getItem('aci_token') })
+    });
+
+    // Remove from local list & re-render card
+    todayRows = todayRows.filter(x => x.rowNumber !== rowNumber);
+    renderRecentRows();
+
+    // Parse the stored date back to YYYY-MM-DD for the date input
+    // Stored format is M/D/YYYY
+    const fmtDate = r.date || '';
+    let isoDate = '';
+    if (fmtDate) {
+      const parts = fmtDate.split('/');
+      if (parts.length === 3) {
+        const [m, d, y] = parts;
+        isoDate = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      }
+    }
+
+    // Fill form fields
+    if (isoDate) document.getElementById('fDate').value    = isoDate;
+    document.getElementById('fSubject').value  = r.subject    || '';
+    document.getElementById('fLecture').value  = r.lectureNo  || '';
+    document.getElementById('fClass').value    = r.classGroup || '';
+
+    // Build preSelected set from the absentStudents string
+    const preSelected = new Set(
+      (r.absentStudents || '').split(',').map(n => n.trim()).filter(Boolean)
+    );
+
+    // Render students with pre-selections
+    selectedAbsent = new Set(preSelected);
+    renderStudents(r.classGroup || '', preSelected);
+    updateAbsentCount();
+    renderAbsentPreview();
+
+    // Clear duplicate guard for this slot so re-submit is allowed
+    const key = (isoDate || '') + '|' + (r.classGroup||'') + '|' + (r.subject||'') + '|' + (r.lectureNo||'');
+    sessionStorage.removeItem(key);
+
+    // Flag that we are in edit mode (skip duplicate check on next submit)
+    pendingEditRow = r;
+
+    hideLoading();
+    showToast(L.toastEditReady, 'success');
+
+    // Scroll to top of form smoothly
+    document.getElementById('screenSubmit').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  } catch(err) {
+    hideLoading();
+    showToast(LANGS[currentLang].toastDelFail, 'error');
   }
 }
 
