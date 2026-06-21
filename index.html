@@ -534,13 +534,14 @@ async function doSubmit() {
     sessionStorage.removeItem('formState');
 
     // Push new row into memory so recent card updates instantly — no API call needed
+    const absentStr = [...selectedAbsent].join(', ');
     todayRows.push({
       rowNumber:      Date.now(), // temporary unique id for this session
       date:           fmtDate,
       subject:        subject,
       lectureNo:      lecture,
       classGroup:     cls,
-      absentStudents: [...selectedAbsent].join(', ')
+      absentStudents: absentStr
     });
     renderRecentRows();
 
@@ -548,7 +549,7 @@ async function doSubmit() {
     resetForm();
     document.getElementById('fDate').valueAsDate = new Date();
 
-    showSuccess(fmtDate, subject, lecture, cls, [...selectedAbsent].join(', '));
+    showSuccess(fmtDate, subject, lecture, cls, absentStr);
   } catch(err) {
     hideLoading();
     showToast(L.toastError, 'error');
@@ -602,7 +603,7 @@ function renderRecentRows() {
       : [];
 
     const pillsHtml = names.length
-      ? names.map(n => `<span class="rt-name-pill">${n}</span>`).join('')
+      ? names.map(n => `<span class="rt-name-pill">${n.split(' ').slice(0,2).join(' ')}</span>`).join('')
       : `<span class="rt-none">${L.noneAbsent}</span>`;
 
     html += `<tr>
