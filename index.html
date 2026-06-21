@@ -371,6 +371,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fDate').valueAsDate = new Date();
   document.getElementById('screenSubmit').style.display = '';
   restoreFormState();
+
+  // Show any rows already saved today (instant, no network)
+  loadRowsFromStorage();
+  // Then fetch from server to get real row numbers for edit/delete
+  loadTodayRows();
 });
 
 // ── Students ──────────────────────────────────────────
@@ -533,23 +538,17 @@ async function doSubmit() {
     sessionStorage.setItem(key, '1');
     sessionStorage.removeItem('formState');
 
-    // Push new row into memory so recent card updates instantly — no API call needed
+    // Capture absent string before resetForm clears selectedAbsent
     const absentStr = [...selectedAbsent].join(', ');
-    todayRows.push({
-      rowNumber:      Date.now(), // temporary unique id for this session
-      date:           fmtDate,
-      subject:        subject,
-      lectureNo:      lecture,
-      classGroup:     cls,
-      absentStudents: absentStr
-    });
-    renderRecentRows();
 
     // Reset form now (date stays today, other fields clear) so it's ready when teacher clicks OK
     resetForm();
     document.getElementById('fDate').valueAsDate = new Date();
 
     showSuccess(fmtDate, subject, lecture, cls, absentStr);
+
+    // Fetch real row numbers from server, save to localStorage, update card
+    loadTodayRows();
   } catch(err) {
     hideLoading();
     showToast(L.toastError, 'error');
@@ -571,6 +570,39 @@ function row(l,v){ return `<div class="detail-row"><span class="label">${l}</spa
 function newSubmission() {
   document.getElementById('screenSuccess').style.display = 'none';
   document.getElementById('screenSubmit').style.display = '';
+}
+
+// ── localStorage helpers ─────────────────────────────
+function todayKey() {
+  const t = currentTeacher ? currentTeacher.username : 'unknown';
+  const d = new Date();
+  return 'aci_rows_' + t + '_' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+function saveRowsToStorage() {
+  try { localStorage.setItem(todayKey(), JSON.stringify(todayRows)); } catch(e) {}
+}
+function loadRowsFromStorage() {
+  try {
+    const raw = localStorage.getItem(todayKey());
+    if (raw) { todayRows = JSON.parse(raw); renderRecentRows(); }
+  } catch(e) {}
+}
+
+// ── Load today's rows from server ────────────────────
+async function loadTodayRows() {
+  try {
+    const url  = SCRIPT_URL + '?action=getTodayRows&teacher='
+               + encodeURIComponent(currentTeacher.displayName)
+               + '&token=' + encodeURIComponent(sessionStorage.getItem('aci_token'));
+    const data = await (await fetch(url)).json();
+    if (data.error) throw new Error(data.error);
+    todayRows = data.rows || [];
+    saveRowsToStorage();
+    renderRecentRows();
+  } catch(err) {
+    // Silent fail — card still shows whatever is in localStorage
+    console.warn('loadTodayRows:', err.message);
+  }
 }
 
 // ── Render recent submissions card ───────────────────
@@ -650,6 +682,7 @@ async function executeDelete() {
     });
     hideLoading();
     todayRows = todayRows.filter(r => r.rowNumber !== rowNum);
+    saveRowsToStorage();
     renderRecentRows();
     showToast(L.toastDelOk, 'success');
   } catch(err) {
@@ -681,6 +714,7 @@ async function askEdit(rowNumber) {
 
     // Remove from local list & re-render card
     todayRows = todayRows.filter(x => x.rowNumber !== rowNumber);
+    saveRowsToStorage();
     renderRecentRows();
 
     // Parse the stored date back to YYYY-MM-DD for the date input
