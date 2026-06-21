@@ -158,7 +158,7 @@
       <h2 id="successTitle">سەرکەفتن! تومار کرا</h2>
       <p id="successSub">نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.</p>
       <div class="success-details" id="successDetails"></div>
-      <button class="btn-new" onclick="newSubmission()" id="btnNew">➕ تومارکرنەکێ نوی</button>
+      <button class="btn-new" onclick="newSubmission()" id="btnNew">✓ باشە</button>
     </div>
   </div>
 </main>
@@ -179,7 +179,7 @@ const LANGS = {
     studentsTitle:'هلبژارنا پۆلێ', absentLabel:'نەهاتی', absentPreview:'✗ قوتابیێن نەهاتی:',
     btnReset:'🔄 سفرکرن', btnSubmit:'📤 شاندن و پاشەکەفتکرن',
     successTitle:'سەرکەفتن! تومار کرا', successSub:'نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.',
-    btnNew:'➕ تومارکرنەکێ نوی', btnLogout:'🚪 دەرچوون',
+    btnNew:'✓ باشە', btnLogout:'🚪 دەرچوون',
     fDate:'بەروار', fTeacher:'مامۆستە', fSubject:'بابەت', fLecture:'دەرس',
     fClass:'پۆل', fAbsent:'ژمارەیا نەهاتی', students:'قوتابی',
     loadingSubmit:'تومارکرنا نەهاتنێ...',
@@ -209,7 +209,7 @@ const LANGS = {
     studentsTitle:'اختيار المجموعة', absentLabel:'غائب', absentPreview:'✗ الطلاب الغائبون:',
     btnReset:'🔄 إعادة تعيين', btnSubmit:'📤 إرسال وحفظ',
     successTitle:'تم الحفظ بنجاح!', successSub:'تم تسجيل غياب الطلاب بنجاح.',
-    btnNew:'➕ تسجيل جديد', btnLogout:'🚪 تسجيل الخروج',
+    btnNew:'✓ حسناً', btnLogout:'🚪 تسجيل الخروج',
     fDate:'التاريخ', fTeacher:'المعلم', fSubject:'المادة', fLecture:'المحاضرة',
     fClass:'المجموعة', fAbsent:'عدد الغائبين', students:'طالب',
     loadingSubmit:'جارٍ حفظ الغياب...',
@@ -239,7 +239,7 @@ const LANGS = {
     studentsTitle:'Select Class', absentLabel:'absent', absentPreview:'✗ Absent students:',
     btnReset:'🔄 Reset', btnSubmit:'📤 Submit',
     successTitle:'Submitted Successfully!', successSub:'Student absences have been recorded.',
-    btnNew:'➕ New Submission', btnLogout:'🚪 Logout',
+    btnNew:'✓ OK', btnLogout:'🚪 Logout',
     fDate:'Date', fTeacher:'Teacher', fSubject:'Subject', fLecture:'Lecture',
     fClass:'Class', fAbsent:'Absent Count', students:'students',
     loadingSubmit:'Saving absence...',
@@ -371,9 +371,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fDate').valueAsDate = new Date();
   document.getElementById('screenSubmit').style.display = '';
   restoreFormState();
-
-  // Auto-load today's submissions on page open
-  loadTodayRows();
 });
 
 // ── Students ──────────────────────────────────────────
@@ -535,9 +532,23 @@ async function doSubmit() {
     const key = date + '|' + cls + '|' + subject + '|' + lecture;
     sessionStorage.setItem(key, '1');
     sessionStorage.removeItem('formState');
+
+    // Push new row into memory so recent card updates instantly — no API call needed
+    todayRows.push({
+      rowNumber:      Date.now(), // temporary unique id for this session
+      date:           fmtDate,
+      subject:        subject,
+      lectureNo:      lecture,
+      classGroup:     cls,
+      absentStudents: [...selectedAbsent].join(', ')
+    });
+    renderRecentRows();
+
+    // Reset form now (date stays today, other fields clear) so it's ready when teacher clicks OK
+    resetForm();
+    document.getElementById('fDate').valueAsDate = new Date();
+
     showSuccess(fmtDate, subject, lecture, cls, [...selectedAbsent].join(', '));
-    // Reload recent submissions to show the new row
-    loadTodayRows();
   } catch(err) {
     hideLoading();
     showToast(L.toastError, 'error');
@@ -557,23 +568,8 @@ function showSuccess(date, subject, lecture, cls, absent) {
 }
 function row(l,v){ return `<div class="detail-row"><span class="label">${l}</span><span class="val">${v}</span></div>`; }
 function newSubmission() {
-  resetForm();
   document.getElementById('screenSuccess').style.display = 'none';
   document.getElementById('screenSubmit').style.display = '';
-}
-
-// ── Load today's rows (auto on page open) ────────────
-async function loadTodayRows() {
-  try {
-    const url  = SCRIPT_URL + '?action=getTodayRows&teacher=' + encodeURIComponent(currentTeacher.displayName) + '&token=' + encodeURIComponent(sessionStorage.getItem('aci_token'));
-    const data = await (await fetch(url)).json();
-    if (data.error) throw new Error(data.error);
-    todayRows = data.rows || [];
-    renderRecentRows();
-  } catch(err) {
-    // Silent fail on auto-load — teacher can still submit
-    console.warn('Could not load today rows:', err.message);
-  }
 }
 
 // ── Render recent submissions card ───────────────────
