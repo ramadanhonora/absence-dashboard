@@ -181,8 +181,8 @@ body {
 .btn-green:hover { background: #45a049; }
 
 /* ── TABLES ─────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; margin-top: 16px; border-radius: 8px; overflow: hidden; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; min-width: 520px; border-collapse: collapse; margin-top: 16px; border-radius: 8px; overflow: hidden; }
 th, td { padding: 13px 14px; border: 1px solid var(--border); }
 th { background: var(--primary); color: #fff; font-weight: 600; text-transform: uppercase; font-size: 0.82em; white-space: nowrap; }
 
@@ -306,26 +306,145 @@ tr.row-low    { background: #e6ffe6; } tr.row-low:hover    { background: #d4f5d4
   .badge { border: 1px solid #000 !important; color: #000 !important; background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
-/* ── RESPONSIVE ─────────────────────────────────────── */
-@media (max-width: 768px) {
-  body { padding: 10px; }
-  .dash-header-top { flex-direction: column; text-align: center; }
-  .dash-titles h1 { font-size: 1.2rem; }
-  .filter-row { flex-direction: column; }
-  .filter-group { min-width: 100%; }
-  .btn, .btn-gray, .btn-green { width: 100%; }
-  .tab { font-size: 0.82em; padding: 9px 12px; flex-basis: calc(50% - 5px); }
-  .content-section { padding: 16px; }
-  .modal-content { padding: 20px; }
-  th, td { padding: 8px; font-size: 0.82em; }
-}
-/* Automatically pushes the new logo to the left edge */
+/* ── LOGO POSITIONING (desktop) ─────────────────────── */
 .logo-left {
-  margin-right: auto; /* In RTL (Right-to-Left), margin-right: auto pushes it to the far left edge */
+  margin-right: auto;
 }
-
-/* If the dashboard is switched to English (LTR), handle it properly */
 [dir="ltr"] .logo-left {
   margin-right: 0;
   margin-left: auto;
+}
+
+/* ── TABLET (≤ 900px) ────────────────────────────────── */
+@media (max-width: 900px) {
+  .dash-titles h1 { font-size: 1.4rem; }
+  .dash-titles h2 { font-size: 0.95rem; }
+  .dash-header-top img { width: 90px; height: 90px; }
+  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .stat-card { padding: 16px 12px; }
+  .stat-card .number { font-size: 2.2em; }
+  .tab { font-size: 0.84em; padding: 9px 14px; min-width: 80px; }
+}
+
+/* ── MOBILE (≤ 600px) ────────────────────────────────── */
+@media (max-width: 600px) {
+
+  /* Body */
+  body { padding: 8px; }
+
+  /* ── Header ── */
+  .dash-header { padding: 14px 14px 16px; border-radius: 12px; }
+
+  /* Controls row: stack last-update on its own line, keep lang+logout together */
+  .dash-header-controls {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .dash-header-controls #lastUpdate {
+    width: 100%;
+    font-size: 0.78em;
+    order: 3; /* push to bottom of controls row */
+  }
+
+  /* Header title row: hide left logo, shrink right logo, compact title */
+  .dash-header-top {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .logo-right {
+    width: 54px !important;
+    height: 54px !important;
+    flex-shrink: 0;
+  }
+  .logo-left { display: none !important; } /* hide left logo on mobile */
+
+  .dash-titles {
+    flex: 1;
+    text-align: start !important;
+  }
+  .dash-titles h1 {
+    font-size: 1rem !important;
+    line-height: 1.25;
+    margin-bottom: 2px !important;
+  }
+  .dash-titles h2 {
+    font-size: 0.78rem !important;
+    margin-top: 0 !important;
+  }
+
+  /* Search */
+  .search-wrap { margin-top: 12px; }
+  .search-wrap input { padding: 11px 16px; font-size: 0.9em; border-radius: 20px; }
+
+  /* ── Stats grid: 2 columns ── */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .stat-card { padding: 14px 10px; border-radius: 10px; }
+  .stat-card h3 { font-size: 0.72em; margin-bottom: 4px; }
+  .stat-card .number { font-size: 1.9em; }
+  .stat-card p { font-size: 0.68em; }
+
+  /* ── Tabs: wrap into compact 2-per-row ── */
+  .tabs { gap: 6px; margin-bottom: 14px; }
+  .tab {
+    flex-basis: calc(33.33% - 6px);
+    flex-grow: 0;
+    min-width: 0;
+    font-size: 0.76em;
+    padding: 8px 6px;
+    border-radius: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ── Content sections ── */
+  .content-section { padding: 14px 12px; border-radius: 10px; }
+  .section-title { font-size: 1.05em; }
+  .section-sub { font-size: 0.82em; margin-bottom: 14px; }
+
+  /* ── Filter section ── */
+  .filter-section { padding: 12px; border-radius: 8px; }
+  .filter-row { flex-direction: column; gap: 10px; }
+  .filter-group { min-width: 100%; }
+  .filter-group label { font-size: 0.78em; }
+  .filter-group input,
+  .filter-group select { height: 42px; font-size: 0.9em; padding: 9px 10px; }
+  .btn, .btn-gray, .btn-green { width: 100%; height: 42px; font-size: 0.88em; }
+
+  /* ── Tables ── */
+  th, td { padding: 9px 10px; font-size: 0.8em; }
+  th { font-size: 0.74em; }
+
+  /* ── Modal ── */
+  .modal-content { padding: 18px 14px; border-radius: 14px; max-height: 92vh; }
+  .modal-close { font-size: 24px; }
+  .profile-header h2 { font-size: 1.3em; }
+  .profile-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .profile-stat { padding: 12px; }
+  .profile-stat .value { font-size: 1.4em; }
+
+  /* ── Admin confirm dialog ── */
+  .admin-confirm-box { padding: 24px 18px; }
+  .admin-confirm-btns { flex-direction: column; gap: 8px; }
+  .btn-cancel-sm,
+  .btn-delete-sm { width: 100%; padding: 12px; }
+
+  /* ── Chart boxes ── */
+  .chart-box { padding: 14px; }
+  .chart-box h3 { font-size: 1em; }
+
+  /* ── Dropdown search results ── */
+  #dropdownResults { top: 50px; border-radius: 10px; }
+  .dropdown-item { padding: 11px 14px; }
+  .dropdown-name { font-size: 13px; }
+  .dropdown-info { font-size: 11px; }
+
+  /* ── Toast ── */
+  .toast { width: 92%; max-width: 340px; font-size: 0.82em; padding: 10px 18px; }
 }
