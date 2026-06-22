@@ -31,7 +31,7 @@ body {
 .dash-header {
   background: var(--white); border-radius: 15px;
   box-shadow: var(--shadow-lg); margin-bottom: 24px;
-  padding: 10px 24px;
+  padding: 20px 24px;
 }
 .dash-header-top { 
   display: flex; 
@@ -111,13 +111,13 @@ body {
   gap: 12px; margin-bottom: 24px;
 }
 .stat-card {
-  background: var(--white); padding: 8px 22px;
+  background: var(--white); padding: 6px 22px;
   border-radius: 14px; box-shadow: var(--shadow);
   text-align: center; border-bottom: 4px solid;
   transition: transform 0.3s, box-shadow 0.3s;
 }
 .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-.stat-card h3 { color: var(--muted); font-size: 0.8em; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+.stat-card h3 { color: var(--muted); font-size: 0.8em; text-transform: uppercase; margin-bottom: 2px; letter-spacing: 0.5px; }
 .stat-card .number { font-size: 2em; font-weight: bold; }
 .stat-card p { font-size: 0.72em; color: var(--muted); margin-top: 4px; }
 
@@ -145,7 +145,7 @@ body {
 /* ── CONTENT SECTIONS ───────────────────────────────── */
 .content-section {
   display: none; background: var(--white);
-  padding: 14px 28px; border-radius: 14px; box-shadow: var(--shadow);
+  padding: 28px; border-radius: 14px; box-shadow: var(--shadow);
 }
 .content-section.active { display: block; animation: fadeIn 0.3s; }
 @keyframes fadeIn {
@@ -157,7 +157,7 @@ body {
 
 /* ── FILTERS ────────────────────────────────────────── */
 .filter-section {
-  background: #f8f9fa; padding: 8px 18px;
+  background: #f8f9fa; padding: 18px;
   border-radius: 10px; margin-bottom: 20px;
   border: 2px solid var(--border);
 }
@@ -209,7 +209,7 @@ tr.row-low    { background: #e6ffe6; } tr.row-low:hover    { background: #d4f5d4
 
 /* ── CHART CONTAINERS ───────────────────────────────── */
 .chart-box {
-  margin-top: 20px; padding: 10px 22px;
+  margin-top: 20px; padding: 22px;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   border-radius: 14px; border: 2px solid var(--border);
 }
@@ -306,102 +306,26 @@ tr.row-low    { background: #e6ffe6; } tr.row-low:hover    { background: #d4f5d4
   .badge { border: 1px solid #000 !important; color: #000 !important; background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
-/* ── LOGO POSITIONING (desktop) ─────────────────────── */
-.logo-left { margin-right: auto; }
-[dir="ltr"] .logo-left { margin-right: 0; margin-left: auto; }
-
-/* ── TABLE SCROLL — all sizes ────────────────────────── */
-.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-table { min-width: 520px; }
-
-/* ── TABLET (≤ 900px) ────────────────────────────────── */
-@media (max-width: 900px) {
-  .dash-titles h1 { font-size: 1.4rem; }
-  .dash-titles h2 { font-size: 0.95rem; }
-  .dash-header-top img { width: 90px; height: 90px; }
-  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-  .stat-card { padding: 12px 10px; }
-  .stat-card .number { font-size: 1.8em; }
-  .tab { font-size: 0.84em; padding: 9px 14px; min-width: 80px; }
+/* ── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  body { padding: 10px; }
+  .dash-header-top { flex-direction: column; text-align: center; }
+  .dash-titles h1 { font-size: 1.2rem; }
+  .filter-row { flex-direction: column; }
+  .filter-group { min-width: 100%; }
+  .btn, .btn-gray, .btn-green { width: 100%; }
+  .tab { font-size: 0.82em; padding: 9px 12px; flex-basis: calc(50% - 5px); }
+  .content-section { padding: 16px; }
+  .modal-content { padding: 20px; }
+  th, td { padding: 8px; font-size: 0.82em; }
+}
+/* Automatically pushes the new logo to the left edge */
+.logo-left {
+  margin-right: auto; /* In RTL (Right-to-Left), margin-right: auto pushes it to the far left edge */
 }
 
-/* ── MOBILE (≤ 600px) ────────────────────────────────── */
-@media (max-width: 600px) {
-
-  body { padding: 8px; }
-
-  /* Header */
-  .dash-header { padding: 10px 14px; border-radius: 12px; }
-  .dash-header-controls { flex-wrap: wrap; gap: 8px; }
-  .dash-header-controls #lastUpdate { width: 100%; font-size: 0.78em; order: 3; }
-
-  /* Header logo row: hide left logo, shrink ACI logo */
-  .dash-header-top { flex-direction: row; align-items: center; gap: 10px; margin-top: 8px; }
-  .logo-left { display: none !important; }
-  .logo-right { width: 52px !important; height: 52px !important; flex-shrink: 0; }
-  .dash-titles { flex: 1; text-align: start !important; }
-  .dash-titles h1 { font-size: 1rem !important; line-height: 1.25; margin-bottom: 2px !important; }
-  .dash-titles h2 { font-size: 0.78rem !important; margin-top: 0 !important; }
-
-  /* Search */
-  .search-wrap { margin-top: 10px; }
-  .search-wrap input { padding: 11px 16px; font-size: 0.9em; border-radius: 20px; }
-
-  /* Stats: 2-column grid */
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-  .stat-card { padding: 8px 10px; border-radius: 10px; }
-  .stat-card h3 { font-size: 0.72em; margin-bottom: 2px; }
-  .stat-card .number { font-size: 1.7em; }
-  .stat-card p { font-size: 0.68em; }
-
-  /* Tabs: 3-per-row compact wrap */
-  .tabs { gap: 6px; margin-bottom: 12px; }
-  .tab {
-    flex-basis: calc(33.33% - 6px); flex-grow: 0; min-width: 0;
-    font-size: 0.76em; padding: 8px 6px; border-radius: 8px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-
-  /* Content sections */
-  .content-section { padding: 10px 12px; border-radius: 10px; }
-  .section-title { font-size: 1.05em; }
-  .section-sub { font-size: 0.82em; margin-bottom: 10px; }
-
-  /* Filters */
-  .filter-section { padding: 8px 12px; border-radius: 8px; }
-  .filter-row { flex-direction: column; gap: 10px; }
-  .filter-group { min-width: 100%; }
-  .filter-group label { font-size: 0.78em; }
-  .filter-group input, .filter-group select { height: 42px; font-size: 0.9em; padding: 9px 10px; }
-  .btn, .btn-gray, .btn-green { width: 100%; height: 42px; font-size: 0.88em; }
-
-  /* Tables */
-  th, td { padding: 9px 10px; font-size: 0.8em; }
-  th { font-size: 0.74em; }
-
-  /* Chart boxes */
-  .chart-box { padding: 8px 14px; }
-  .chart-box h3 { font-size: 1em; }
-
-  /* Modal */
-  .modal-content { padding: 16px 14px; border-radius: 14px; max-height: 92vh; }
-  .modal-close { font-size: 24px; }
-  .profile-header h2 { font-size: 1.3em; }
-  .profile-stats { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .profile-stat { padding: 10px; }
-  .profile-stat .value { font-size: 1.4em; }
-
-  /* Admin confirm dialog */
-  .admin-confirm-box { padding: 20px 16px; }
-  .admin-confirm-btns { flex-direction: column; gap: 8px; }
-  .btn-cancel-sm, .btn-delete-sm { width: 100%; padding: 12px; }
-
-  /* Dropdown */
-  #dropdownResults { top: 50px; border-radius: 10px; }
-  .dropdown-item { padding: 11px 14px; }
-  .dropdown-name { font-size: 13px; }
-  .dropdown-info { font-size: 11px; }
-
-  /* Toast */
-  .toast { width: 92%; max-width: 340px; font-size: 0.82em; padding: 10px 18px; }
+/* If the dashboard is switched to English (LTR), handle it properly */
+[dir="ltr"] .logo-left {
+  margin-right: 0;
+  margin-left: auto;
 }
