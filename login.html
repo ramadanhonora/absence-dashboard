@@ -118,7 +118,6 @@ const LANGS = {
 };
 
 let currentLang = localStorage.getItem('aci_lang') || 'ku';
-let TEACHERS = [];
 let STUDENTS = {};
 
 function setLang(lang) {
@@ -150,42 +149,34 @@ function checkAutoLogin() {
   if (token && role === 'teacher') { window.location.href = PORTAL_URL; return; }
 }
 
-// ── Load system data via GET (no CORS issue) ──────────
+// ── Load system data via GET — for students only ──────
 function loadSystemData() {
   const L = LANGS[currentLang];
   showLoading(L.loading);
-  const eb = document.getElementById('loginError');
-  const et = document.getElementById('loginErrorText');
-  eb.classList.remove('show');
-
   fetch(SCRIPT_URL)
     .then(r => r.json())
     .then(data => {
       hideLoading();
-      if (data.error) {
-        et.textContent = L.errConn;
-        eb.classList.add('show');
-        return;
-      }
-      TEACHERS = data.teachers || [];
       STUDENTS = data.students || {};
       document.getElementById('btnLogin').disabled = false;
       checkAutoLogin();
     })
     .catch(() => {
       hideLoading();
-      et.textContent = L.errConn;
-      eb.classList.add('show');
+      // Still enable login even if student data fails
+      document.getElementById('btnLogin').disabled = false;
+      checkAutoLogin();
     });
 }
 
-// ── Login — validated client-side against fetched data ─
-function doLogin() {
+// ── Login — validated server-side via POST ─────────────
+async function doLogin() {
   const L  = LANGS[currentLang];
   const u  = document.getElementById('loginUsername').value.trim().toLowerCase();
   const p  = document.getElementById('loginPassword').value.trim();
   const eb = document.getElementById('loginError');
   const et = document.getElementById('loginErrorText');
+  const btn = document.getElementById('btnLogin');
 
   eb.classList.remove('show');
   document.getElementById('loginUsername').classList.remove('error');
@@ -197,42 +188,54 @@ function doLogin() {
     return;
   }
 
-  // Find teacher in fetched data
-  // Note: getSystemData in code.gs now sends passwords back only for auth
-  // We look up in the full teacher list fetched via GET
-  const teacher = TEACHERS.find(t =>
-    t.username.toLowerCase() === u && t.password === p
-  );
+  btn.disabled = true;
+  document.getElementById('btnLoginText').textContent = L.loggingIn;
+  showLoading(L.loggingIn);
 
-  if (!teacher) {
-    et.textContent = L.errWrong;
+  try {
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login', username: u, password: p })
+    });
+    const data = await resp.json();
+    hideLoading();
+
+    if (data.error || !data.success) {
+      et.textContent = L.errWrong;
+      eb.classList.add('show');
+      document.getElementById('loginUsername').classList.add('error');
+      document.getElementById('loginPassword').classList.add('error');
+      btn.disabled = false;
+      document.getElementById('btnLoginText').textContent = L.btnLogin;
+      return;
+    }
+
+    // Success — store session
+    sessionStorage.setItem('aci_token', data.token);
+    sessionStorage.setItem('aci_role',  data.role);
+    sessionStorage.setItem('aci_teacher', JSON.stringify({
+      arabicName:  data.teacher.arabicName,
+      username:    data.teacher.username,
+      displayName: data.teacher.displayName,
+      subjects:    data.teacher.subjects || [],
+      classes:     data.teacher.classes  || []
+    }));
+    sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
+    sessionStorage.removeItem('explicit_logout');
+
+    if (data.role === 'admin') {
+      window.location.href = DASHBOARD_URL;
+    } else {
+      window.location.href = PORTAL_URL;
+    }
+
+  } catch(err) {
+    hideLoading();
+    et.textContent = L.errConn;
     eb.classList.add('show');
-    document.getElementById('loginUsername').classList.add('error');
-    document.getElementById('loginPassword').classList.add('error');
-    return;
-  }
-
-  const isAdmin = teacher.displayName === 'Admin Dashboard';
-  const role    = isAdmin ? 'admin' : 'teacher';
-  const token   = makeToken(u, role);
-
-  // Store in sessionStorage — cleared when browser closes
-  sessionStorage.setItem('aci_token',   token);
-  sessionStorage.setItem('aci_role',    role);
-  sessionStorage.setItem('aci_teacher', JSON.stringify({
-    arabicName:  teacher.arabicName,
-    username:    teacher.username,
-    displayName: teacher.displayName,
-    subjects:    teacher.subjects || [],
-    classes:     teacher.classes  || []
-  }));
-  sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
-  sessionStorage.removeItem('explicit_logout');
-
-  if (isAdmin) {
-    window.location.href = DASHBOARD_URL;
-  } else {
-    window.location.href = PORTAL_URL;
+    btn.disabled = false;
+    document.getElementById('btnLoginText').textContent = L.btnLogin;
   }
 }
 
