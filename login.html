@@ -169,13 +169,13 @@ function loadSystemData() {
     });
 }
 
-// ── Login — validated server-side via POST ─────────────
+// ── Login — validated server-side via GET (CORS-safe) ──
 async function doLogin() {
-  const L  = LANGS[currentLang];
-  const u  = document.getElementById('loginUsername').value.trim().toLowerCase();
-  const p  = document.getElementById('loginPassword').value.trim();
-  const eb = document.getElementById('loginError');
-  const et = document.getElementById('loginErrorText');
+  const L   = LANGS[currentLang];
+  const u   = document.getElementById('loginUsername').value.trim().toLowerCase();
+  const p   = document.getElementById('loginPassword').value.trim();
+  const eb  = document.getElementById('loginError');
+  const et  = document.getElementById('loginErrorText');
   const btn = document.getElementById('btnLogin');
 
   eb.classList.remove('show');
@@ -193,11 +193,8 @@ async function doLogin() {
   showLoading(L.loggingIn);
 
   try {
-    const resp = await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'login', username: u, password: p })
-    });
+    const url  = SCRIPT_URL + '?action=login&username=' + encodeURIComponent(u) + '&password=' + encodeURIComponent(p);
+    const resp = await fetch(url);
     const data = await resp.json();
     hideLoading();
 
