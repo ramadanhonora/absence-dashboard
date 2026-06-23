@@ -1224,7 +1224,7 @@ function openAddTeacher(){
   document.getElementById('tmUsername').disabled=false;
   document.getElementById('tmPassword').value='';
   document.getElementById('tmLblPass').textContent = (L.tmLblPass||'').replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','').replace('(اتركها فارغة لعدم التغيير)','').replace('(leave blank to keep unchanged)','');
-  buildCheckboxes('tmClasses', mgmtData.classes||[], []);
+  buildCheckboxes('tmClasses', sortClasses(mgmtData.classes||[]), []);
   // No classes selected → show all subjects
   updateSubjectCheckboxes([]);
   document.getElementById('teacherModal').classList.add('open');
@@ -1240,7 +1240,7 @@ function openEditTeacher(t){
   document.getElementById('tmUsername').disabled=true;
   document.getElementById('tmPassword').value='';
   document.getElementById('tmLblPass').textContent = L.tmLblPass||'پاسۆرد';
-  buildCheckboxes('tmClasses', mgmtData.classes||[], t.classes||[]);
+  buildCheckboxes('tmClasses', sortClasses(mgmtData.classes||[]), t.classes||[]);
   updateSubjectCheckboxes(t.classes||[], t.subjects||[]);
   document.getElementById('teacherModal').classList.add('open');
 }
@@ -1265,21 +1265,38 @@ function buildCheckboxes(containerId, items, checked){
   }
 }
 
-// Get stage key from class name: '1A' → '1', '4pro' → '4pro', '4net' → '4net'
+// Get stage key from class name — case insensitive
+// '1A','1B' → '1'  |  '4PRO','4pro' → '4pro'  |  '4NET' → '4net'
 function getStageKey(className){
-  const m = className.match(/^(\d+[a-zA-Z]*)/);
-  if(!m) return className;
-  const full = m[1]; // e.g. '1', '4pro', '4net'
-  // If it's just a number like '1', '2', '3' → return that number
+  const m = String(className).toLowerCase().match(/^(\d+[a-z]*)/);
+  if(!m) return String(className).toLowerCase();
+  const full = m[1];
+  // Pure number like '1','2','3' → return as string number
   if(/^\d+$/.test(full)) return full;
-  // If it has letters like '4pro' → return as-is
+  // Has letters like '4pro','4net','4web' → return lowercase
   return full;
+}
+
+// Natural sort for class names: 1A < 1B < 2A < 3A < 4PRO < 5NET etc.
+function sortClasses(classes){
+  return [...classes].sort((a,b)=>{
+    const ma=String(a).match(/^(\d+)(.*)$/);
+    const mb=String(b).match(/^(\d+)(.*)$/);
+    if(!ma||!mb) return a.localeCompare(b);
+    const numDiff=parseInt(ma[1])-parseInt(mb[1]);
+    if(numDiff!==0) return numDiff;
+    return ma[2].toLowerCase().localeCompare(mb[2].toLowerCase());
+  });
 }
 
 // Update subject checkboxes based on selected classes (stage filtering)
 function updateSubjectCheckboxes(selectedClasses, currentChecked){
   if(!mgmtData) return;
-  const csMap = mgmtData.classSubjectMap || {};
+  // Normalize map keys to lowercase for case-insensitive matching
+  const csMapRaw = mgmtData.classSubjectMap || {};
+  const csMap = {};
+  Object.entries(csMapRaw).forEach(([k,v])=>{ csMap[String(k).toLowerCase()]=v; });
+
   let availableSubjects = [];
 
   if(!selectedClasses.length){
@@ -1291,7 +1308,7 @@ function updateSubjectCheckboxes(selectedClasses, currentChecked){
     // Collect subjects for all selected class stages
     const stageKeys = [...new Set(selectedClasses.map(getStageKey))];
     stageKeys.forEach(key=>{
-      const subs = csMap[key]||[];
+      const subs = csMap[key.toLowerCase()]||[];
       subs.forEach(s=>{ if(!availableSubjects.includes(s)) availableSubjects.push(s); });
     });
   }
@@ -1371,7 +1388,7 @@ function renderStudentTab(){
   if(!mgmtData) return;
   const L=LANGS[currentLang];
   const grid=document.getElementById('classGrid');
-  grid.innerHTML=mgmtData.classes.map(cls=>{
+  grid.innerHTML=sortClasses(mgmtData.classes).map(cls=>{
     const count=(mgmtData.students[cls]||[]).length;
     return `<button class="class-btn ${selectedClass===cls?'selected':''}" onclick="selectClass('${cls}')">
       <div class="cls-name">${cls}</div>
@@ -1485,7 +1502,7 @@ function openMoveStudent(safeName, safeCls){
   document.getElementById('moveStudentName').value=name;
   document.getElementById('moveStudentFrom').value=cls;
   document.getElementById('moveStudentNameDisplay').textContent='👤 '+name;
-  document.getElementById('moveClassRadios').innerHTML=(mgmtData.classes||[]).filter(c=>c!==cls).map(c=>`
+  document.getElementById('moveClassRadios').innerHTML=sortClasses((mgmtData.classes||[]).filter(c=>c!==cls)).map(c=>`
     <label style="display:flex;align-items:center;gap:6px;background:#f4f6ff;border:1.5px solid #d0d7ff;border-radius:8px;padding:6px 12px;cursor:pointer;">
       <input type="radio" name="moveTarget" value="${c}" style="accent-color:#667eea;">
       <span style="font-weight:700;">${c}</span>
