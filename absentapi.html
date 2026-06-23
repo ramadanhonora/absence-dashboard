@@ -1284,15 +1284,20 @@ function buildCheckboxes(containerId, items, checked){
 }
 
 // Get stage key from class name — case insensitive
-// '1A','1B' → '1'  |  '4PRO','4pro' → '4pro'  |  '4NET' → '4net'
+// '1A','1B','1C','1D' → '1'  (single letter = group, strip it)
+// '4PRO','4pro'       → '4pro'  (multi-letter = department, keep lowercase)
+// '5NET','5WEB'       → '5net','5web'
 function getStageKey(className){
-  const m = String(className).toLowerCase().match(/^(\d+[a-z]*)/);
+  const m = String(className).toLowerCase().match(/^(\d+)([a-z]*)$/);
   if(!m) return String(className).toLowerCase();
-  const full = m[1];
-  // Pure number like '1','2','3' → return as string number
-  if(/^\d+$/.test(full)) return full;
-  // Has letters like '4pro','4net','4web' → return lowercase
-  return full;
+  const num    = m[1]; // e.g. '1','4','5'
+  const suffix = m[2]; // e.g. 'a','b','pro','net','web' or ''
+  // No suffix → pure stage number
+  if(!suffix) return num;
+  // Single letter suffix (a,b,c,d) → group indicator, return just the number
+  if(suffix.length === 1) return num;
+  // Multi-letter suffix (pro,net,web) → department, return number+suffix
+  return num + suffix;
 }
 
 // Get unique stage keys from classSubjectMap (the display list for teacher modal)
