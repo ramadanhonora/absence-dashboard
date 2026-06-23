@@ -1224,8 +1224,8 @@ function openAddTeacher(){
   document.getElementById('tmUsername').disabled=false;
   document.getElementById('tmPassword').value='';
   document.getElementById('tmLblPass').textContent = (L.tmLblPass||'').replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','').replace('(اتركها فارغة لعدم التغيير)','').replace('(leave blank to keep unchanged)','');
-  buildCheckboxes('tmClasses', sortClasses(mgmtData.classes||[]), []);
-  // No classes selected → show all subjects
+  buildStageCheckboxes('tmClasses', getStageList(), []);
+  // No stages selected → show all subjects
   updateSubjectCheckboxes([]);
   document.getElementById('teacherModal').classList.add('open');
 }
@@ -1240,9 +1240,27 @@ function openEditTeacher(t){
   document.getElementById('tmUsername').disabled=true;
   document.getElementById('tmPassword').value='';
   document.getElementById('tmLblPass').textContent = L.tmLblPass||'پاسۆرد';
-  buildCheckboxes('tmClasses', sortClasses(mgmtData.classes||[]), t.classes||[]);
+  buildStageCheckboxes('tmClasses', getStageList(), groupsToStages(t.classes||[]));
   updateSubjectCheckboxes(t.classes||[], t.subjects||[]);
   document.getElementById('teacherModal').classList.add('open');
+}
+
+// Build stage checkboxes (1, 2, 3, 4pro, 4web...) for teacher modal
+function buildStageCheckboxes(containerId, stages, checkedStages){
+  const el=document.getElementById(containerId);
+  el.innerHTML=stages.map(stage=>`
+    <label class="cb-item">
+      <input type="checkbox" value="${stage}" ${checkedStages.includes(stage)?'checked':''}>
+      <label>${stage.toUpperCase()}</label>
+    </label>`).join('');
+  // Watch changes to filter subjects
+  el.querySelectorAll('input').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const selStages=getChecked(containerId);
+      const selSubjects=getChecked('tmSubjects');
+      updateSubjectCheckboxes(selStages, selSubjects);
+    });
+  });
 }
 
 // Build class checkboxes and attach change listener for subject filtering
@@ -1277,7 +1295,35 @@ function getStageKey(className){
   return full;
 }
 
-// Natural sort for class names: 1A < 1B < 2A < 3A < 4PRO < 5NET etc.
+// Get unique stage keys from classSubjectMap (the display list for teacher modal)
+// Returns sorted array like ['1','2','3','4pro','4web','4net','5pro','5web','5net']
+function getStageList(){
+  const csMap = mgmtData.classSubjectMap || {};
+  const keys  = Object.keys(csMap);
+  // Sort: pure numbers first (1,2,3), then alphanumeric (4pro,4web,5pro)
+  return keys.sort((a,b)=>{
+    const ma=a.match(/^(\d+)([a-z]*)$/i), mb=b.match(/^(\d+)([a-z]*)$/i);
+    if(!ma||!mb) return a.localeCompare(b);
+    const nd=parseInt(ma[1])-parseInt(mb[1]);
+    if(nd!==0) return nd;
+    return ma[2].localeCompare(mb[2]);
+  });
+}
+
+// Get all class groups that belong to a given stage key
+// e.g. stage '1' → ['1A','1B','1C','1D'] from mgmtData.classes
+// e.g. stage '4pro' → ['4PRO'] (exact match case-insensitive)
+function getGroupsForStage(stageKey){
+  return (mgmtData.classes||[]).filter(cls=>
+    getStageKey(cls) === stageKey.toLowerCase()
+  );
+}
+
+// Convert teacher's stored groups to selected stage keys for display
+// e.g. ['1A','1B','1C'] → ['1']  |  ['4PRO','4WEB'] → ['4pro','4web']
+function groupsToStages(groups){
+  return [...new Set((groups||[]).map(g=>getStageKey(g)))];
+}
 function sortClasses(classes){
   return [...classes].sort((a,b)=>{
     const ma=String(a).match(/^(\d+)(.*)$/);
@@ -1305,8 +1351,9 @@ function updateSubjectCheckboxes(selectedClasses, currentChecked){
       subs.forEach(s=>{ if(!availableSubjects.includes(s)) availableSubjects.push(s); });
     });
   } else {
-    // Collect subjects for all selected class stages
-    const stageKeys = [...new Set(selectedClasses.map(getStageKey))];
+    // selectedClasses are already stage keys (from stage checkboxes)
+    // but also handle if full group names passed (e.g. from edit teacher)
+    const stageKeys = [...new Set(selectedClasses.map(c=>getStageKey(c)))];
     stageKeys.forEach(key=>{
       const subs = csMap[key.toLowerCase()]||[];
       subs.forEach(s=>{ if(!availableSubjects.includes(s)) availableSubjects.push(s); });
@@ -1345,8 +1392,12 @@ async function saveTeacher(){
   const name=document.getElementById('tmName').value.trim();
   const username=document.getElementById('tmUsername').value.trim().toLowerCase();
   const password=document.getElementById('tmPassword').value.trim();
-  const selClasses=getChecked('tmClasses').join(',');
-  const selSubjects=getChecked('tmSubjects').join(',');
+  const selStages  = getChecked('tmClasses'); // e.g. ['1','2','4pro']
+  const selSubjects= getChecked('tmSubjects').join(',');
+
+  // Expand stages → actual class groups stored in sheet
+  // e.g. ['1','4pro'] → ['1A','1B','1C','1D','4PRO']
+  const selClasses = selStages.flatMap(stage=>getGroupsForStage(stage)).join(',');
 
   if(!name||!username){showToast('❌ ناڤ و یوزەرناڤ پێویستە','error');return;}
   if(!isEdit&&!password){showToast('❌ پاسۆرد پێویستە','error');return;}
