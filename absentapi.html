@@ -5,15 +5,113 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>پەیمانگەها کومپیوتەرێ ل ئاکرێ — داشبۆرد</title>
 <link rel="stylesheet" href="dashboard.css">
+<style>
+/* ── MANAGEMENT STYLES ─────────────────────────────── */
+.mgmt-section { margin-bottom: 28px; }
+.mgmt-subtabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.mgmt-subtab {
+  padding:9px 22px; border-radius:8px; border:2px solid #667eea;
+  color:#667eea; background:#fff; font-weight:700; cursor:pointer;
+  font-family:inherit; font-size:0.9em; transition:all 0.2s;
+}
+.mgmt-subtab.active { background:#667eea; color:#fff; }
+.mgmt-panel { display:none; }
+.mgmt-panel.active { display:block; }
+
+/* Teacher table */
+.mgmt-table { width:100%; border-collapse:collapse; margin-top:10px; }
+.mgmt-table th { background:#667eea; color:#fff; padding:10px 12px; font-size:0.82em; text-align:start; }
+.mgmt-table td { padding:9px 12px; border-bottom:1px solid #e9ecef; vertical-align:middle; font-size:0.88em; }
+.mgmt-table tr:hover td { background:#f8f9ff; }
+.tag { display:inline-block; background:#eef0ff; color:#667eea; border-radius:6px; padding:2px 8px; font-size:0.75em; margin:1px; font-weight:600; }
+
+/* Checkbox group */
+.cb-group { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.cb-item { display:flex; align-items:center; gap:4px; background:#f4f6ff; border:1.5px solid #d0d7ff; border-radius:8px; padding:5px 10px; cursor:pointer; transition:all 0.2s; user-select:none; }
+.cb-item input { cursor:pointer; width:15px; height:15px; accent-color:#667eea; }
+.cb-item:has(input:checked) { background:#667eea; color:#fff; border-color:#667eea; }
+.cb-item label { cursor:pointer; font-size:0.85em; font-weight:600; }
+
+/* Form fields */
+.mgmt-form { display:flex; flex-direction:column; gap:14px; }
+.mgmt-field { display:flex; flex-direction:column; gap:5px; }
+.mgmt-field label { font-size:0.82em; color:#666; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }
+.mgmt-field input, .mgmt-field textarea {
+  padding:10px 14px; border:2px solid #e9ecef; border-radius:8px;
+  font-size:0.95em; font-family:inherit; outline:none;
+  transition:border-color 0.2s;
+}
+.mgmt-field input:focus, .mgmt-field textarea:focus { border-color:#667eea; }
+.mgmt-field textarea { resize:vertical; min-height:110px; }
+.paste-hint { font-size:0.75em; color:#999; margin-top:3px; }
+.paste-preview { background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:10px; margin-top:8px; max-height:160px; overflow-y:auto; display:none; }
+.paste-preview.show { display:block; }
+.paste-preview-item { padding:3px 6px; font-size:0.85em; border-bottom:1px solid #f0f0f0; }
+.paste-preview-item:last-child { border-bottom:none; }
+
+/* Modals */
+.mgmt-modal-bg {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+  z-index:2000; align-items:center; justify-content:center; padding:16px;
+}
+.mgmt-modal-bg.open { display:flex; }
+.mgmt-modal {
+  background:#fff; border-radius:16px; padding:28px 24px;
+  width:100%; max-width:580px; max-height:90vh; overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  animation:slideIn 0.25s;
+}
+.mgmt-modal h3 { color:#667eea; margin-bottom:20px; font-size:1.2em; }
+.mgmt-modal-btns { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; flex-wrap:wrap; }
+
+/* Student class grid */
+.class-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-bottom:20px; }
+.class-btn {
+  padding:14px 10px; border-radius:10px; border:2px solid #e9ecef;
+  background:#fff; cursor:pointer; text-align:center; transition:all 0.2s;
+  font-family:inherit;
+}
+.class-btn:hover { border-color:#667eea; background:#f4f6ff; }
+.class-btn.selected { border-color:#667eea; background:#667eea; color:#fff; }
+.class-btn .cls-name { font-weight:700; font-size:1em; }
+.class-btn .cls-count { font-size:0.72em; opacity:0.7; margin-top:2px; }
+
+/* Student list */
+.student-list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+.student-list-header h3 { color:#667eea; font-size:1.1em; }
+.student-row { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-bottom:1px solid #f0f0f0; transition:background 0.15s; }
+.student-row:hover { background:#f8f9ff; }
+.student-row:last-child { border-bottom:none; }
+.student-name { font-size:0.9em; font-weight:600; }
+.student-actions { display:flex; gap:6px; flex-shrink:0; }
+.btn-sm { padding:5px 12px; border-radius:6px; border:none; cursor:pointer; font-family:inherit; font-size:0.78em; font-weight:600; transition:all 0.2s; }
+.btn-move { background:#e8f0fe; color:#667eea; }
+.btn-move:hover { background:#667eea; color:#fff; }
+.btn-del { background:#fdecea; color:#c8402a; }
+.btn-del:hover { background:#c8402a; color:#fff; }
+.btn-add { background:#667eea; color:#fff; border:none; border-radius:8px; padding:9px 18px; font-family:inherit; font-weight:700; cursor:pointer; font-size:0.88em; transition:all 0.2s; }
+.btn-add:hover { background:#5568d3; }
+.btn-danger { background:#c8402a; color:#fff; border:none; border-radius:8px; padding:9px 18px; font-family:inherit; font-weight:700; cursor:pointer; font-size:0.88em; }
+.btn-secondary { background:#f0f0f0; color:#666; border:none; border-radius:8px; padding:9px 18px; font-family:inherit; font-weight:700; cursor:pointer; font-size:0.88em; }
+
+.cache-bar { background:#f4f6ff; border:2px solid #d0d7ff; border-radius:10px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; margin-top:24px; flex-wrap:wrap; gap:10px; }
+.cache-bar p { color:#667eea; font-size:0.88em; font-weight:600; margin:0; }
+
+/* Responsive mgmt */
+@media(max-width:600px){
+  .mgmt-table { font-size:0.78em; }
+  .mgmt-table th, .mgmt-table td { padding:7px 8px; }
+  .mgmt-modal { padding:18px 14px; }
+  .class-grid { grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); }
+}
+</style>
 </head>
 <body>
 <div style="max-width:1400px;margin:0 auto;">
 
 <!-- HEADER -->
-
-  
 <div class="dash-header">
-            <div class="dash-header-controls">
+  <div class="dash-header-controls">
     <p id="lastUpdate"></p>
     <div class="lang-switcher">
       <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
@@ -22,21 +120,15 @@
     </div>
     <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪 دەرچوون</button>
   </div>
-<br>
-  
-  <div class="dash-header-top">  
+  <br>
+  <div class="dash-header-top">
     <img src="aci.jpg" alt="ACI Logo" class="logo-right">
-    
-
-<div class="dash-titles" dir="rtl" style="font-family: 'Segoe UI', Tahoma, Arial, sans-serif; text-align: center;">
-  <h1 id="dInstName" style="margin-bottom: 5px;font-size: 36px;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
-  <h2 id="dSub" style="margin-top: 0; color: #555;font-size: 24px;">تومارا نەهاتنا قوتابیان</h2>
-</div>
+    <div class="dash-titles" dir="rtl" style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;text-align:center;">
+      <h1 id="dInstName" style="margin-bottom:5px;font-size:36px;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+      <h2 id="dSub" style="margin-top:0;color:#555;font-size:24px;">تومارا نەهاتنا قوتابیان</h2>
+    </div>
     <img src="new-left-logo.jpg" alt="New Left Logo" class="logo-left">
   </div>
-  
-
-
   <div class="search-wrap">
     <input type="text" id="searchInput" placeholder="🔍 ناڤێ یەکەم ی قوتابی بنووسە..." oninput="onSearch()">
     <div id="dropdownResults"></div>
@@ -54,16 +146,18 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="showTab('daily')"   id="tab-daily">📅 ڕۆژانە</button>
-  <button class="tab" onclick="showTab('weekly')"  id="tab-weekly">📊 هەفتانە</button>
-  <button class="tab" onclick="showTab('monthly')" id="tab-monthly">📅 مانگانە</button>
-  <button class="tab" onclick="showTab('roster')"  id="tab-roster">📋 لیست</button>
-  <button class="tab" onclick="showTab('analytics')" id="tab-analytics">📈 شیکاری</button>
+  <button class="tab active" onclick="showTab('daily')"    id="tab-daily">📅 ڕۆژانە</button>
+  <button class="tab"        onclick="showTab('weekly')"   id="tab-weekly">📊 هەفتانە</button>
+  <button class="tab"        onclick="showTab('monthly')"  id="tab-monthly">📅 مانگانە</button>
+  <button class="tab"        onclick="showTab('roster')"   id="tab-roster">📋 لیست</button>
+  <button class="tab"        onclick="showTab('analytics')"id="tab-analytics">📈 شیکاری</button>
+  <button class="tab"        onclick="showTab('teachers')" id="tab-teachers">👨‍🏫 مامۆستایان</button>
+  <button class="tab"        onclick="showTab('students')" id="tab-students">👨‍🎓 قوتابیان</button>
 </div>
 
 <!-- DAILY -->
 <div id="daily" class="content-section active">
-  <h2 class="section-title" id="dDailyTitle"> 📅 ڕاپۆرتی ڕۆژانە</h2>
+  <h2 class="section-title" id="dDailyTitle">📅 ڕاپۆرتی ڕۆژانە</h2>
   <p class="section-sub" id="dDailySub">کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە</p>
   <div class="filter-section">
     <div class="filter-row">
@@ -150,9 +244,63 @@
   <div id="analyticsContent"><div style="text-align:center;padding:50px;color:#667eea;font-size:1.1em;">⏳ بارکرن...</div></div>
 </div>
 
+<!-- TEACHERS TAB -->
+<div id="teachers" class="content-section">
+  <h2 class="section-title" id="dTeachersTitle">👨‍🏫 بەڕێوەبردنی مامۆستایان</h2>
+  <p class="section-sub" id="dTeachersSub">زیادکرن، دەسکاریکرن و بینینی هەموو مامۆستایان</p>
+  <div style="margin-bottom:16px;">
+    <button class="btn-add" onclick="openAddTeacher()" id="btnAddTeacher">➕ مامۆستایێ نوی</button>
+  </div>
+  <div class="table-wrap">
+    <table class="mgmt-table" id="teacherTable">
+      <thead><tr>
+        <th id="thTName">ناڤ</th>
+        <th id="thTUser">یوزەرناڤ</th>
+        <th id="thTPass">پاسۆرد</th>
+        <th id="thTClasses">پۆلان</th>
+        <th id="thTSubjects">بابەت</th>
+        <th id="thTAction"></th>
+      </tr></thead>
+      <tbody id="teacherTableBody">
+        <tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">⏳ بارکرن...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cache-bar">
+    <p id="cacheNote1">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache1">🔄 نوێکرنەوەی داتا</button>
+  </div>
+</div>
+
+<!-- STUDENTS TAB -->
+<div id="students" class="content-section">
+  <h2 class="section-title" id="dStudentsTitle">👨‍🎓 بەڕێوەبردنی قوتابیان</h2>
+  <p class="section-sub" id="dStudentsSub">بینین، زیادکرن، گواستنەوە و سڕینەوەی قوتابیان</p>
+
+  <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+    <!-- Left: class grid -->
+    <div style="flex:0 0 200px;min-width:160px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+        <strong style="color:#667eea;" id="classListTitle">🏫 پۆلان</strong>
+        <button class="btn-add" onclick="openNewClass()" id="btnNewClass" style="font-size:0.78em;padding:6px 12px;">➕ پۆلێ نوی</button>
+      </div>
+      <div id="classGrid" class="class-grid" style="grid-template-columns:1fr;"></div>
+    </div>
+    <!-- Right: student list -->
+    <div style="flex:1;min-width:260px;">
+      <div id="studentPanel"><div style="text-align:center;padding:40px;color:#999;" id="selectClassHint">← پۆلێک هەلبژێرە</div></div>
+    </div>
+  </div>
+
+  <div class="cache-bar">
+    <p id="cacheNote2">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache2">🔄 نوێکرنەوەی داتا</button>
+  </div>
+</div>
+
 </div><!-- /container -->
 
-<!-- STUDENT MODAL -->
+<!-- STUDENT PROFILE MODAL -->
 <div class="modal" id="studentModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-content">
     <button class="modal-close" onclick="closeModal()">×</button>
@@ -174,11 +322,137 @@
   </div>
 </div>
 
+<!-- ── TEACHER ADD/EDIT MODAL ── -->
+<div class="mgmt-modal-bg" id="teacherModal">
+  <div class="mgmt-modal">
+    <h3 id="teacherModalTitle">➕ مامۆستایێ نوی</h3>
+    <div class="mgmt-form">
+      <input type="hidden" id="tmEditUsername">
+      <div class="mgmt-field">
+        <label id="tmLblName">ناڤی مامۆستا</label>
+        <input type="text" id="tmName" placeholder="Ahmed Ali">
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblUser">یوزەرناڤ</label>
+        <input type="text" id="tmUsername" placeholder="ahmed" autocomplete="off">
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblPass">پاسۆرد</label>
+        <input type="text" id="tmPassword" placeholder="••••••" autocomplete="off">
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblClasses">🏫 پۆلان</label>
+        <div class="cb-group" id="tmClasses"></div>
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblSubjects">📚 بابەت</label>
+        <div class="cb-group" id="tmSubjects"></div>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeTeacherModal()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveTeacher()" id="btnSaveTeacher">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD STUDENT MODAL ── -->
+<div class="mgmt-modal-bg" id="addStudentModal">
+  <div class="mgmt-modal">
+    <h3 id="addStudentTitle">➕ قوتابی زیادبکە</h3>
+    <input type="hidden" id="addStudentClass">
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="addStudentLbl">ناڤی قوتابی</label>
+        <input type="text" id="addStudentName" placeholder="Ahmed Ali Hassan">
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeAddStudent()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveAddStudent()">زیادبکە</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BULK ADD STUDENTS MODAL ── -->
+<div class="mgmt-modal-bg" id="bulkStudentModal">
+  <div class="mgmt-modal">
+    <h3 id="bulkStudentTitle">➕ زیادکرنی چەند قوتابیێ</h3>
+    <input type="hidden" id="bulkStudentClass">
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="bulkStudentLbl">ناڤەکان بنووسە یان کۆپی بکە (هەر ناڤێ لە ستوری جیا)</label>
+        <textarea id="bulkStudentText" placeholder="Ahmed Ali&#10;Sara Hassan&#10;Ali Mohammed" oninput="previewBulk()"></textarea>
+        <span class="paste-hint" id="bulkHint">دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی — بە خودی خو پاک دەبێتەوە</span>
+      </div>
+      <div id="bulkPreview" class="paste-preview"></div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeBulkStudent()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveBulkStudents()" id="btnSaveBulk">هەموویان زیادبکە</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MOVE STUDENT MODAL ── -->
+<div class="mgmt-modal-bg" id="moveStudentModal">
+  <div class="mgmt-modal">
+    <h3 id="moveStudentTitle">↔️ گواستنەوەی قوتابی</h3>
+    <input type="hidden" id="moveStudentName">
+    <input type="hidden" id="moveStudentFrom">
+    <p style="color:#667eea;font-weight:700;margin-bottom:14px;" id="moveStudentNameDisplay"></p>
+    <div class="mgmt-field">
+      <label id="moveToLbl">بۆ کام پۆل؟</label>
+      <div id="moveClassRadios" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeMoveStudent()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveMoveStudent()">گواستنەوە</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NEW CLASS MODAL ── -->
+<div class="mgmt-modal-bg" id="newClassModal">
+  <div class="mgmt-modal">
+    <h3 id="newClassTitle">🏫 پۆلێ نوی دروستبکە</h3>
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="newClassLbl">ناڤی پۆل</label>
+        <input type="text" id="newClassName" placeholder="مثال: 3B">
+      </div>
+      <div class="mgmt-field">
+        <label id="newClassStudentsLbl">ناڤێن قوتابیان (هەر ناڤێ لە ستوری جیا)</label>
+        <textarea id="newClassStudents" placeholder="Ahmed Ali&#10;Sara Hassan&#10;Ali Mohammed" oninput="previewNewClass()" style="min-height:130px;"></textarea>
+        <span class="paste-hint" id="newClassHint">دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی</span>
+      </div>
+      <div id="newClassPreview" class="paste-preview"></div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeNewClass()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveNewClass()" id="btnSaveNewClass">دروستکرن</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DELETE CONFIRM MODAL ── -->
+<div class="mgmt-modal-bg" id="mgmtConfirmModal">
+  <div class="mgmt-modal" style="max-width:380px;text-align:center;">
+    <div style="font-size:2.5em;margin-bottom:12px;">🗑️</div>
+    <h3 id="mgmtConfirmTitle" style="color:#c8402a;">دڵنیایت؟</h3>
+    <p id="mgmtConfirmText" style="color:#666;margin-bottom:20px;font-size:0.9em;"></p>
+    <div class="mgmt-modal-btns" style="justify-content:center;">
+      <button class="btn-secondary" onclick="closeMgmtConfirm()">هەڵوەستان</button>
+      <button class="btn-danger" id="mgmtConfirmOk">بسڕەوە</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
-const LOGIN_URL   = 'login.html';
+const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
+const LOGIN_URL    = 'login.html';
 const SCHOOL_START = '9/21/2025';
 
 // ── i18n ─────────────────────────────────────────────
@@ -192,6 +466,7 @@ const LANGS = {
     sHighRiskSub:'≥15 نەهاتن', sAtRiskSub:'8-14 نەهاتن',
     tabDaily:'📅 ڕۆژانە', tabWeekly:'📊 هەفتانە', tabMonthly:'📅 مانگانە',
     tabRoster:'📋 لیست', tabAnalytics:'📈 شیکاری',
+    tabTeachers:'👨‍🏫 مامۆستایان', tabStudents:'👨‍🎓 قوتابیان',
     dDailyTitle:'📅 ڕاپۆرتی ڕۆژانە', dDailySub:'کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە',
     dDateLabel:'📆 بەروار:', btnToday:'ئەمرۆ', btnYesterday:'دووێ',
     dWeeklyTitle:'📊 ڕاپۆرتی هەفتانە', dWeeklySub:'کۆی نەهاتنی هەفتەیەک',
@@ -204,10 +479,31 @@ const LANGS = {
     dPolicyTitle:'ڕێکخستنا سیاسەتی دەرکرن',
     dLecPerDay:'ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:',
     dExpDays:'ژمارەی ڕۆژانی دابراون بۆ دەرکرن:',
-    weekend:'🏖️ دەرفەت — مکتەب نییە',
-    noAbsences:'هیچ نەهاتنێک نینە',
-    selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە',
-    selectClass:'پۆلێک هەلبژێرە',
+    dTeachersTitle:'👨‍🏫 بەڕێوەبردنی مامۆستایان', dTeachersSub:'زیادکرن، دەسکاریکرن و بینینی هەموو مامۆستایان',
+    dStudentsTitle:'👨‍🎓 بەڕێوەبردنی قوتابیان', dStudentsSub:'بینین، زیادکرن، گواستنەوە و سڕینەوەی قوتابیان',
+    btnAddTeacher:'➕ مامۆستایێ نوی', thTName:'ناڤ', thTUser:'یوزەرناڤ', thTPass:'پاسۆرد',
+    thTClasses:'پۆلان', thTSubjects:'بابەت',
+    cacheNote1:'📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە',
+    cacheNote2:'📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە',
+    btnClearCache1:'🔄 نوێکرنەوەی داتا', btnClearCache2:'🔄 نوێکرنەوەی داتا',
+    classListTitle:'🏫 پۆلان', btnNewClass:'➕ پۆلێ نوی',
+    selectClassHint:'← پۆلێک هەلبژێرە',
+    editBtn:'✏️ دەسکاری', teacherModalTitle:'➕ مامۆستایێ نوی',
+    editTeacherTitle:'✏️ دەسکاریکرنی مامۆستا',
+    tmLblName:'ناڤی مامۆستا', tmLblUser:'یوزەرناڤ', tmLblPass:'پاسۆرد (بەتاڵ بهێلە بۆ نەگۆڕان)',
+    tmLblClasses:'🏫 پۆلان', tmLblSubjects:'📚 بابەت',
+    btnSaveTeacher:'تۆمارکرن',
+    addStudentTitle:'➕ قوتابی زیادبکە', addStudentLbl:'ناڤی قوتابی',
+    bulkStudentTitle:'➕ زیادکرنی چەند قوتابیێ',
+    bulkStudentLbl:'ناڤەکان بنووسە یان کۆپی بکە (هەر ناڤێ لە ستوری جیا)',
+    bulkHint:'دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی — بە خودی خو پاک دەبێتەوە',
+    moveStudentTitle:'↔️ گواستنەوەی قوتابی', moveToLbl:'بۆ کام پۆل؟',
+    newClassTitle:'🏫 پۆلێ نوی دروستبکە', newClassLbl:'ناڤی پۆل',
+    newClassStudentsLbl:'ناڤێن قوتابیان (هەر ناڤێ لە ستوری جیا)',
+    newClassHint:'دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی',
+    mgmtConfirmTitle:'دڵنیایت؟',
+    weekend:'🏖️ دەرفەت — مکتەب نییە', noAbsences:'هیچ نەهاتنێک نینە',
+    selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە', selectClass:'پۆلێک هەلبژێرە',
     weekLabel:'هەفتە', manageLabel:'🗑️ رێکخستنی تومارکرنان',
     noneAbsent:'هیچ', classLabel:'پۆل', totalLabel:'کۆ',
     studentLabel:'قوتابی', subjectLabel:'بابەت',
@@ -218,16 +514,16 @@ const LANGS = {
     colDate:'بەروار', colLecture:'وانە', colSubject:'بابەت', colTeacher:'مامۆستە',
     riskDismissed:'دەرکراو', riskHigh:'مەترسیدار', riskLow:'باشە',
     colDaysMissed:'ڕۆژانی دابراو', colRemaining:'ماوەی مایە', colStatus:'دۆخ',
-    expulsionReport:'⚠️ ڕاپۆرتی مەترسی دەرکرن',
-    expulsionDesc:'قوتابیانێ کە ب مەترسیدا ر',
+    expulsionReport:'⚠️ ڕاپۆرتی مەترسی دەرکرن', expulsionDesc:'قوتابیانێ کە ب مەترسیدار',
     absByClass:'📊 نەهاتن بە پۆل', absByLec:'⏰ نەهاتن بە وانە', absBySubj:'📚 نەهاتن بە بابەت',
     pctLabel:'%', noResults:'هیچ قوتابیێک نەدۆزرایەوە',
     adminConfTitle:'تومارکرن بسڕەوە؟', adminConfWarning:'ئەم کارە نابێتە پووچەلکرن.',
     adminCancelBtn:'هەڵوەستان', adminDeleteBtn:'🗑️ بسڕەوە',
-    toastDeleted:'✅ سڕایەوە. مامۆستا دوبارە تومار بکات.',
-    toastDeleteFail:'❌ سڕینەوە سەرنەکەفت!',
-    lastUpdated:'✅ دوایین نوێکرنەوە:',
-    loading:'⏳ بارکرن...',
+    toastDeleted:'✅ سڕایەوە.', toastDeleteFail:'❌ سڕینەوە سەرنەکەفت!',
+    toastSaved:'✅ تۆمارکرا.', toastSaveFail:'❌ تۆمارکرن سەرنەکەفت!',
+    toastCacheCleared:'✅ داتا نوێبویەوە.', toastCacheFail:'❌ نوێکرنەوە سەرنەکەفت!',
+    lastUpdated:'✅ دوایین نوێکرنەوە:', loading:'⏳ بارکرن...',
+    students:'قوتابی',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -238,6 +534,7 @@ const LANGS = {
     sHighRiskSub:'≥15 غياب', sAtRiskSub:'8-14 غياب',
     tabDaily:'📅 يومي', tabWeekly:'📊 أسبوعي', tabMonthly:'📅 شهري',
     tabRoster:'📋 كشف', tabAnalytics:'📈 تحليلات',
+    tabTeachers:'👨‍🏫 الأساتذة', tabStudents:'👨‍🎓 الطلاب',
     dDailyTitle:'📅 التقرير اليومي', dDailySub:'عرض الغياب حصة بحصة',
     dDateLabel:'📆 التاريخ:', btnToday:'اليوم', btnYesterday:'أمس',
     dWeeklyTitle:'📊 التقرير الأسبوعي', dWeeklySub:'ملخص غياب الأسبوع',
@@ -250,8 +547,30 @@ const LANGS = {
     dPolicyTitle:'إعداد سياسة الفصل',
     dLecPerDay:'عدد الحصص الغائبة لتحتسب يوماً:',
     dExpDays:'عدد الأيام لاتخاذ قرار الفصل:',
-    weekend:'🏖️ عطلة — لا دوام',
-    noAbsences:'لا يوجد غياب',
+    dTeachersTitle:'👨‍🏫 إدارة الأساتذة', dTeachersSub:'إضافة وتعديل وعرض جميع الأساتذة',
+    dStudentsTitle:'👨‍🎓 إدارة الطلاب', dStudentsSub:'عرض، إضافة، نقل وحذف الطلاب',
+    btnAddTeacher:'➕ إضافة أستاذ', thTName:'الاسم', thTUser:'اسم المستخدم', thTPass:'كلمة المرور',
+    thTClasses:'الشعب', thTSubjects:'المواد',
+    cacheNote1:'📡 بعد كل تغيير يجب تحديث البيانات',
+    cacheNote2:'📡 بعد كل تغيير يجب تحديث البيانات',
+    btnClearCache1:'🔄 تحديث البيانات', btnClearCache2:'🔄 تحديث البيانات',
+    classListTitle:'🏫 الشعب', btnNewClass:'➕ شعبة جديدة',
+    selectClassHint:'← اختر شعبة',
+    editBtn:'✏️ تعديل', teacherModalTitle:'➕ إضافة أستاذ جديد',
+    editTeacherTitle:'✏️ تعديل الأستاذ',
+    tmLblName:'اسم الأستاذ', tmLblUser:'اسم المستخدم', tmLblPass:'كلمة المرور (اتركها فارغة لعدم التغيير)',
+    tmLblClasses:'🏫 الشعب', tmLblSubjects:'📚 المواد',
+    btnSaveTeacher:'حفظ',
+    addStudentTitle:'➕ إضافة طالب', addStudentLbl:'اسم الطالب',
+    bulkStudentTitle:'➕ إضافة عدة طلاب',
+    bulkStudentLbl:'اكتب أو الصق الأسماء (اسم في كل سطر)',
+    bulkHint:'يمكنك نسخ الأسماء من Excel أو Word — سيتم التنظيف تلقائياً',
+    moveStudentTitle:'↔️ نقل الطالب', moveToLbl:'إلى أي شعبة؟',
+    newClassTitle:'🏫 إنشاء شعبة جديدة', newClassLbl:'اسم الشعبة',
+    newClassStudentsLbl:'أسماء الطلاب (اسم في كل سطر)',
+    newClassHint:'يمكنك نسخ الأسماء من Excel أو Word',
+    mgmtConfirmTitle:'هل أنت متأكد؟',
+    weekend:'🏖️ عطلة — لا دوام', noAbsences:'لا يوجد غياب',
     selectWeek:'اختر أسبوعاً', selectMonth:'اختر شهراً', selectClass:'اختر شعبة',
     weekLabel:'أسبوع', manageLabel:'🗑️ إدارة التسجيلات',
     noneAbsent:'لا غياب', classLabel:'الشعبة', totalLabel:'الإجمالي',
@@ -263,16 +582,16 @@ const LANGS = {
     colDate:'التاريخ', colLecture:'الحصة', colSubject:'المادة', colTeacher:'الأستاذ',
     riskDismissed:'مفصول', riskHigh:'خطر', riskLow:'جيد',
     colDaysMissed:'أيام الغياب', colRemaining:'المتبقي', colStatus:'الحالة',
-    expulsionReport:'⚠️ تقرير خطر الفصل',
-    expulsionDesc:'تتبع الطلاب المعرضين لخطر الفصل',
+    expulsionReport:'⚠️ تقرير خطر الفصل', expulsionDesc:'تتبع الطلاب المعرضين لخطر الفصل',
     absByClass:'📊 الغياب حسب الشعبة', absByLec:'⏰ الغياب حسب الحصة', absBySubj:'📚 الغياب حسب المادة',
     pctLabel:'%', noResults:'لا يوجد طلاب مطابقون',
     adminConfTitle:'حذف التسجيل؟', adminConfWarning:'لا يمكن التراجع عن هذا.',
     adminCancelBtn:'إلغاء', adminDeleteBtn:'🗑️ حذف',
-    toastDeleted:'✅ تم الحذف. اطلب من الأستاذ إعادة التسجيل.',
-    toastDeleteFail:'❌ فشل الحذف!',
-    lastUpdated:'✅ آخر تحديث:',
-    loading:'⏳ جارٍ التحميل...',
+    toastDeleted:'✅ تم الحذف.', toastDeleteFail:'❌ فشل الحذف!',
+    toastSaved:'✅ تم الحفظ.', toastSaveFail:'❌ فشل الحفظ!',
+    toastCacheCleared:'✅ تم تحديث البيانات.', toastCacheFail:'❌ فشل التحديث!',
+    lastUpdated:'✅ آخر تحديث:', loading:'⏳ جارٍ التحميل...',
+    students:'طالب',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -283,6 +602,7 @@ const LANGS = {
     sHighRiskSub:'≥15 absences', sAtRiskSub:'8-14 absences',
     tabDaily:'📅 Daily', tabWeekly:'📊 Weekly', tabMonthly:'📅 Monthly',
     tabRoster:'📋 Roster', tabAnalytics:'📈 Analytics',
+    tabTeachers:'👨‍🏫 Teachers', tabStudents:'👨‍🎓 Students',
     dDailyTitle:'📅 Daily Absence Report', dDailySub:'View absence breakdown by lecture and class',
     dDateLabel:'📆 Date:', btnToday:'Today', btnYesterday:'Yesterday',
     dWeeklyTitle:'📊 Weekly Report', dWeeklySub:'Weekly absence summaries',
@@ -295,8 +615,30 @@ const LANGS = {
     dPolicyTitle:'Policy Risk Configuration',
     dLecPerDay:'Lectures missed to count as 1 day:',
     dExpDays:'Days missed threshold for dismissal:',
-    weekend:'🏖️ Weekend — No School',
-    noAbsences:'No absences recorded',
+    dTeachersTitle:'👨‍🏫 Teacher Management', dTeachersSub:'Add, edit and view all teachers',
+    dStudentsTitle:'👨‍🎓 Student Management', dStudentsSub:'View, add, move and remove students',
+    btnAddTeacher:'➕ Add Teacher', thTName:'Name', thTUser:'Username', thTPass:'Password',
+    thTClasses:'Classes', thTSubjects:'Subjects',
+    cacheNote1:'📡 After any change, refresh data so teachers see updates immediately',
+    cacheNote2:'📡 After any change, refresh data so teachers see updates immediately',
+    btnClearCache1:'🔄 Refresh Data', btnClearCache2:'🔄 Refresh Data',
+    classListTitle:'🏫 Classes', btnNewClass:'➕ New Class',
+    selectClassHint:'← Select a class',
+    editBtn:'✏️ Edit', teacherModalTitle:'➕ Add New Teacher',
+    editTeacherTitle:'✏️ Edit Teacher',
+    tmLblName:'Teacher Name', tmLblUser:'Username', tmLblPass:'Password (leave blank to keep unchanged)',
+    tmLblClasses:'🏫 Classes', tmLblSubjects:'📚 Subjects',
+    btnSaveTeacher:'Save',
+    addStudentTitle:'➕ Add Student', addStudentLbl:'Student Name',
+    bulkStudentTitle:'➕ Add Multiple Students',
+    bulkStudentLbl:'Type or paste names (one per line)',
+    bulkHint:'You can copy names from Excel or Word — auto-cleaned',
+    moveStudentTitle:'↔️ Move Student', moveToLbl:'Move to which class?',
+    newClassTitle:'🏫 Create New Class', newClassLbl:'Class Name',
+    newClassStudentsLbl:'Student Names (one per line)',
+    newClassHint:'You can paste names from Excel or Word',
+    mgmtConfirmTitle:'Are you sure?',
+    weekend:'🏖️ Weekend — No School', noAbsences:'No absences recorded',
     selectWeek:'Select a week', selectMonth:'Select a month', selectClass:'Select a class',
     weekLabel:'Week', manageLabel:'🗑️ Manage Submissions',
     noneAbsent:'None', classLabel:'Class', totalLabel:'TOTAL',
@@ -308,16 +650,16 @@ const LANGS = {
     colDate:'Date', colLecture:'Lecture', colSubject:'Subject', colTeacher:'Teacher',
     riskDismissed:'DISMISSED', riskHigh:'HIGH RISK', riskLow:'LOW RISK',
     colDaysMissed:'Days Missed', colRemaining:'Days Left', colStatus:'Status',
-    expulsionReport:'⚠️ Expulsion Risk Report',
-    expulsionDesc:'Students flagged based on configured policy',
+    expulsionReport:'⚠️ Expulsion Risk Report', expulsionDesc:'Students flagged based on configured policy',
     absByClass:'📊 Absences by Class', absByLec:'⏰ Absences by Lecture', absBySubj:'📚 Absences by Subject',
     pctLabel:'%', noResults:'No students found',
-    adminConfTitle:'Delete this submission?', adminConfWarning:'This cannot be undone. Ask the teacher to resubmit.',
+    adminConfTitle:'Delete this submission?', adminConfWarning:'This cannot be undone.',
     adminCancelBtn:'Cancel', adminDeleteBtn:'🗑️ Delete',
-    toastDeleted:'✅ Deleted. Ask teacher to resubmit.',
-    toastDeleteFail:'❌ Delete failed!',
-    lastUpdated:'✅ Last updated:',
-    loading:'⏳ Loading...',
+    toastDeleted:'✅ Deleted.', toastDeleteFail:'❌ Delete failed!',
+    toastSaved:'✅ Saved successfully.', toastSaveFail:'❌ Save failed!',
+    toastCacheCleared:'✅ Data refreshed.', toastCacheFail:'❌ Refresh failed!',
+    lastUpdated:'✅ Last updated:', loading:'⏳ Loading...',
+    students:'students',
   }
 };
 
@@ -326,21 +668,20 @@ let allData = [], classes = [], weeks = [], months = [];
 let adminToken = null;
 let adminPendingRow = null;
 
+// Management data
+let mgmtData = null; // { teachers, subjects, classes, students }
+
 // ── Auth ──────────────────────────────────────────────
 function checkAuth() {
   const token = sessionStorage.getItem('aci_token');
   const role  = sessionStorage.getItem('aci_role');
-  if (!token || role !== 'admin') {
-    window.location.href = LOGIN_URL;
-    return false;
-  }
+  if (!token || role !== 'admin') { window.location.href = LOGIN_URL; return false; }
   adminToken = token;
   return true;
 }
-
 function doLogout() {
   sessionStorage.clear();
-  sessionStorage.setItem('explicit_logout', '1');
+  sessionStorage.setItem('explicit_logout','1');
   window.location.href = LOGIN_URL;
 }
 
@@ -358,268 +699,230 @@ function setLang(lang) {
     'btnToday','btnYesterday','dWeeklyTitle','dWeeklySub','dWeekLabel','dMonthlyTitle',
     'dMonthlySub','dMonthLabel','dRosterTitle','dRosterSub','dClassLabel','dMinAbsLabel',
     'dAnalyticsTitle','dAnalyticsSub','dPolicyTitle','dLecPerDay','dExpDays',
-    'adminConfTitle','adminConfWarning','adminCancelBtn','adminDeleteBtn'];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && L[id]) el.textContent = L[id];
-  });
+    'adminConfTitle','adminConfWarning','adminCancelBtn','adminDeleteBtn',
+    'dTeachersTitle','dTeachersSub','dStudentsTitle','dStudentsSub',
+    'btnAddTeacher','thTName','thTUser','thTPass','thTClasses','thTSubjects',
+    'cacheNote1','cacheNote2','btnClearCache1','btnClearCache2',
+    'classListTitle','btnNewClass','selectClassHint',
+    'teacherModalTitle','tmLblName','tmLblUser','tmLblPass','tmLblClasses','tmLblSubjects','btnSaveTeacher',
+    'addStudentTitle','addStudentLbl','bulkStudentTitle','bulkStudentLbl','bulkHint',
+    'moveStudentTitle','moveToLbl','newClassTitle','newClassLbl','newClassStudentsLbl','newClassHint',
+    'mgmtConfirmTitle'];
+  ids.forEach(id => { const el=document.getElementById(id); if(el && L[id]) el.textContent=L[id]; });
 
-  // Tab labels
-  ['daily','weekly','monthly','roster','analytics'].forEach(t => {
+  ['daily','weekly','monthly','roster','analytics','teachers','students'].forEach(t => {
     const key = 'tab'+t.charAt(0).toUpperCase()+t.slice(1);
     const el  = document.getElementById('tab-'+t);
-    if (el && L[key]) el.textContent = L[key];
+    if(el && L[key]) el.textContent = L[key];
   });
 
-  // Print buttons
   ['btnPrintW','btnPrintM','btnPrintR'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.textContent = L.btnPrint;
+    if(el) el.textContent = L.btnPrint;
   });
 
   document.getElementById('searchInput').placeholder = L.searchPH;
-
   document.querySelectorAll('.lang-btn').forEach((b,i) => {
     b.classList.toggle('active', ['ku','ar','en'][i] === lang);
   });
 
-  // Re-render active tab
   const active = document.querySelector('.content-section.active');
-  if (active) {
+  if(active) {
     const id = active.id;
-    if (id==='daily')     filterDaily();
-    if (id==='weekly')    loadWeekly();
-    if (id==='monthly')   loadMonthly();
-    if (id==='roster')    filterRoster();
-    if (id==='analytics') loadAnalytics();
+    if(id==='daily')     filterDaily();
+    if(id==='weekly')    loadWeekly();
+    if(id==='monthly')   loadMonthly();
+    if(id==='roster')    filterRoster();
+    if(id==='analytics') loadAnalytics();
+    if(id==='teachers')  renderTeacherTable();
+    if(id==='students')  renderStudentTab();
   }
 }
 
 // ── Helpers ───────────────────────────────────────────
-function getFirstName(fullName) {
-  if (!fullName) return '';
-  return fullName.trim().split(/\s+/)[0];
-}
-function getThreeNames(fullName) {
-  if (!fullName) return '';
-  return fullName.trim().split(/\s+/).slice(0,3).join(' ');
-}
-function normalizeDate(s) {
-  if (!s) return '';
-  const parts = s.split('/');
-  if (parts.length===3) {
-    const d = new Date(parts[2], parts[0]-1, parts[1]);
-    if (!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
-  }
-  const d = new Date(s);
-  if (!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+function getFirstName(n){ return n?n.trim().split(/\s+/)[0]:''; }
+function getThreeNames(n){ return n?n.trim().split(/\s+/).slice(0,3).join(' '):''; }
+function normalizeDate(s){
+  if(!s) return '';
+  const p=s.split('/');
+  if(p.length===3){ const d=new Date(p[2],p[0]-1,p[1]); if(!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`; }
+  const d=new Date(s); if(!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
   return '';
 }
-function formatDate(d) {
-  if (!d||isNaN(d.getTime())) return '';
-  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-}
-function getLectureCount(lec) {
-  const s = String(lec).toLowerCase();
-  return (s.includes('merged')||s.includes('and')||/\d\s*-\s*\d/.test(s)) ? 2 : 1;
-}
-function getSeverity(n) { return n>=15?'high':n>=8?'medium':'low'; }
-function getBadge(n) {
-  const L = LANGS[currentLang];
-  const s = getSeverity(n);
-  const t = s==='high'?L.badgeHigh:s==='medium'?L.badgeMedium:L.badgeLow;
+function formatDate(d){ if(!d||isNaN(d.getTime())) return ''; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
+function getLectureCount(lec){ const s=String(lec).toLowerCase(); return (s.includes('merged')||s.includes('and')||/\d\s*-\s*\d/.test(s))?2:1; }
+function getSeverity(n){ return n>=15?'high':n>=8?'medium':'low'; }
+function getBadge(n){
+  const L=LANGS[currentLang]; const s=getSeverity(n);
+  const t=s==='high'?L.badgeHigh:s==='medium'?L.badgeMedium:L.badgeLow;
   return `<span class="badge badge-${s}">${t}</span>`;
 }
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className='toast'+(type?' '+type:'');
+function showToast(msg,type){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast'+(type?' '+type:'');
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3500);
 }
 
-// ── Search — first name only ───────────────────────────
-function onSearch() {
-  const query    = document.getElementById('searchInput').value.trim().toLowerCase();
-  const dropdown = document.getElementById('dropdownResults');
-  const L        = LANGS[currentLang];
+// ── Smart name cleaner for paste ──────────────────────
+function cleanPastedNames(raw) {
+  return raw.split('\n')
+    .map(line => {
+      // Remove leading numbers, tabs, extra spaces
+      return line.replace(/^\d+[\.\)\-\s]+/, '').replace(/\t/g, ' ').trim();
+    })
+    .map(line => {
+      // If multiple columns separated by spaces, take only words that look like names (no numbers)
+      const words = line.split(/\s{2,}|\t/).map(w => w.trim()).filter(Boolean);
+      // Pick the part that has no pure numbers and is longest
+      const namePart = words.find(w => /[^\d\s]/.test(w) && w.split(' ').length >= 1) || line;
+      return namePart.trim();
+    })
+    .filter(n => n.length > 1 && /\S/.test(n));
+}
 
-  if (query.length < 2) { dropdown.classList.remove('show'); return; }
-
-  const details = {};
-  allData.forEach(row => {
-    row.absences.forEach(name => {
-      const firstName = getFirstName(name).toLowerCase();
-      if (firstName.startsWith(query)) {
-        if (!details[name]) details[name] = { cls: row.classGroup, total:0, subjects:new Set() };
-        details[name].total += row.lectureCount;
+// ── Search ────────────────────────────────────────────
+function onSearch(){
+  const query=document.getElementById('searchInput').value.trim().toLowerCase();
+  const dropdown=document.getElementById('dropdownResults');
+  const L=LANGS[currentLang];
+  if(query.length<2){dropdown.classList.remove('show');return;}
+  const details={};
+  allData.forEach(row=>{
+    row.absences.forEach(name=>{
+      const firstName=getFirstName(name).toLowerCase();
+      if(firstName.startsWith(query)){
+        if(!details[name]) details[name]={cls:row.classGroup,total:0,subjects:new Set()};
+        details[name].total+=row.lectureCount;
         details[name].subjects.add(row.subject);
       }
     });
   });
-
   dropdown.classList.add('show');
-  if (!Object.keys(details).length) {
-    dropdown.innerHTML = `<div class="dropdown-empty">🔍 ${L.noResults} "<strong>${query}</strong>"</div>`;
+  if(!Object.keys(details).length){
+    dropdown.innerHTML=`<div class="dropdown-empty">🔍 ${L.noResults} "<strong>${query}</strong>"</div>`;
     return;
   }
-
-  let html = '';
-  Object.entries(details).sort((a,b)=>b[1].total-a[1].total).forEach(([name,d]) => {
-    const sev  = getSeverity(d.total);
-    const badge= sev==='high'?L.badgeHigh:sev==='medium'?L.badgeMedium:L.badgeLow;
-    const safe = encodeURIComponent(name);
-    html += `<div class="dropdown-item" onclick="openProfileFromDropdown('${safe}')">
+  let html='';
+  Object.entries(details).sort((a,b)=>b[1].total-a[1].total).forEach(([name,d])=>{
+    const sev=getSeverity(d.total);
+    const badge=sev==='high'?L.badgeHigh:sev==='medium'?L.badgeMedium:L.badgeLow;
+    const safe=encodeURIComponent(name);
+    html+=`<div class="dropdown-item" onclick="openProfileFromDropdown('${safe}')">
       <div class="dropdown-name">${name} <span class="badge badge-${sev}">${badge}</span></div>
       <div class="dropdown-info">${L.classLabel} ${d.cls||'?'} • ${d.total} ${L.sTotalAbs||'abs'} • ${d.subjects.size} ${L.subjectLabel||'subj'}</div>
     </div>`;
   });
-  dropdown.innerHTML = html;
+  dropdown.innerHTML=html;
 }
-
-function openProfileFromDropdown(encoded) {
-  const name = decodeURIComponent(encoded);
+function openProfileFromDropdown(encoded){
+  const name=decodeURIComponent(encoded);
   document.getElementById('dropdownResults').classList.remove('show');
-  document.getElementById('searchInput').value = '';
+  document.getElementById('searchInput').value='';
   showStudentProfile(name);
 }
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('#searchInput') && !e.target.closest('#dropdownResults'))
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#searchInput')&&!e.target.closest('#dropdownResults'))
     document.getElementById('dropdownResults').classList.remove('show');
 });
 
 // ── Data fetch ────────────────────────────────────────
-function parseData(json) {
-  if (!json?.values || json.values.length < 2) return [];
-  const rows = json.values.slice(1);
-  const data = [];
-  rows.forEach((row, idx) => {
-    const date       = row[1] ? String(row[1]).trim() : '';
-    const teacher    = row[2] ? String(row[2]).trim() : 'Unknown';
-    const subject    = row[3] ? String(row[3]).trim() : 'Unknown';
-    const lecture    = row[4] ? String(row[4]).trim() : 'Lecture 1';
-    const classGroup = row[5] ? String(row[5]).trim() : '';
-    const absentRaw  = row[6] ? String(row[6]).trim() : '';
-    if (!date||!classGroup) return;
-    const absences = absentRaw
-      ? absentRaw.split(',').map(s=>s.trim()).filter(Boolean).map(getThreeNames)
-      : [];
-    data.push({
-      rowNumber: idx+2, date, teacher, subject, lecture,
-      lectureCount: getLectureCount(lecture),
-      classGroup, absences: [...new Set(absences)]
-    });
+function parseData(json){
+  if(!json?.values||json.values.length<2) return [];
+  const rows=json.values.slice(1); const data=[];
+  rows.forEach((row,idx)=>{
+    const date=row[1]?String(row[1]).trim():'';
+    const teacher=row[2]?String(row[2]).trim():'Unknown';
+    const subject=row[3]?String(row[3]).trim():'Unknown';
+    const lecture=row[4]?String(row[4]).trim():'Lecture 1';
+    const classGroup=row[5]?String(row[5]).trim():'';
+    const absentRaw=row[6]?String(row[6]).trim():'';
+    if(!date||!classGroup) return;
+    const absences=absentRaw?absentRaw.split(',').map(s=>s.trim()).filter(Boolean).map(getThreeNames):[];
+    data.push({rowNumber:idx+2,date,teacher,subject,lecture,lectureCount:getLectureCount(lecture),classGroup,absences:[...new Set(absences)]});
   });
   return data;
 }
 
-async function fetchData() {
-  const L = LANGS[currentLang];
-  document.getElementById('lastUpdate').innerHTML = `<span style="color:#667eea;">${L.loading}</span>`;
+async function fetchData(){
+  const L=LANGS[currentLang];
+  document.getElementById('lastUpdate').innerHTML=`<span style="color:#667eea;">${L.loading}</span>`;
   try {
-    const url  = SCRIPT_URL + '?api=data&token=' + encodeURIComponent(adminToken);
-    const json = await (await fetch(url)).json();
-    if (json.error) throw new Error(json.error);
-
-    allData = parseData(json).map(r=>({...r, date:normalizeDate(r.date)})).filter(r=>r.date);
-    classes = [...new Set(allData.map(r=>r.classGroup).filter(Boolean))].sort();
-    weeks   = getWeeks();
-    months  = getMonths();
-
-    updateStats();
-    loadDaily();
-    if (document.getElementById('roster').classList.contains('active'))    loadRosterDropdown();
-    if (document.getElementById('weekly').classList.contains('active'))    loadWeeklyDropdown();
-    if (document.getElementById('monthly').classList.contains('active'))   loadMonthlyDropdown();
-    if (document.getElementById('analytics').classList.contains('active')) loadAnalytics();
-
-    document.getElementById('lastUpdate').innerHTML =
-      `<span style="color:#4CAF50;">${L.lastUpdated} ${new Date().toLocaleTimeString()}</span>`;
-  } catch(err) {
-    document.getElementById('lastUpdate').innerHTML = `<span style="color:#ff4444;">❌ ${err.message}</span>`;
+    const url=SCRIPT_URL+'?api=data&token='+encodeURIComponent(adminToken);
+    const json=await(await fetch(url)).json();
+    if(json.error) throw new Error(json.error);
+    allData=parseData(json).map(r=>({...r,date:normalizeDate(r.date)})).filter(r=>r.date);
+    classes=[...new Set(allData.map(r=>r.classGroup).filter(Boolean))].sort();
+    weeks=getWeeks(); months=getMonths();
+    updateStats(); loadDaily();
+    if(document.getElementById('roster').classList.contains('active'))    loadRosterDropdown();
+    if(document.getElementById('weekly').classList.contains('active'))    loadWeeklyDropdown();
+    if(document.getElementById('monthly').classList.contains('active'))   loadMonthlyDropdown();
+    if(document.getElementById('analytics').classList.contains('active')) loadAnalytics();
+    document.getElementById('lastUpdate').innerHTML=`<span style="color:#4CAF50;">${L.lastUpdated} ${new Date().toLocaleTimeString()}</span>`;
+  } catch(err){
+    document.getElementById('lastUpdate').innerHTML=`<span style="color:#ff4444;">❌ ${err.message}</span>`;
   }
 }
 
-function updateStats() {
+async function fetchManageData(){
+  try {
+    const url=SCRIPT_URL+'?action=getManageData&token='+encodeURIComponent(adminToken);
+    const json=await(await fetch(url)).json();
+    if(json.error) throw new Error(json.error);
+    mgmtData=json;
+  } catch(err){
+    showToast('❌ '+err.message,'error');
+  }
+}
+
+function updateStats(){
   let totalAbs=0; const students={};
-  allData.forEach(r=>{
-    totalAbs += r.lectureCount * r.absences.length;
-    r.absences.forEach(n=>{ const k=n.toLowerCase(); students[k]=(students[k]||0)+r.lectureCount; });
-  });
+  allData.forEach(r=>{ totalAbs+=r.lectureCount*r.absences.length; r.absences.forEach(n=>{const k=n.toLowerCase();students[k]=(students[k]||0)+r.lectureCount;}); });
   let high=0,medium=0;
-  Object.values(students).forEach(c=>{ if(c>=15)high++; else if(c>=8)medium++; });
-  document.getElementById('totalAbsences').textContent = totalAbs;
-  document.getElementById('totalStudents').textContent = Object.keys(students).length;
-  document.getElementById('highRisk').textContent      = high;
-  document.getElementById('atRisk').textContent        = medium;
-  document.getElementById('totalClasses').textContent  = classes.length;
+  Object.values(students).forEach(c=>{if(c>=15)high++;else if(c>=8)medium++;});
+  document.getElementById('totalAbsences').textContent=totalAbs;
+  document.getElementById('totalStudents').textContent=Object.keys(students).length;
+  document.getElementById('highRisk').textContent=high;
+  document.getElementById('atRisk').textContent=medium;
+  document.getElementById('totalClasses').textContent=classes.length;
 }
 
 // ── Week/Month builders ───────────────────────────────
-function getWeeks() {
-  const start = new Date(SCHOOL_START);
-  if (isNaN(start.getTime())) return [];
+function getWeeks(){
+  const start=new Date(SCHOOL_START); if(isNaN(start.getTime())) return [];
   const arr=[]; let cur=new Date(start); let num=1;
-  cur.setDate(cur.getDate()-cur.getDay());
-  const now=new Date();
-  while(cur<=now){
-    const ws=new Date(cur), we=new Date(cur);
-    we.setDate(we.getDate()+6);
-    if(ws<=now) arr.push({number:num++,start:ws,end:we});
-    cur.setDate(cur.getDate()+7);
-  }
+  cur.setDate(cur.getDate()-cur.getDay()); const now=new Date();
+  while(cur<=now){ const ws=new Date(cur),we=new Date(cur); we.setDate(we.getDate()+6); if(ws<=now) arr.push({number:num++,start:ws,end:we}); cur.setDate(cur.getDate()+7); }
   return arr.reverse();
 }
-function getMonths() {
+function getMonths(){
   const start=new Date(SCHOOL_START); if(isNaN(start.getTime())) return [];
   const arr=[]; let cur=new Date(start.getFullYear(),start.getMonth(),1); const now=new Date();
-  while(cur<=now){
-    const ms=new Date(cur), me=new Date(cur.getFullYear(),cur.getMonth()+1,0);
-    arr.push({name:ms.toLocaleString('default',{month:'long',year:'numeric'}),start:ms,end:me});
-    cur.setMonth(cur.getMonth()+1);
-  }
+  while(cur<=now){ const ms=new Date(cur),me=new Date(cur.getFullYear(),cur.getMonth()+1,0); arr.push({name:ms.toLocaleString('default',{month:'long',year:'numeric'}),start:ms,end:me}); cur.setMonth(cur.getMonth()+1); }
   return arr.reverse();
 }
 
 // ── DAILY ─────────────────────────────────────────────
-function setToday(){
-  const n=new Date();
-  document.getElementById('dailyDate').value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-  filterDaily();
-}
-function setPrevDay(){
-  const d=new Date(); d.setDate(d.getDate()-1);
-  document.getElementById('dailyDate').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  filterDaily();
-}
+function setToday(){ const n=new Date(); document.getElementById('dailyDate').value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; filterDaily(); }
+function setPrevDay(){ const d=new Date(); d.setDate(d.getDate()-1); document.getElementById('dailyDate').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; filterDaily(); }
 function loadDaily(){ if(!document.getElementById('dailyDate').value) setToday(); else filterDaily(); }
 
-function filterDaily() {
-  const L   = LANGS[currentLang];
-  const val = document.getElementById('dailyDate').value;
+function filterDaily(){
+  const L=LANGS[currentLang]; const val=document.getElementById('dailyDate').value;
   if(!val) return;
-  const sel = new Date(val);
-  if(sel.getDay()===5||sel.getDay()===6){
-    document.getElementById('dailyContent').innerHTML=`<div style="text-align:center;padding:80px 20px;"><div style="font-size:5em;margin-bottom:20px;">🏖️</div><h2 style="color:#667eea;font-size:1.8em;">${L.weekend}</h2></div>`;
-    return;
-  }
-  const fDate    = normalizeDate(val);
-  const filtered = allData.filter(r=>r.date===fDate);
-  const byClass  = {};
+  const sel=new Date(val);
+  if(sel.getDay()===5||sel.getDay()===6){ document.getElementById('dailyContent').innerHTML=`<div style="text-align:center;padding:80px 20px;"><div style="font-size:5em;margin-bottom:20px;">🏖️</div><h2 style="color:#667eea;font-size:1.8em;">${L.weekend}</h2></div>`; return; }
+  const fDate=normalizeDate(val);
+  const filtered=allData.filter(r=>r.date===fDate);
+  const byClass={};
   classes.forEach(c=>{byClass[c]={};});
   filtered.forEach(row=>{
     if(!row.classGroup) return;
     if(!byClass[row.classGroup]) byClass[row.classGroup]={};
     const nums=String(row.lecture).match(/\d+/g)||['1'];
-    nums.forEach(n=>{
-      const num=parseInt(n);
-      if(num>=1&&num<=6){
-        if(!byClass[row.classGroup][num]) byClass[row.classGroup][num]={subject:row.subject,teacher:row.teacher,students:[]};
-        row.absences.forEach(s=>{ if(!byClass[row.classGroup][num].students.includes(s)) byClass[row.classGroup][num].students.push(s); });
-      }
-    });
+    nums.forEach(n=>{ const num=parseInt(n); if(num>=1&&num<=6){ if(!byClass[row.classGroup][num]) byClass[row.classGroup][num]={subject:row.subject,teacher:row.teacher,students:[]}; row.absences.forEach(s=>{if(!byClass[row.classGroup][num].students.includes(s)) byClass[row.classGroup][num].students.push(s);}); } });
   });
-
   let html='';
   Object.keys(byClass).sort().forEach(cls=>{
     const lecs=byClass[cls];
@@ -631,19 +934,13 @@ function filterDaily() {
     html+=`</tr><tr>`;
     for(let i=1;i<=6;i++){
       const l=lecs[i];
-      if(l&&l.students.length>0){
-        html+=`<td style="vertical-align:top;padding:10px;"><div style="color:#c33;font-weight:500;text-align:${document.documentElement.dir==='rtl'?'right':'left'};direction:rtl;">${l.students.map(s=>`• ${s}`).join('<br>')}</div></td>`;
-      } else if(l){
-        html+=`<td style="text-align:center;color:#4CAF50;padding:10px;font-weight:600;">${L.noneAbsent}</td>`;
-      } else {
-        html+=`<td style="text-align:center;color:#999;padding:10px;"></td>`;
-      }
+      if(l&&l.students.length>0){ html+=`<td style="vertical-align:top;padding:10px;"><div style="color:#c33;font-weight:500;text-align:${document.documentElement.dir==='rtl'?'right':'left'};direction:rtl;">${l.students.map(s=>`• ${s}`).join('<br>')}</div></td>`; }
+      else if(l){ html+=`<td style="text-align:center;color:#4CAF50;padding:10px;font-weight:600;">${L.noneAbsent}</td>`; }
+      else { html+=`<td style="text-align:center;color:#999;padding:10px;"></td>`; }
     }
     html+=`</tr><tr style="background:#f8f9fa;">`;
     for(let i=1;i<=6;i++){ const l=lecs[i]; html+=`<td style="text-align:center;font-style:italic;color:#666;padding:10px;font-size:0.88em;">${l?l.teacher:''}</td>`; }
     html+=`</tr></tbody></table></div>`;
-
-    // Admin delete panel
     const clsRows=filtered.filter(r=>r.classGroup===cls);
     if(clsRows.length>0){
       html+=`<details style="margin-top:10px;"><summary style="cursor:pointer;color:#667eea;font-size:0.85em;font-weight:600;padding:6px 0;">${L.manageLabel} ${cls} (${clsRows.length})</summary>`;
@@ -659,131 +956,49 @@ function filterDaily() {
     }
     html+=`</div>`;
   });
-
   if(!html) html=`<div style="text-align:center;padding:60px;color:#999;font-size:1.1em;">📭 ${L.noAbsences}</div>`;
   document.getElementById('dailyContent').innerHTML=html;
 }
 
 // ── WEEKLY ────────────────────────────────────────────
-function loadWeeklyDropdown(){
-  const sel=document.getElementById('weekSelect');
-  const cur=sel.value;
-  sel.innerHTML='';
-  const L=LANGS[currentLang];
-  weeks.forEach((w,i)=>{
-    const o=document.createElement('option'); o.value=i;
-    o.textContent=`${L.weekLabel} ${w.number}: ${formatDate(w.start)} - ${formatDate(w.end)}`;
-    sel.appendChild(o);
-  });
-  sel.value=cur||0;
-  loadWeekly();
-}
-function loadWeekly(){
-  const L=LANGS[currentLang];
-  const idx=parseInt(document.getElementById('weekSelect').value);
-  if(isNaN(idx)||!weeks[idx]){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectWeek}</div>`;return;}
-  const week=weeks[idx];
-  const data=allData.filter(r=>{const d=new Date(r.date);return d>=week.start&&d<=week.end;});
-  if(!data.length){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;}
-  document.getElementById('weeklyContent').innerHTML=buildClassTable(data,`${L.weekLabel} ${week.number}: ${formatDate(week.start)} - ${formatDate(week.end)}`,L);
-}
+function loadWeeklyDropdown(){ const sel=document.getElementById('weekSelect'); const cur=sel.value; sel.innerHTML=''; const L=LANGS[currentLang]; weeks.forEach((w,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${L.weekLabel} ${w.number}: ${formatDate(w.start)} - ${formatDate(w.end)}`; sel.appendChild(o); }); sel.value=cur||0; loadWeekly(); }
+function loadWeekly(){ const L=LANGS[currentLang]; const idx=parseInt(document.getElementById('weekSelect').value); if(isNaN(idx)||!weeks[idx]){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectWeek}</div>`;return;} const week=weeks[idx]; const data=allData.filter(r=>{const d=new Date(r.date);return d>=week.start&&d<=week.end;}); if(!data.length){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;} document.getElementById('weeklyContent').innerHTML=buildClassTable(data,`${L.weekLabel} ${week.number}: ${formatDate(week.start)} - ${formatDate(week.end)}`,L); }
 
 // ── MONTHLY ───────────────────────────────────────────
-function loadMonthlyDropdown(){
-  const sel=document.getElementById('monthSelect');
-  const cur=sel.value;
-  sel.innerHTML='';
-  months.forEach((m,i)=>{
-    const o=document.createElement('option'); o.value=i;
-    o.textContent=`${m.name} (${formatDate(m.start)} - ${formatDate(m.end)})`;
-    sel.appendChild(o);
-  });
-  sel.value=cur||0;
-  loadMonthly();
-}
-function loadMonthly(){
-  const L=LANGS[currentLang];
-  const idx=parseInt(document.getElementById('monthSelect').value);
-  if(isNaN(idx)||!months[idx]){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectMonth}</div>`;return;}
-  const month=months[idx];
-  const data=allData.filter(r=>{const d=new Date(r.date);return d>=month.start&&d<=month.end;});
-  if(!data.length){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;}
-  document.getElementById('monthlyContent').innerHTML=buildClassTable(data,`${month.name}`,L);
-}
+function loadMonthlyDropdown(){ const sel=document.getElementById('monthSelect'); const cur=sel.value; sel.innerHTML=''; months.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${m.name} (${formatDate(m.start)} - ${formatDate(m.end)})`; sel.appendChild(o); }); sel.value=cur||0; loadMonthly(); }
+function loadMonthly(){ const L=LANGS[currentLang]; const idx=parseInt(document.getElementById('monthSelect').value); if(isNaN(idx)||!months[idx]){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectMonth}</div>`;return;} const month=months[idx]; const data=allData.filter(r=>{const d=new Date(r.date);return d>=month.start&&d<=month.end;}); if(!data.length){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;} document.getElementById('monthlyContent').innerHTML=buildClassTable(data,`${month.name}`,L); }
 
-function buildClassTable(data, title, L){
+function buildClassTable(data,title,L){
   const byClass={};
-  data.forEach(row=>{
-    if(!row.classGroup) return;
-    if(!byClass[row.classGroup]) byClass[row.classGroup]={};
-    row.absences.forEach(name=>{
-      if(!byClass[row.classGroup][name]) byClass[row.classGroup][name]={total:0,subjects:{}};
-      byClass[row.classGroup][name].total+=row.lectureCount;
-      byClass[row.classGroup][name].subjects[row.subject]=(byClass[row.classGroup][name].subjects[row.subject]||0)+row.lectureCount;
-    });
-  });
+  data.forEach(row=>{ if(!row.classGroup) return; if(!byClass[row.classGroup]) byClass[row.classGroup]={}; row.absences.forEach(name=>{ if(!byClass[row.classGroup][name]) byClass[row.classGroup][name]={total:0,subjects:{}}; byClass[row.classGroup][name].total+=row.lectureCount; byClass[row.classGroup][name].subjects[row.subject]=(byClass[row.classGroup][name].subjects[row.subject]||0)+row.lectureCount; }); });
   let html=`<h3 style="color:#667eea;margin-bottom:20px;font-size:1.3em;">${title}</h3>`;
   Object.keys(byClass).sort().forEach(cls=>{
-    const students=byClass[cls];
-    const sorted=Object.entries(students).sort((a,b)=>b[1].total-a[1].total);
+    const students=byClass[cls]; const sorted=Object.entries(students).sort((a,b)=>b[1].total-a[1].total);
     const subjects=new Set(); Object.values(students).forEach(s=>Object.keys(s.subjects).forEach(sub=>subjects.add(sub)));
     const subArr=[...subjects].sort();
     html+=`<div class="chart-box"><h4 style="color:#667eea;margin-bottom:14px;">🏫 ${L.classLabel} ${cls}</h4><div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>`;
     subArr.forEach(s=>html+=`<th style="text-align:center;" title="${s}">${s.length>12?s.slice(0,10)+'…':s}</th>`);
     html+=`<th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-    sorted.forEach(([name,d])=>{
-      const sev=getSeverity(d.total);
-      const safe=encodeURIComponent(name);
-      html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`;
-      subArr.forEach(sub=>{
-        const cnt=d.subjects[sub]||0;
-        const col=cnt>=6?'#c33':cnt>=3?'#ff8800':cnt>0?'#667eea':'#bbb';
-        html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;
-      });
-      html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`;
-    });
+    sorted.forEach(([name,d])=>{ const sev=getSeverity(d.total); const safe=encodeURIComponent(name); html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`; subArr.forEach(sub=>{const cnt=d.subjects[sub]||0;const col=cnt>=6?'#c33':cnt>=3?'#ff8800':cnt>0?'#667eea':'#bbb';html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;}); html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`; });
     html+=`</tbody></table></div></div>`;
   });
   return html;
 }
 
 // ── ROSTER ────────────────────────────────────────────
-function loadRosterDropdown(){
-  const sel=document.getElementById('rosterClass');
-  const cur=sel.value;
-  const L=LANGS[currentLang];
-  sel.innerHTML=`<option value="">${L.selectClass}</option>`;
-  classes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-  if(classes.includes(cur)) sel.value=cur;
-  else if(classes.length) sel.value=classes[0];
-  filterRoster();
-}
+function loadRosterDropdown(){ const sel=document.getElementById('rosterClass'); const cur=sel.value; const L=LANGS[currentLang]; sel.innerHTML=`<option value="">${L.selectClass}</option>`; classes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);}); if(classes.includes(cur)) sel.value=cur; else if(classes.length) sel.value=classes[0]; filterRoster(); }
 function filterRoster(){
-  const L=LANGS[currentLang];
-  const cls=document.getElementById('rosterClass').value;
-  const min=parseInt(document.getElementById('minAbsences').value)||0;
+  const L=LANGS[currentLang]; const cls=document.getElementById('rosterClass').value; const min=parseInt(document.getElementById('minAbsences').value)||0;
   if(!cls){document.getElementById('rosterContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectClass}</div>`;return;}
   const summary={};const subjects=new Set();
-  allData.filter(r=>r.classGroup===cls).forEach(row=>{
-    row.absences.forEach(name=>{
-      if(!summary[name]) summary[name]={total:0,subjects:{}};
-      summary[name].total+=row.lectureCount;
-      summary[name].subjects[row.subject]=(summary[name].subjects[row.subject]||0)+row.lectureCount;
-      subjects.add(row.subject);
-    });
-  });
+  allData.filter(r=>r.classGroup===cls).forEach(row=>{ row.absences.forEach(name=>{ if(!summary[name]) summary[name]={total:0,subjects:{}}; summary[name].total+=row.lectureCount; summary[name].subjects[row.subject]=(summary[name].subjects[row.subject]||0)+row.lectureCount; subjects.add(row.subject); }); });
   const sorted=Object.entries(summary).filter(([,d])=>d.total>=min).sort((a,b)=>b[1].total-a[1].total);
   if(!sorted.length){document.getElementById('rosterContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;"><p style="font-size:3em;">✅</p><p>${L.noAbsences}</p></div>`;return;}
   const subArr=[...subjects].sort();
   let html=`<h3 style="color:#667eea;margin-bottom:14px;">🏫 ${L.classLabel} ${cls}</h3><div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>`;
   subArr.forEach(s=>html+=`<th style="text-align:center;" title="${s}">${s.length>12?s.slice(0,10)+'…':s}</th>`);
   html+=`<th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-  sorted.forEach(([name,d])=>{
-    const sev=getSeverity(d.total); const safe=encodeURIComponent(name);
-    html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`;
-    subArr.forEach(sub=>{const cnt=d.subjects[sub]||0;const col=cnt>=3?'#c33':cnt>0?'#667eea':'#bbb';html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;});
-    html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`;
-  });
+  sorted.forEach(([name,d])=>{ const sev=getSeverity(d.total); const safe=encodeURIComponent(name); html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`; subArr.forEach(sub=>{const cnt=d.subjects[sub]||0;const col=cnt>=3?'#c33':cnt>0?'#667eea':'#bbb';html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;}); html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`; });
   html+=`</tbody></table></div>`;
   document.getElementById('rosterContent').innerHTML=html;
 }
@@ -793,61 +1008,20 @@ function loadAnalytics(){
   const L=LANGS[currentLang];
   const lpd=parseInt(document.getElementById('lecturesPerDay').value)||3;
   const expD=parseInt(document.getElementById('expulsionDays').value)||21;
-
-  // Build daily lecture counts per student
   const dailyMap={};
-  allData.forEach(entry=>{
-    entry.absences.forEach(name=>{
-      if(!dailyMap[name]) dailyMap[name]={};
-      dailyMap[name][entry.date]=(dailyMap[name][entry.date]||0)+entry.lectureCount;
-    });
-  });
-
-  // Calculate risk
+  allData.forEach(entry=>{ entry.absences.forEach(name=>{ if(!dailyMap[name]) dailyMap[name]={}; dailyMap[name][entry.date]=(dailyMap[name][entry.date]||0)+entry.lectureCount; }); });
   const risk={};
-  Object.entries(dailyMap).forEach(([name,days])=>{
-    let daysMissed=0;
-    Object.values(days).forEach(cnt=>{ if(cnt>=lpd) daysMissed++; });
-    risk[name]={daysMissed, dismissed:daysMissed>=expD};
-  });
-
-  // Group by class
+  Object.entries(dailyMap).forEach(([name,days])=>{ let daysMissed=0; Object.values(days).forEach(cnt=>{if(cnt>=lpd) daysMissed++;}); risk[name]={daysMissed,dismissed:daysMissed>=expD}; });
   const byClass={};
-  Object.entries(risk).forEach(([name,d])=>{
-    let cls='?';
-    for(const row of allData){ if(row.absences.includes(name)){cls=row.classGroup||'?';break;} }
-    if(!byClass[cls]) byClass[cls]=[];
-    byClass[cls].push({name,...d});
-  });
-
-  let html=`<div class="chart-box" style="margin-bottom:24px;">
-    <h3 style="color:#ff4444;margin-bottom:12px;font-size:1.4em;">${L.expulsionReport}</h3>
-    <p style="color:#666;margin-bottom:16px;">${L.expulsionDesc} — <strong>${lpd}</strong> lec/day → 1 day • threshold: <strong>${expD}</strong> days</p>`;
-
+  Object.entries(risk).forEach(([name,d])=>{ let cls='?'; for(const row of allData){if(row.absences.includes(name)){cls=row.classGroup||'?';break;}} if(!byClass[cls]) byClass[cls]=[]; byClass[cls].push({name,...d}); });
+  let html=`<div class="chart-box" style="margin-bottom:24px;"><h3 style="color:#ff4444;margin-bottom:12px;font-size:1.4em;">${L.expulsionReport}</h3><p style="color:#666;margin-bottom:16px;">${L.expulsionDesc} — <strong>${lpd}</strong> lec/day • threshold: <strong>${expD}</strong> days</p>`;
   Object.keys(byClass).sort().forEach(cls=>{
     const students=byClass[cls].sort((a,b)=>b.daysMissed-a.daysMissed);
-    html+=`<div style="margin-bottom:24px;"><h4 style="color:#667eea;margin-bottom:12px;">🏫 ${L.classLabel} ${cls}</h4>
-      <div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>
-      <th style="text-align:center;">${L.colDaysMissed}</th>
-      <th style="text-align:center;">${L.colRemaining}</th>
-      <th style="text-align:center;">${L.colStatus}</th></tr></thead><tbody>`;
-    students.forEach(s=>{
-      const pct=s.daysMissed/expD;
-      let rowCls='row-low', status=L.riskLow, col='#4CAF50';
-      if(s.dismissed){rowCls='row-high';status=L.riskDismissed;col='#ff4444';}
-      else if(pct>=0.75){rowCls='row-medium';status=L.riskHigh;col='#ff8800';}
-      const rem=Math.max(0,expD-s.daysMissed);
-      const safe=encodeURIComponent(s.name);
-      html+=`<tr class="${rowCls}"><td><span class="clickable" onclick="openProfileFromDropdown('${safe}')">${s.name}</span></td>
-        <td style="text-align:center;font-weight:bold;">${s.daysMissed}</td>
-        <td style="text-align:center;">${rem}</td>
-        <td style="text-align:center;font-weight:bold;color:${col};">${status}</td></tr>`;
-    });
+    html+=`<div style="margin-bottom:24px;"><h4 style="color:#667eea;margin-bottom:12px;">🏫 ${L.classLabel} ${cls}</h4><div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th><th style="text-align:center;">${L.colDaysMissed}</th><th style="text-align:center;">${L.colRemaining}</th><th style="text-align:center;">${L.colStatus}</th></tr></thead><tbody>`;
+    students.forEach(s=>{ const pct=s.daysMissed/expD; let rowCls='row-low',status=L.riskLow,col='#4CAF50'; if(s.dismissed){rowCls='row-high';status=L.riskDismissed;col='#ff4444';} else if(pct>=0.75){rowCls='row-medium';status=L.riskHigh;col='#ff8800';} const rem=Math.max(0,expD-s.daysMissed); const safe=encodeURIComponent(s.name); html+=`<tr class="${rowCls}"><td><span class="clickable" onclick="openProfileFromDropdown('${safe}')">${s.name}</span></td><td style="text-align:center;font-weight:bold;">${s.daysMissed}</td><td style="text-align:center;">${rem}</td><td style="text-align:center;font-weight:bold;color:${col};">${status}</td></tr>`; });
     html+=`</tbody></table></div></div>`;
   });
   html+=`</div>`;
-
-  // Legacy: by class, lecture, subject
   const byClassAbs={};classes.forEach(c=>byClassAbs[c]=0);
   allData.forEach(r=>{if(r.classGroup&&byClassAbs.hasOwnProperty(r.classGroup)) byClassAbs[r.classGroup]+=r.absences.length*r.lectureCount;});
   const byLec={1:0,2:0,3:0,4:0,5:0,6:0};
@@ -855,25 +1029,16 @@ function loadAnalytics(){
   const bySubj={};
   allData.forEach(r=>{if(r.subject) bySubj[r.subject]=(bySubj[r.subject]||0)+r.absences.length*r.lectureCount;});
   const totalSubj=Object.values(bySubj).reduce((a,b)=>a+b,0);
-
   html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
     <div class="chart-box"><h3 style="color:#667eea;margin-bottom:12px;">${L.absByClass}</h3><div class="table-wrap"><table><thead><tr><th>${L.classLabel}</th><th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-  Object.entries(byClassAbs).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([cls,cnt])=>{
-    html+=`<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`;
-  });
+  Object.entries(byClassAbs).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([cls,cnt])=>{ html+=`<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`; });
   html+=`</tbody></table></div></div>
     <div class="chart-box"><h3 style="color:#667eea;margin-bottom:12px;">${L.absByLec}</h3><div class="table-wrap"><table><thead><tr><th>Lecture</th><th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-  Object.entries(byLec).forEach(([l,cnt])=>{
-    html+=`<tr><td><strong>Lecture ${l}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`;
-  });
+  Object.entries(byLec).forEach(([l,cnt])=>{ html+=`<tr><td><strong>Lecture ${l}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`; });
   html+=`</tbody></table></div></div>
     <div class="chart-box" style="grid-column:1/-1;"><h3 style="color:#667eea;margin-bottom:12px;">${L.absBySubj}</h3><div class="table-wrap"><table><thead><tr><th>${L.subjectLabel}</th><th style="text-align:center;">${L.totalLabel}</th><th style="text-align:center;">${L.pctLabel}</th></tr></thead><tbody>`;
-  Object.entries(bySubj).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([subj,cnt])=>{
-    const pct=((cnt/totalSubj)*100).toFixed(1);
-    html+=`<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td><td style="text-align:center;color:#ff8800;font-weight:600;">${pct}%</td></tr>`;
-  });
+  Object.entries(bySubj).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([subj,cnt])=>{ const pct=((cnt/totalSubj)*100).toFixed(1); html+=`<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td><td style="text-align:center;color:#ff8800;font-weight:600;">${pct}%</td></tr>`; });
   html+=`</tbody></table></div></div></div>`;
-
   document.getElementById('analyticsContent').innerHTML=html;
 }
 
@@ -881,19 +1046,11 @@ function loadAnalytics(){
 function showStudentProfile(name){
   const L=LANGS[currentLang];
   const d={cls:'',total:0,log:[]};
-  allData.forEach(row=>{
-    row.absences.forEach(n=>{
-      if(n.toLowerCase()===name.toLowerCase()){
-        d.cls=row.classGroup||d.cls; d.total+=row.lectureCount;
-        d.log.push({date:row.date,teacher:row.teacher,subject:row.subject,lecture:row.lecture});
-      }
-    });
-  });
+  allData.forEach(row=>{ row.absences.forEach(n=>{ if(n.toLowerCase()===name.toLowerCase()){ d.cls=row.classGroup||d.cls; d.total+=row.lectureCount; d.log.push({date:row.date,teacher:row.teacher,subject:row.subject,lecture:row.lecture}); } }); });
   d.log.sort((a,b)=>new Date(b.date)-new Date(a.date));
   const subjects=[...new Set(d.log.map(a=>a.subject))];
   const sev=getSeverity(d.total);
   const col=sev==='high'?'#ff4444':sev==='medium'?'#ff8800':'#4CAF50';
-
   let html=`<div class="profile-header"><h2>👤 ${name}</h2><div style="margin-top:8px;">${getBadge(d.total)}</div></div>
     <div class="profile-stats">
       <div class="profile-stat"><div class="label">${L.profileClass}</div><div class="value" style="font-size:1.6em;">${d.cls||'?'}</div></div>
@@ -917,29 +1074,20 @@ function showStudentProfile(name){
 function closeModal(){ document.getElementById('studentModal').classList.remove('open'); }
 
 // ── ADMIN DELETE ──────────────────────────────────────
-function askAdminDelete(rowNumber, info){
+function askAdminDelete(rowNumber,info){
   adminPendingRow=rowNumber;
   document.getElementById('adminConfInfo').textContent=info;
   document.getElementById('adminConfirm').classList.add('show');
 }
-function closeAdminConfirm(){
-  document.getElementById('adminConfirm').classList.remove('show');
-  adminPendingRow=null;
-}
+function closeAdminConfirm(){ document.getElementById('adminConfirm').classList.remove('show'); adminPendingRow=null; }
 async function executeAdminDelete(){
   if(!adminPendingRow) return;
-  const rowNum=adminPendingRow;
-  closeAdminConfirm();
+  const rowNum=adminPendingRow; closeAdminConfirm();
   const L=LANGS[currentLang];
   try {
-    await fetch(SCRIPT_URL,{
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'deleteRow',rowNumber:rowNum,teacher:'admin',token:adminToken})
-    });
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'deleteRow',rowNumber:rowNum,teacher:'admin',token:adminToken})});
     allData=allData.filter(r=>r.rowNumber!==rowNum);
-    filterDaily();
-    showToast(L.toastDeleted,'success');
+    filterDaily(); showToast(L.toastDeleted,'success');
   } catch(err){ showToast(L.toastDeleteFail,'error'); }
 }
 
@@ -953,18 +1101,365 @@ function showTab(name){
   if(name==='weekly')    loadWeeklyDropdown();
   if(name==='monthly')   loadMonthlyDropdown();
   if(name==='analytics') loadAnalytics();
+  if(name==='teachers')  loadTeachersTab();
+  if(name==='students')  loadStudentsTab();
+}
+
+// ══════════════════════════════════════════════════════
+// ── TEACHERS TAB ─────────────────────────────────────
+// ══════════════════════════════════════════════════════
+async function loadTeachersTab(){
+  if(!mgmtData) await fetchManageData();
+  renderTeacherTable();
+}
+
+function renderTeacherTable(){
+  if(!mgmtData) return;
+  const L=LANGS[currentLang];
+  const tbody=document.getElementById('teacherTableBody');
+  if(!mgmtData.teachers.length){ tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">—</td></tr>`; return; }
+  tbody.innerHTML=mgmtData.teachers.map(t=>`
+    <tr>
+      <td><strong>${t.arabicName||t.displayName}</strong></td>
+      <td style="direction:ltr;text-align:start;">${t.username}</td>
+      <td style="direction:ltr;text-align:start;color:#999;font-size:0.82em;">••••••</td>
+      <td>${t.classes.map(c=>`<span class="tag">${c}</span>`).join(' ')||'—'}</td>
+      <td>${t.subjects.map(s=>`<span class="tag" style="background:#fff4e6;color:#ff8800;">${s}</span>`).join(' ')||'—'}</td>
+      <td><button class="btn-sm btn-move" onclick='openEditTeacher(${JSON.stringify(t)})'>${L.editBtn||'✏️'}</button></td>
+    </tr>`).join('');
+}
+
+function openAddTeacher(){
+  if(!mgmtData){fetchManageData().then(()=>openAddTeacher());return;}
+  const L=LANGS[currentLang];
+  document.getElementById('teacherModalTitle').textContent = L.teacherModalTitle||'➕ مامۆستایێ نوی';
+  document.getElementById('tmEditUsername').value='';
+  document.getElementById('tmName').value='';
+  document.getElementById('tmUsername').value='';
+  document.getElementById('tmPassword').value='';
+  document.getElementById('tmLblPass').textContent = L.tmLblPass.replace('(leave blank to keep unchanged)','').replace('(اتركها فارغة لعدم التغيير)','').replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','');
+  buildCheckboxes('tmClasses', mgmtData.classes, []);
+  buildCheckboxes('tmSubjects', mgmtData.subjects, []);
+  document.getElementById('teacherModal').classList.add('open');
+}
+
+function openEditTeacher(t){
+  if(!mgmtData){fetchManageData().then(()=>openEditTeacher(t));return;}
+  const L=LANGS[currentLang];
+  document.getElementById('teacherModalTitle').textContent = L.editTeacherTitle||'✏️ دەسکاریکرنی مامۆستا';
+  document.getElementById('tmEditUsername').value=t.username;
+  document.getElementById('tmName').value=t.arabicName||t.displayName;
+  document.getElementById('tmUsername').value=t.username;
+  document.getElementById('tmUsername').disabled=true;
+  document.getElementById('tmPassword').value='';
+  document.getElementById('tmLblPass').textContent = L.tmLblPass;
+  buildCheckboxes('tmClasses',  mgmtData.classes,  t.classes);
+  buildCheckboxes('tmSubjects', mgmtData.subjects, t.subjects);
+  document.getElementById('teacherModal').classList.add('open');
+}
+
+function buildCheckboxes(containerId, items, checked){
+  const el=document.getElementById(containerId);
+  el.innerHTML=items.map(item=>`
+    <label class="cb-item">
+      <input type="checkbox" value="${item}" ${checked.includes(item)?'checked':''}>
+      <label>${item}</label>
+    </label>`).join('');
+}
+
+function getChecked(containerId){
+  return [...document.querySelectorAll(`#${containerId} input:checked`)].map(i=>i.value);
+}
+
+function closeTeacherModal(){
+  document.getElementById('teacherModal').classList.remove('open');
+  document.getElementById('tmUsername').disabled=false;
+}
+
+async function saveTeacher(){
+  const L=LANGS[currentLang];
+  const editUsername=document.getElementById('tmEditUsername').value.trim();
+  const isEdit=editUsername!=='';
+  const name=document.getElementById('tmName').value.trim();
+  const username=document.getElementById('tmUsername').value.trim().toLowerCase();
+  const password=document.getElementById('tmPassword').value.trim();
+  const selClasses=getChecked('tmClasses');
+  const selSubjects=getChecked('tmSubjects');
+
+  if(!name||!username){showToast('❌ ناڤ و یوزەرناڤ پێویستە','error');return;}
+  if(!isEdit&&!password){showToast('❌ پاسۆرد پێویستە','error');return;}
+
+  const btn=document.getElementById('btnSaveTeacher');
+  btn.textContent='⏳'; btn.disabled=true;
+  try {
+    const body={
+      action: isEdit?'editTeacher':'addTeacher',
+      token: adminToken,
+      arabicName: name, username, displayName: name,
+      subjects: selSubjects, classes: selClasses
+    };
+    if(password) body.password=password;
+
+    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const text=await resp.text();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    closeTeacherModal();
+    mgmtData=null;
+    await fetchManageData();
+    renderTeacherTable();
+    showToast(L.toastSaved,'success');
+  } catch(err){
+    showToast(L.toastSaveFail+' '+err.message,'error');
+  } finally {
+    btn.textContent=L.btnSaveTeacher||'تۆمارکرن'; btn.disabled=false;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// ── STUDENTS TAB ─────────────────────────────────────
+// ══════════════════════════════════════════════════════
+let selectedClass = null;
+
+async function loadStudentsTab(){
+  if(!mgmtData) await fetchManageData();
+  renderStudentTab();
+}
+
+function renderStudentTab(){
+  if(!mgmtData) return;
+  const L=LANGS[currentLang];
+  // Class grid
+  const grid=document.getElementById('classGrid');
+  grid.innerHTML=mgmtData.classes.map(cls=>{
+    const count=(mgmtData.students[cls]||[]).length;
+    return `<button class="class-btn ${selectedClass===cls?'selected':''}" onclick="selectClass('${cls}')">
+      <div class="cls-name">${cls}</div>
+      <div class="cls-count">${count} ${L.students||'قوتابی'}</div>
+    </button>`;
+  }).join('');
+  // Student panel
+  if(selectedClass) renderStudentList(selectedClass);
+  else document.getElementById('studentPanel').innerHTML=`<div style="text-align:center;padding:40px;color:#999;" id="selectClassHint">${L.selectClassHint||'← پۆلێک هەلبژێرە'}</div>`;
+}
+
+function selectClass(cls){
+  selectedClass=cls;
+  renderStudentTab();
+}
+
+function renderStudentList(cls){
+  const L=LANGS[currentLang];
+  const students=mgmtData.students[cls]||[];
+  let html=`<div class="student-list-header">
+    <h3>🏫 ${cls} <span style="color:#999;font-size:0.8em;">(${students.length} ${L.students||'قوتابی'})</span></h3>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn-add" onclick="openAddStudent('${cls}')" style="font-size:0.78em;padding:7px 14px;">➕ ${L.addStudentTitle||'قوتابی زیادبکە'}</button>
+      <button class="btn-add" onclick="openBulkStudent('${cls}')" style="font-size:0.78em;padding:7px 14px;background:#4CAF50;">➕➕ ${L.bulkStudentTitle||'چەند قوتابیێ'}</button>
+    </div>
+  </div>`;
+  if(!students.length){
+    html+=`<div style="text-align:center;padding:30px;color:#999;">—</div>`;
+  } else {
+    html+=`<div style="background:#fff;border-radius:10px;border:1px solid #e9ecef;overflow:hidden;">`;
+    students.forEach((name,i)=>{
+      const safe=encodeURIComponent(name);
+      const safeCls=encodeURIComponent(cls);
+      html+=`<div class="student-row">
+        <span class="student-name">${i+1}. ${name}</span>
+        <div class="student-actions">
+          <button class="btn-sm btn-move" onclick="openMoveStudent('${safe}','${safeCls}')">↔️</button>
+          <button class="btn-sm btn-del"  onclick="askDeleteStudent('${safe}','${safeCls}')">🗑️</button>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  document.getElementById('studentPanel').innerHTML=html;
+}
+
+// ── Add single student ────────────────────────────────
+function openAddStudent(cls){
+  document.getElementById('addStudentClass').value=cls;
+  document.getElementById('addStudentName').value='';
+  document.getElementById('addStudentModal').classList.add('open');
+  setTimeout(()=>document.getElementById('addStudentName').focus(),100);
+}
+function closeAddStudent(){ document.getElementById('addStudentModal').classList.remove('open'); }
+async function saveAddStudent(){
+  const L=LANGS[currentLang];
+  const cls=document.getElementById('addStudentClass').value;
+  const name=document.getElementById('addStudentName').value.trim();
+  if(!name){showToast('❌ ناڤ بنووسە','error');return;}
+  try {
+    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addStudent',token:adminToken,className:cls,names:[name]})});
+    const text=await resp.text();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    closeAddStudent();
+    mgmtData.students[cls]=[...(mgmtData.students[cls]||[]),name];
+    renderStudentTab();
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+}
+
+// ── Bulk add students ─────────────────────────────────
+function openBulkStudent(cls){
+  document.getElementById('bulkStudentClass').value=cls;
+  document.getElementById('bulkStudentText').value='';
+  document.getElementById('bulkPreview').className='paste-preview';
+  document.getElementById('bulkStudentModal').classList.add('open');
+  setTimeout(()=>document.getElementById('bulkStudentText').focus(),100);
+}
+function closeBulkStudent(){ document.getElementById('bulkStudentModal').classList.remove('open'); }
+function previewBulk(){
+  const raw=document.getElementById('bulkStudentText').value;
+  const names=cleanPastedNames(raw);
+  const preview=document.getElementById('bulkPreview');
+  if(!names.length){preview.className='paste-preview';return;}
+  preview.className='paste-preview show';
+  preview.innerHTML=`<div style="font-size:0.75em;color:#667eea;font-weight:700;margin-bottom:4px;">✅ ${names.length} ناڤ دۆزرایەوە:</div>`+
+    names.map(n=>`<div class="paste-preview-item">• ${n}</div>`).join('');
+}
+async function saveBulkStudents(){
+  const L=LANGS[currentLang];
+  const cls=document.getElementById('bulkStudentClass').value;
+  const raw=document.getElementById('bulkStudentText').value;
+  const names=cleanPastedNames(raw);
+  if(!names.length){showToast('❌ هیچ ناڤێک نەدۆزرایەوە','error');return;}
+  const btn=document.getElementById('btnSaveBulk');
+  btn.textContent='⏳'; btn.disabled=true;
+  try {
+    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addStudent',token:adminToken,className:cls,names})});
+    const text=await resp.text();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    const added=parseInt(text.split(':')[1])||names.length;
+    closeBulkStudent();
+    // Update local data
+    const existing=new Set((mgmtData.students[cls]||[]).map(n=>n.toLowerCase()));
+    const newOnes=names.filter(n=>!existing.has(n.toLowerCase()));
+    mgmtData.students[cls]=[...(mgmtData.students[cls]||[]),...newOnes];
+    renderStudentTab();
+    showToast(`✅ ${added} ${L.students||'قوتابی'} زیادکران`,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { btn.textContent=L.btnSaveTeacher||'هەموویان زیادبکە'; btn.disabled=false; }
+}
+
+// ── Move student ──────────────────────────────────────
+function openMoveStudent(safeName, safeCls){
+  const name=decodeURIComponent(safeName);
+  const cls=decodeURIComponent(safeCls);
+  document.getElementById('moveStudentName').value=name;
+  document.getElementById('moveStudentFrom').value=cls;
+  document.getElementById('moveStudentNameDisplay').textContent='👤 '+name;
+  const container=document.getElementById('moveClassRadios');
+  const L=LANGS[currentLang];
+  container.innerHTML=(mgmtData.classes||[]).filter(c=>c!==cls).map(c=>`
+    <label style="display:flex;align-items:center;gap:6px;background:#f4f6ff;border:1.5px solid #d0d7ff;border-radius:8px;padding:6px 12px;cursor:pointer;">
+      <input type="radio" name="moveTarget" value="${c}" style="accent-color:#667eea;">
+      <span style="font-weight:700;">${c}</span>
+    </label>`).join('');
+  document.getElementById('moveStudentModal').classList.add('open');
+}
+function closeMoveStudent(){ document.getElementById('moveStudentModal').classList.remove('open'); }
+async function saveMoveStudent(){
+  const L=LANGS[currentLang];
+  const name=document.getElementById('moveStudentName').value;
+  const fromCls=document.getElementById('moveStudentFrom').value;
+  const radio=document.querySelector('input[name="moveTarget"]:checked');
+  if(!radio){showToast('❌ پۆلێک هەلبژێرە','error');return;}
+  const toCls=radio.value;
+  try {
+    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'moveStudent',token:adminToken,studentName:name,fromClass:fromCls,toClass:toCls})});
+    const text=await resp.text();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    closeMoveStudent();
+    // Update local
+    mgmtData.students[fromCls]=(mgmtData.students[fromCls]||[]).filter(n=>n.toLowerCase()!==name.toLowerCase());
+    mgmtData.students[toCls]=[...(mgmtData.students[toCls]||[]),name];
+    selectedClass=fromCls;
+    renderStudentTab();
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+}
+
+// ── Delete student ────────────────────────────────────
+function askDeleteStudent(safeName, safeCls){
+  const name=decodeURIComponent(safeName);
+  const cls=decodeURIComponent(safeCls);
+  const L=LANGS[currentLang];
+  document.getElementById('mgmtConfirmText').textContent=`${name} — ${cls}`;
+  document.getElementById('mgmtConfirmModal').classList.add('open');
+  document.getElementById('mgmtConfirmOk').onclick=()=>doDeleteStudent(name,cls);
+}
+function closeMgmtConfirm(){ document.getElementById('mgmtConfirmModal').classList.remove('open'); }
+async function doDeleteStudent(name,cls){
+  const L=LANGS[currentLang];
+  closeMgmtConfirm();
+  try {
+    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'removeStudent',token:adminToken,className:cls,studentName:name})});
+    const text=await resp.text();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    mgmtData.students[cls]=(mgmtData.students[cls]||[]).filter(n=>n.toLowerCase()!==name.toLowerCase());
+    renderStudentTab();
+    showToast(L.toastDeleted,'success');
+  } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
+}
+
+// ── New class ─────────────────────────────────────────
+function openNewClass(){
+  document.getElementById('newClassName').value='';
+  document.getElementById('newClassStudents').value='';
+  document.getElementById('newClassPreview').className='paste-preview';
+  document.getElementById('newClassModal').classList.add('open');
+  setTimeout(()=>document.getElementById('newClassName').focus(),100);
+}
+function closeNewClass(){ document.getElementById('newClassModal').classList.remove('open'); }
+function previewNewClass(){
+  const raw=document.getElementById('newClassStudents').value;
+  const names=cleanPastedNames(raw);
+  const preview=document.getElementById('newClassPreview');
+  if(!names.length){preview.className='paste-preview';return;}
+  preview.className='paste-preview show';
+  preview.innerHTML=`<div style="font-size:0.75em;color:#667eea;font-weight:700;margin-bottom:4px;">✅ ${names.length} ناڤ دۆزرایەوە:</div>`+
+    names.map(n=>`<div class="paste-preview-item">• ${n}</div>`).join('');
+}
+async function saveNewClass(){
+  const L=LANGS[currentLang];
+  const className=document.getElementById('newClassName').value.trim();
+  if(!className){showToast('❌ ناڤی پۆل بنووسە','error');return;}
+  if(mgmtData&&mgmtData.classes.includes(className)){showToast('❌ ئەم پۆلە پێشتر هەیە','error');return;}
+  const names=cleanPastedNames(document.getElementById('newClassStudents').value);
+  const btn=document.getElementById('btnSaveNewClass');
+  btn.textContent='⏳'; btn.disabled=true;
+  try {
+    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addClass',token:adminToken,className,names})});
+    const text=await resp.text();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    closeNewClass();
+    if(mgmtData){ mgmtData.classes.push(className); mgmtData.students[className]=names; }
+    selectedClass=className;
+    renderStudentTab();
+    showToast(`✅ ${className} — ${names.length} ${L.students||'قوتابی'}`,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { btn.textContent=L.newClassTitle||'دروستکرن'; btn.disabled=false; }
+}
+
+// ── Clear cache ───────────────────────────────────────
+async function doClearCache(){
+  const L=LANGS[currentLang];
+  try {
+    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'clearCache',token:adminToken})});
+    const text=await resp.text();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    mgmtData=null;
+    showToast(L.toastCacheCleared,'success');
+  } catch(err){ showToast(L.toastCacheFail+' '+err.message,'error'); }
 }
 
 // ── Scheduling ────────────────────────────────────────
 function scheduleRefresh(){
   const h=new Date().getHours();
-  if(h>=8&&h<14){
-    fetchData();
-    setTimeout(scheduleRefresh, 300000); // every 5 min during school hours
-  } else {
-    const next=new Date(); next.setDate(next.getDate()+(h>=14?1:0)); next.setHours(8,0,1,0);
-    setTimeout(scheduleRefresh, next.getTime()-Date.now());
-  }
+  if(h>=8&&h<14){ fetchData(); setTimeout(scheduleRefresh,300000); }
+  else { const next=new Date(); next.setDate(next.getDate()+(h>=14?1:0)); next.setHours(8,0,1,0); setTimeout(scheduleRefresh,next.getTime()-Date.now()); }
 }
 
 // ── Init ──────────────────────────────────────────────
