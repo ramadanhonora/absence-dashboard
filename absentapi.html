@@ -153,6 +153,7 @@
   <button class="tab"        onclick="showTab('analytics')"id="tab-analytics">📈 شیکاری</button>
   <button class="tab"        onclick="showTab('teachers')" id="tab-teachers">👨‍🏫 مامۆستایان</button>
   <button class="tab"        onclick="showTab('students')" id="tab-students">👨‍🎓 قوتابیان</button>
+  <button class="tab"        onclick="showTab('subjects')" id="tab-subjects">📚 بابەت</button>
 </div>
 
 <!-- DAILY -->
@@ -295,6 +296,31 @@
   <div class="cache-bar">
     <p id="cacheNote2">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
     <button class="btn-add" onclick="doClearCache()" id="btnClearCache2">🔄 نوێکرنەوەی داتا</button>
+  </div>
+</div>
+
+<!-- SUBJECTS TAB -->
+<div id="subjects" class="content-section">
+  <h2 class="section-title" id="dSubjectsTitle">📚 بەڕێوەبردنی بابەتان</h2>
+  <p class="section-sub" id="dSubjectsSub">بابەتان بە پێی پۆل زیادبکە یان دەسکاری بکە</p>
+  <div style="margin-bottom:16px;">
+    <button class="btn-add" onclick="openAddSubject()" id="btnAddSubject">➕ زیادکرنی بابەت</button>
+  </div>
+  <div class="table-wrap">
+    <table class="mgmt-table" id="subjectTable">
+      <thead><tr>
+        <th id="thSClass">پۆل / قۆناغ</th>
+        <th id="thSSubjects">بابەتان</th>
+        <th id="thSAction"></th>
+      </tr></thead>
+      <tbody id="subjectTableBody">
+        <tr><td colspan="3" style="text-align:center;padding:30px;color:#999;">⏳ بارکرن...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cache-bar">
+    <p id="cacheNote3">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache3">🔄 نوێکرنەوەی داتا</button>
   </div>
 </div>
 
@@ -448,6 +474,28 @@
   </div>
 </div>
 
+<!-- ── SUBJECT ADD/EDIT MODAL ── -->
+<div class="mgmt-modal-bg" id="subjectModal">
+  <div class="mgmt-modal">
+    <h3 id="subjectModalTitle">➕ زیادکرنی بابەت</h3>
+    <div class="mgmt-form">
+      <input type="hidden" id="smRowIndex">
+      <div class="mgmt-field">
+        <label id="smLblClass">پۆل / قۆناغ (مثال: 1 یان 4pro)</label>
+        <input type="text" id="smClassKey" placeholder="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="smLblSubjects">بابەتان (کۆما جیاکەرەوەیان)</label>
+        <textarea id="smSubjects" placeholder="Internet, Windows, IT, C#" style="min-height:80px;"></textarea>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeSubjectModal()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveSubjectRow()" id="btnSaveSubject">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -466,7 +514,7 @@ const LANGS = {
     sHighRiskSub:'≥15 نەهاتن', sAtRiskSub:'8-14 نەهاتن',
     tabDaily:'📅 ڕۆژانە', tabWeekly:'📊 هەفتانە', tabMonthly:'📅 مانگانە',
     tabRoster:'📋 لیست', tabAnalytics:'📈 شیکاری',
-    tabTeachers:'👨‍🏫 مامۆستایان', tabStudents:'👨‍🎓 قوتابیان',
+    tabTeachers:'👨‍🏫 مامۆستایان', tabStudents:'👨‍🎓 قوتابیان', tabSubjects:'📚 بابەت',
     dDailyTitle:'📅 ڕاپۆرتی ڕۆژانە', dDailySub:'کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە',
     dDateLabel:'📆 بەروار:', btnToday:'ئەمرۆ', btnYesterday:'دووێ',
     dWeeklyTitle:'📊 ڕاپۆرتی هەفتانە', dWeeklySub:'کۆی نەهاتنی هەفتەیەک',
@@ -502,6 +550,13 @@ const LANGS = {
     newClassStudentsLbl:'ناڤێن قوتابیان (هەر ناڤێ لە ستوری جیا)',
     newClassHint:'دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی',
     mgmtConfirmTitle:'دڵنیایت؟',
+    dSubjectsTitle:'📚 بەڕێوەبردنی بابەتان', dSubjectsSub:'بابەتان بە پێی پۆل زیادبکە یان دەسکاری بکە',
+    btnAddSubject:'➕ زیادکرنی بابەت', thSClass:'پۆل / قۆناغ', thSSubjects:'بابەتان',
+    cacheNote3:'📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە', btnClearCache3:'🔄 نوێکرنەوەی داتا',
+    subjectModalTitle:'➕ زیادکرنی بابەت', editSubjectTitle:'✏️ دەسکاریکرنی بابەت',
+    smLblClass:'پۆل / قۆناغ (مثال: 1 یان 4pro)', smLblSubjects:'بابەتان (کۆما جیاکەرەوەیان)',
+    btnSaveSubject:'تۆمارکرن',
+    subjectFilterNote:'📌 بابەتان بە پێی پۆلە هەلبژێردراوەکان فلتەر دەبن',
     weekend:'🏖️ دەرفەت — مکتەب نییە', noAbsences:'هیچ نەهاتنێک نینە',
     selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە', selectClass:'پۆلێک هەلبژێرە',
     weekLabel:'هەفتە', manageLabel:'🗑️ رێکخستنی تومارکرنان',
@@ -534,7 +589,7 @@ const LANGS = {
     sHighRiskSub:'≥15 غياب', sAtRiskSub:'8-14 غياب',
     tabDaily:'📅 يومي', tabWeekly:'📊 أسبوعي', tabMonthly:'📅 شهري',
     tabRoster:'📋 كشف', tabAnalytics:'📈 تحليلات',
-    tabTeachers:'👨‍🏫 الأساتذة', tabStudents:'👨‍🎓 الطلاب',
+    tabTeachers:'👨‍🏫 الأساتذة', tabStudents:'👨‍🎓 الطلاب', tabSubjects:'📚 المواد',
     dDailyTitle:'📅 التقرير اليومي', dDailySub:'عرض الغياب حصة بحصة',
     dDateLabel:'📆 التاريخ:', btnToday:'اليوم', btnYesterday:'أمس',
     dWeeklyTitle:'📊 التقرير الأسبوعي', dWeeklySub:'ملخص غياب الأسبوع',
@@ -570,6 +625,13 @@ const LANGS = {
     newClassStudentsLbl:'أسماء الطلاب (اسم في كل سطر)',
     newClassHint:'يمكنك نسخ الأسماء من Excel أو Word',
     mgmtConfirmTitle:'هل أنت متأكد؟',
+    dSubjectsTitle:'📚 إدارة المواد', dSubjectsSub:'إضافة أو تعديل المواد حسب المرحلة',
+    btnAddSubject:'➕ إضافة مواد', thSClass:'الشعبة / المرحلة', thSSubjects:'المواد',
+    cacheNote3:'📡 بعد كل تغيير يجب تحديث البيانات', btnClearCache3:'🔄 تحديث البيانات',
+    subjectModalTitle:'➕ إضافة مواد', editSubjectTitle:'✏️ تعديل المواد',
+    smLblClass:'الشعبة / المرحلة (مثال: 1 أو 4pro)', smLblSubjects:'المواد (مفصولة بفاصلة)',
+    btnSaveSubject:'حفظ',
+    subjectFilterNote:'📌 تُصفَّى المواد حسب الشعب المختارة',
     weekend:'🏖️ عطلة — لا دوام', noAbsences:'لا يوجد غياب',
     selectWeek:'اختر أسبوعاً', selectMonth:'اختر شهراً', selectClass:'اختر شعبة',
     weekLabel:'أسبوع', manageLabel:'🗑️ إدارة التسجيلات',
@@ -602,7 +664,7 @@ const LANGS = {
     sHighRiskSub:'≥15 absences', sAtRiskSub:'8-14 absences',
     tabDaily:'📅 Daily', tabWeekly:'📊 Weekly', tabMonthly:'📅 Monthly',
     tabRoster:'📋 Roster', tabAnalytics:'📈 Analytics',
-    tabTeachers:'👨‍🏫 Teachers', tabStudents:'👨‍🎓 Students',
+    tabTeachers:'👨‍🏫 Teachers', tabStudents:'👨‍🎓 Students', tabSubjects:'📚 Subjects',
     dDailyTitle:'📅 Daily Absence Report', dDailySub:'View absence breakdown by lecture and class',
     dDateLabel:'📆 Date:', btnToday:'Today', btnYesterday:'Yesterday',
     dWeeklyTitle:'📊 Weekly Report', dWeeklySub:'Weekly absence summaries',
@@ -638,6 +700,14 @@ const LANGS = {
     newClassStudentsLbl:'Student Names (one per line)',
     newClassHint:'You can paste names from Excel or Word',
     mgmtConfirmTitle:'Are you sure?',
+    dSubjectsTitle:'📚 Subject Management', dSubjectsSub:'Add or edit subjects per class stage',
+    btnAddSubject:'➕ Add Subjects', thSClass:'Class / Stage', thSSubjects:'Subjects',
+    cacheNote3:'📡 After any change, refresh data so teachers see updates immediately',
+    btnClearCache3:'🔄 Refresh Data',
+    subjectModalTitle:'➕ Add Subjects', editSubjectTitle:'✏️ Edit Subjects',
+    smLblClass:'Class / Stage (e.g. 1 or 4pro)', smLblSubjects:'Subjects (comma-separated)',
+    btnSaveSubject:'Save',
+    subjectFilterNote:'📌 Subjects are filtered based on selected classes',
     weekend:'🏖️ Weekend — No School', noAbsences:'No absences recorded',
     selectWeek:'Select a week', selectMonth:'Select a month', selectClass:'Select a class',
     weekLabel:'Week', manageLabel:'🗑️ Manage Submissions',
@@ -707,10 +777,12 @@ function setLang(lang) {
     'teacherModalTitle','tmLblName','tmLblUser','tmLblPass','tmLblClasses','tmLblSubjects','btnSaveTeacher',
     'addStudentTitle','addStudentLbl','bulkStudentTitle','bulkStudentLbl','bulkHint',
     'moveStudentTitle','moveToLbl','newClassTitle','newClassLbl','newClassStudentsLbl','newClassHint',
-    'mgmtConfirmTitle'];
+    'mgmtConfirmTitle',
+    'dSubjectsTitle','dSubjectsSub','btnAddSubject','thSClass','thSSubjects',
+    'cacheNote3','btnClearCache3','subjectModalTitle','smLblClass','smLblSubjects','btnSaveSubject'];
   ids.forEach(id => { const el=document.getElementById(id); if(el && L[id]) el.textContent=L[id]; });
 
-  ['daily','weekly','monthly','roster','analytics','teachers','students'].forEach(t => {
+  ['daily','weekly','monthly','roster','analytics','teachers','students','subjects'].forEach(t => {
     const key = 'tab'+t.charAt(0).toUpperCase()+t.slice(1);
     const el  = document.getElementById('tab-'+t);
     if(el && L[key]) el.textContent = L[key];
@@ -736,6 +808,7 @@ function setLang(lang) {
     if(id==='analytics') loadAnalytics();
     if(id==='teachers')  renderTeacherTable();
     if(id==='students')  renderStudentTab();
+    if(id==='subjects')  renderSubjectTable();
   }
 }
 
@@ -862,17 +935,6 @@ async function fetchData(){
     document.getElementById('lastUpdate').innerHTML=`<span style="color:#4CAF50;">${L.lastUpdated} ${new Date().toLocaleTimeString()}</span>`;
   } catch(err){
     document.getElementById('lastUpdate').innerHTML=`<span style="color:#ff4444;">❌ ${err.message}</span>`;
-  }
-}
-
-async function fetchManageData(){
-  try {
-    const url=SCRIPT_URL+'?action=getManageData&token='+encodeURIComponent(adminToken);
-    const json=await(await fetch(url)).json();
-    if(json.error) throw new Error(json.error);
-    mgmtData=json;
-  } catch(err){
-    showToast('❌ '+err.message,'error');
   }
 }
 
@@ -1103,6 +1165,29 @@ function showTab(name){
   if(name==='analytics') loadAnalytics();
   if(name==='teachers')  loadTeachersTab();
   if(name==='students')  loadStudentsTab();
+  if(name==='subjects')  loadSubjectsTab();
+}
+
+// ══════════════════════════════════════════════════════
+// ── MANAGEMENT DATA FETCH (GET-based, CORS-safe) ──────
+// ══════════════════════════════════════════════════════
+async function fetchManageData(){
+  try {
+    const url  = SCRIPT_URL+'?action=getManageData&token='+encodeURIComponent(adminToken);
+    const json = await (await fetch(url)).json();
+    if(json.error) throw new Error(json.error);
+    mgmtData = json;
+  } catch(err){
+    showToast('❌ '+err.message,'error');
+  }
+}
+
+// Helper: GET-based admin action
+async function adminGet(params){
+  const qs = Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  const resp = await fetch(SCRIPT_URL+'?'+qs+'&token='+encodeURIComponent(adminToken));
+  const text = await resp.text();
+  return text;
 }
 
 // ══════════════════════════════════════════════════════
@@ -1123,8 +1208,8 @@ function renderTeacherTable(){
       <td><strong>${t.arabicName||t.displayName}</strong></td>
       <td style="direction:ltr;text-align:start;">${t.username}</td>
       <td style="direction:ltr;text-align:start;color:#999;font-size:0.82em;">••••••</td>
-      <td>${t.classes.map(c=>`<span class="tag">${c}</span>`).join(' ')||'—'}</td>
-      <td>${t.subjects.map(s=>`<span class="tag" style="background:#fff4e6;color:#ff8800;">${s}</span>`).join(' ')||'—'}</td>
+      <td>${(t.classes||[]).map(c=>`<span class="tag">${c}</span>`).join(' ')||'—'}</td>
+      <td>${(t.subjects||[]).map(s=>`<span class="tag" style="background:#fff4e6;color:#ff8800;">${s}</span>`).join(' ')||'—'}</td>
       <td><button class="btn-sm btn-move" onclick='openEditTeacher(${JSON.stringify(t)})'>${L.editBtn||'✏️'}</button></td>
     </tr>`).join('');
 }
@@ -1136,10 +1221,12 @@ function openAddTeacher(){
   document.getElementById('tmEditUsername').value='';
   document.getElementById('tmName').value='';
   document.getElementById('tmUsername').value='';
+  document.getElementById('tmUsername').disabled=false;
   document.getElementById('tmPassword').value='';
-  document.getElementById('tmLblPass').textContent = L.tmLblPass.replace('(leave blank to keep unchanged)','').replace('(اتركها فارغة لعدم التغيير)','').replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','');
-  buildCheckboxes('tmClasses', mgmtData.classes, []);
-  buildCheckboxes('tmSubjects', mgmtData.subjects, []);
+  document.getElementById('tmLblPass').textContent = (L.tmLblPass||'').replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','').replace('(اتركها فارغة لعدم التغيير)','').replace('(leave blank to keep unchanged)','');
+  buildCheckboxes('tmClasses', mgmtData.classes||[], []);
+  // No classes selected → show all subjects
+  updateSubjectCheckboxes([]);
   document.getElementById('teacherModal').classList.add('open');
 }
 
@@ -1152,15 +1239,73 @@ function openEditTeacher(t){
   document.getElementById('tmUsername').value=t.username;
   document.getElementById('tmUsername').disabled=true;
   document.getElementById('tmPassword').value='';
-  document.getElementById('tmLblPass').textContent = L.tmLblPass;
-  buildCheckboxes('tmClasses',  mgmtData.classes,  t.classes);
-  buildCheckboxes('tmSubjects', mgmtData.subjects, t.subjects);
+  document.getElementById('tmLblPass').textContent = L.tmLblPass||'پاسۆرد';
+  buildCheckboxes('tmClasses', mgmtData.classes||[], t.classes||[]);
+  updateSubjectCheckboxes(t.classes||[], t.subjects||[]);
   document.getElementById('teacherModal').classList.add('open');
 }
 
+// Build class checkboxes and attach change listener for subject filtering
 function buildCheckboxes(containerId, items, checked){
   const el=document.getElementById(containerId);
   el.innerHTML=items.map(item=>`
+    <label class="cb-item">
+      <input type="checkbox" value="${item}" ${checked.includes(item)?'checked':''}>
+      <label>${item}</label>
+    </label>`).join('');
+  // If this is the classes container, watch for changes to filter subjects
+  if(containerId==='tmClasses'){
+    el.querySelectorAll('input').forEach(cb=>{
+      cb.addEventListener('change', ()=>{
+        const selClasses=getChecked('tmClasses');
+        const selSubjects=getChecked('tmSubjects');
+        updateSubjectCheckboxes(selClasses, selSubjects);
+      });
+    });
+  }
+}
+
+// Get stage key from class name: '1A' → '1', '4pro' → '4pro', '4net' → '4net'
+function getStageKey(className){
+  const m = className.match(/^(\d+[a-zA-Z]*)/);
+  if(!m) return className;
+  const full = m[1]; // e.g. '1', '4pro', '4net'
+  // If it's just a number like '1', '2', '3' → return that number
+  if(/^\d+$/.test(full)) return full;
+  // If it has letters like '4pro' → return as-is
+  return full;
+}
+
+// Update subject checkboxes based on selected classes (stage filtering)
+function updateSubjectCheckboxes(selectedClasses, currentChecked){
+  if(!mgmtData) return;
+  const csMap = mgmtData.classSubjectMap || {};
+  let availableSubjects = [];
+
+  if(!selectedClasses.length){
+    // No class selected — show ALL subjects
+    Object.values(csMap).forEach(subs=>{
+      subs.forEach(s=>{ if(!availableSubjects.includes(s)) availableSubjects.push(s); });
+    });
+  } else {
+    // Collect subjects for all selected class stages
+    const stageKeys = [...new Set(selectedClasses.map(getStageKey))];
+    stageKeys.forEach(key=>{
+      const subs = csMap[key]||[];
+      subs.forEach(s=>{ if(!availableSubjects.includes(s)) availableSubjects.push(s); });
+    });
+  }
+
+  availableSubjects.sort();
+  const checked = currentChecked||getChecked('tmSubjects');
+  const el=document.getElementById('tmSubjects');
+
+  if(!availableSubjects.length){
+    el.innerHTML=`<span style="color:#999;font-size:0.82em;">— هیچ بابەتێک نەدۆزرایەوە بۆ ئەم پۆلانە —</span>`;
+    return;
+  }
+
+  el.innerHTML=availableSubjects.map(item=>`
     <label class="cb-item">
       <input type="checkbox" value="${item}" ${checked.includes(item)?'checked':''}>
       <label>${item}</label>
@@ -1183,8 +1328,8 @@ async function saveTeacher(){
   const name=document.getElementById('tmName').value.trim();
   const username=document.getElementById('tmUsername').value.trim().toLowerCase();
   const password=document.getElementById('tmPassword').value.trim();
-  const selClasses=getChecked('tmClasses');
-  const selSubjects=getChecked('tmSubjects');
+  const selClasses=getChecked('tmClasses').join(',');
+  const selSubjects=getChecked('tmSubjects').join(',');
 
   if(!name||!username){showToast('❌ ناڤ و یوزەرناڤ پێویستە','error');return;}
   if(!isEdit&&!password){showToast('❌ پاسۆرد پێویستە','error');return;}
@@ -1192,16 +1337,13 @@ async function saveTeacher(){
   const btn=document.getElementById('btnSaveTeacher');
   btn.textContent='⏳'; btn.disabled=true;
   try {
-    const body={
+    const params={
       action: isEdit?'editTeacher':'addTeacher',
-      token: adminToken,
       arabicName: name, username, displayName: name,
       subjects: selSubjects, classes: selClasses
     };
-    if(password) body.password=password;
-
-    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const text=await resp.text();
+    if(password) params.password=password;
+    const text=await adminGet(params);
     if(text.startsWith('ERROR')) throw new Error(text);
     closeTeacherModal();
     mgmtData=null;
@@ -1228,7 +1370,6 @@ async function loadStudentsTab(){
 function renderStudentTab(){
   if(!mgmtData) return;
   const L=LANGS[currentLang];
-  // Class grid
   const grid=document.getElementById('classGrid');
   grid.innerHTML=mgmtData.classes.map(cls=>{
     const count=(mgmtData.students[cls]||[]).length;
@@ -1237,9 +1378,8 @@ function renderStudentTab(){
       <div class="cls-count">${count} ${L.students||'قوتابی'}</div>
     </button>`;
   }).join('');
-  // Student panel
   if(selectedClass) renderStudentList(selectedClass);
-  else document.getElementById('studentPanel').innerHTML=`<div style="text-align:center;padding:40px;color:#999;" id="selectClassHint">${L.selectClassHint||'← پۆلێک هەلبژێرە'}</div>`;
+  else document.getElementById('studentPanel').innerHTML=`<div style="text-align:center;padding:40px;color:#999;">${L.selectClassHint||'← پۆلێک هەلبژێرە'}</div>`;
 }
 
 function selectClass(cls){
@@ -1253,8 +1393,8 @@ function renderStudentList(cls){
   let html=`<div class="student-list-header">
     <h3>🏫 ${cls} <span style="color:#999;font-size:0.8em;">(${students.length} ${L.students||'قوتابی'})</span></h3>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn-add" onclick="openAddStudent('${cls}')" style="font-size:0.78em;padding:7px 14px;">➕ ${L.addStudentTitle||'قوتابی زیادبکە'}</button>
-      <button class="btn-add" onclick="openBulkStudent('${cls}')" style="font-size:0.78em;padding:7px 14px;background:#4CAF50;">➕➕ ${L.bulkStudentTitle||'چەند قوتابیێ'}</button>
+      <button class="btn-add" onclick="openAddStudent('${cls}')" style="font-size:0.78em;padding:7px 14px;">➕ ${L.addStudentTitle||'قوتابی'}</button>
+      <button class="btn-add" onclick="openBulkStudent('${cls}')" style="font-size:0.78em;padding:7px 14px;background:#4CAF50;">➕➕</button>
     </div>
   </div>`;
   if(!students.length){
@@ -1277,7 +1417,6 @@ function renderStudentList(cls){
   document.getElementById('studentPanel').innerHTML=html;
 }
 
-// ── Add single student ────────────────────────────────
 function openAddStudent(cls){
   document.getElementById('addStudentClass').value=cls;
   document.getElementById('addStudentName').value='';
@@ -1291,8 +1430,7 @@ async function saveAddStudent(){
   const name=document.getElementById('addStudentName').value.trim();
   if(!name){showToast('❌ ناڤ بنووسە','error');return;}
   try {
-    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addStudent',token:adminToken,className:cls,names:[name]})});
-    const text=await resp.text();
+    const text=await adminGet({action:'addStudent',className:cls,names:name});
     if(text.startsWith('ERROR')) throw new Error(text);
     closeAddStudent();
     mgmtData.students[cls]=[...(mgmtData.students[cls]||[]),name];
@@ -1301,7 +1439,6 @@ async function saveAddStudent(){
   } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
 }
 
-// ── Bulk add students ─────────────────────────────────
 function openBulkStudent(cls){
   document.getElementById('bulkStudentClass').value=cls;
   document.getElementById('bulkStudentText').value='';
@@ -1316,7 +1453,7 @@ function previewBulk(){
   const preview=document.getElementById('bulkPreview');
   if(!names.length){preview.className='paste-preview';return;}
   preview.className='paste-preview show';
-  preview.innerHTML=`<div style="font-size:0.75em;color:#667eea;font-weight:700;margin-bottom:4px;">✅ ${names.length} ناڤ دۆزرایەوە:</div>`+
+  preview.innerHTML=`<div style="font-size:0.75em;color:#667eea;font-weight:700;margin-bottom:4px;">✅ ${names.length} ناڤ:</div>`+
     names.map(n=>`<div class="paste-preview-item">• ${n}</div>`).join('');
 }
 async function saveBulkStudents(){
@@ -1328,31 +1465,27 @@ async function saveBulkStudents(){
   const btn=document.getElementById('btnSaveBulk');
   btn.textContent='⏳'; btn.disabled=true;
   try {
-    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addStudent',token:adminToken,className:cls,names})});
-    const text=await resp.text();
+    // Use ||| as separator (safe for names)
+    const text=await adminGet({action:'addStudent',className:cls,names:names.join('|||')});
     if(text.startsWith('ERROR')) throw new Error(text);
-    const added=parseInt(text.split(':')[1])||names.length;
+    const added=parseInt((text.split(':')[1])||'0')||names.length;
     closeBulkStudent();
-    // Update local data
     const existing=new Set((mgmtData.students[cls]||[]).map(n=>n.toLowerCase()));
     const newOnes=names.filter(n=>!existing.has(n.toLowerCase()));
     mgmtData.students[cls]=[...(mgmtData.students[cls]||[]),...newOnes];
     renderStudentTab();
     showToast(`✅ ${added} ${L.students||'قوتابی'} زیادکران`,'success');
   } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
-  finally { btn.textContent=L.btnSaveTeacher||'هەموویان زیادبکە'; btn.disabled=false; }
+  finally { btn.textContent='هەموویان زیادبکە'; btn.disabled=false; }
 }
 
-// ── Move student ──────────────────────────────────────
 function openMoveStudent(safeName, safeCls){
   const name=decodeURIComponent(safeName);
   const cls=decodeURIComponent(safeCls);
   document.getElementById('moveStudentName').value=name;
   document.getElementById('moveStudentFrom').value=cls;
   document.getElementById('moveStudentNameDisplay').textContent='👤 '+name;
-  const container=document.getElementById('moveClassRadios');
-  const L=LANGS[currentLang];
-  container.innerHTML=(mgmtData.classes||[]).filter(c=>c!==cls).map(c=>`
+  document.getElementById('moveClassRadios').innerHTML=(mgmtData.classes||[]).filter(c=>c!==cls).map(c=>`
     <label style="display:flex;align-items:center;gap:6px;background:#f4f6ff;border:1.5px solid #d0d7ff;border-radius:8px;padding:6px 12px;cursor:pointer;">
       <input type="radio" name="moveTarget" value="${c}" style="accent-color:#667eea;">
       <span style="font-weight:700;">${c}</span>
@@ -1368,11 +1501,9 @@ async function saveMoveStudent(){
   if(!radio){showToast('❌ پۆلێک هەلبژێرە','error');return;}
   const toCls=radio.value;
   try {
-    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'moveStudent',token:adminToken,studentName:name,fromClass:fromCls,toClass:toCls})});
-    const text=await resp.text();
+    const text=await adminGet({action:'moveStudent',studentName:name,fromClass:fromCls,toClass:toCls});
     if(text.startsWith('ERROR')) throw new Error(text);
     closeMoveStudent();
-    // Update local
     mgmtData.students[fromCls]=(mgmtData.students[fromCls]||[]).filter(n=>n.toLowerCase()!==name.toLowerCase());
     mgmtData.students[toCls]=[...(mgmtData.students[toCls]||[]),name];
     selectedClass=fromCls;
@@ -1381,11 +1512,9 @@ async function saveMoveStudent(){
   } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
 }
 
-// ── Delete student ────────────────────────────────────
 function askDeleteStudent(safeName, safeCls){
   const name=decodeURIComponent(safeName);
   const cls=decodeURIComponent(safeCls);
-  const L=LANGS[currentLang];
   document.getElementById('mgmtConfirmText').textContent=`${name} — ${cls}`;
   document.getElementById('mgmtConfirmModal').classList.add('open');
   document.getElementById('mgmtConfirmOk').onclick=()=>doDeleteStudent(name,cls);
@@ -1395,8 +1524,7 @@ async function doDeleteStudent(name,cls){
   const L=LANGS[currentLang];
   closeMgmtConfirm();
   try {
-    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'removeStudent',token:adminToken,className:cls,studentName:name})});
-    const text=await resp.text();
+    const text=await adminGet({action:'removeStudent',className:cls,studentName:name});
     if(text.startsWith('ERROR')) throw new Error(text);
     mgmtData.students[cls]=(mgmtData.students[cls]||[]).filter(n=>n.toLowerCase()!==name.toLowerCase());
     renderStudentTab();
@@ -1404,7 +1532,6 @@ async function doDeleteStudent(name,cls){
   } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
 }
 
-// ── New class ─────────────────────────────────────────
 function openNewClass(){
   document.getElementById('newClassName').value='';
   document.getElementById('newClassStudents').value='';
@@ -1419,7 +1546,7 @@ function previewNewClass(){
   const preview=document.getElementById('newClassPreview');
   if(!names.length){preview.className='paste-preview';return;}
   preview.className='paste-preview show';
-  preview.innerHTML=`<div style="font-size:0.75em;color:#667eea;font-weight:700;margin-bottom:4px;">✅ ${names.length} ناڤ دۆزرایەوە:</div>`+
+  preview.innerHTML=`<div style="font-size:0.75em;color:#667eea;font-weight:700;margin-bottom:4px;">✅ ${names.length} ناڤ:</div>`+
     names.map(n=>`<div class="paste-preview-item">• ${n}</div>`).join('');
 }
 async function saveNewClass(){
@@ -1431,24 +1558,114 @@ async function saveNewClass(){
   const btn=document.getElementById('btnSaveNewClass');
   btn.textContent='⏳'; btn.disabled=true;
   try {
-    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'addClass',token:adminToken,className,names})});
-    const text=await resp.text();
+    const text=await adminGet({action:'addClass',className,names:names.join('|||')});
     if(text.startsWith('ERROR')) throw new Error(text);
     closeNewClass();
-    if(mgmtData){ mgmtData.classes.push(className); mgmtData.students[className]=names; }
+    if(mgmtData){ mgmtData.classes.push(className); mgmtData.students[className]=[...names]; }
     selectedClass=className;
     renderStudentTab();
     showToast(`✅ ${className} — ${names.length} ${L.students||'قوتابی'}`,'success');
   } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
-  finally { btn.textContent=L.newClassTitle||'دروستکرن'; btn.disabled=false; }
+  finally { btn.textContent='دروستکرن'; btn.disabled=false; }
+}
+
+// ══════════════════════════════════════════════════════
+// ── SUBJECTS TAB ─────────────────────────────────────
+// ══════════════════════════════════════════════════════
+async function loadSubjectsTab(){
+  if(!mgmtData) await fetchManageData();
+  renderSubjectTable();
+}
+
+function renderSubjectTable(){
+  if(!mgmtData) return;
+  const L=LANGS[currentLang];
+  const tbody=document.getElementById('subjectTableBody');
+  const rows=mgmtData.classSubjectRows||[];
+  if(!rows.length){
+    tbody.innerHTML=`<tr><td colspan="3" style="text-align:center;padding:30px;color:#999;">—</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=rows.map(row=>`
+    <tr>
+      <td><strong style="color:#667eea;">${row.classKey}</strong></td>
+      <td style="font-size:0.85em;">${row.subjects.map(s=>`<span class="tag" style="background:#fff4e6;color:#ff8800;">${s}</span>`).join(' ')}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn-sm btn-move" onclick='openEditSubject(${JSON.stringify(row)})'>✏️</button>
+        <button class="btn-sm btn-del" onclick="askDeleteSubject(${row.rowIndex},'${row.classKey}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function openAddSubject(){
+  const L=LANGS[currentLang];
+  document.getElementById('subjectModalTitle').textContent=L.subjectModalTitle||'➕ زیادکرنی بابەت';
+  document.getElementById('smRowIndex').value='';
+  document.getElementById('smClassKey').value='';
+  document.getElementById('smSubjects').value='';
+  document.getElementById('subjectModal').classList.add('open');
+  setTimeout(()=>document.getElementById('smClassKey').focus(),100);
+}
+
+function openEditSubject(row){
+  const L=LANGS[currentLang];
+  document.getElementById('subjectModalTitle').textContent=L.editSubjectTitle||'✏️ دەسکاریکرنی بابەت';
+  document.getElementById('smRowIndex').value=row.rowIndex;
+  document.getElementById('smClassKey').value=row.classKey;
+  document.getElementById('smSubjects').value=row.subjects.join(', ');
+  document.getElementById('subjectModal').classList.add('open');
+}
+
+function closeSubjectModal(){ document.getElementById('subjectModal').classList.remove('open'); }
+
+async function saveSubjectRow(){
+  const L=LANGS[currentLang];
+  const classKey=document.getElementById('smClassKey').value.trim();
+  const subjects=document.getElementById('smSubjects').value.trim();
+  const rowIndex=document.getElementById('smRowIndex').value.trim();
+  if(!classKey||!subjects){showToast('❌ پۆل و بابەت پێویستن','error');return;}
+  const btn=document.getElementById('btnSaveSubject');
+  btn.textContent='⏳'; btn.disabled=true;
+  try {
+    const text=await adminGet({action:'saveSubject',classKey,subjects,rowIndex:rowIndex||'0'});
+    if(text.startsWith('ERROR')) throw new Error(text);
+    closeSubjectModal();
+    mgmtData=null;
+    await fetchManageData();
+    renderSubjectTable();
+    // Also refresh subject checkboxes if teacher modal is open
+    const selClasses=getChecked('tmClasses');
+    const selSubjects=getChecked('tmSubjects');
+    updateSubjectCheckboxes(selClasses,selSubjects);
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { btn.textContent=L.btnSaveSubject||'تۆمارکرن'; btn.disabled=false; }
+}
+
+function askDeleteSubject(rowIndex,classKey){
+  document.getElementById('mgmtConfirmText').textContent=classKey;
+  document.getElementById('mgmtConfirmModal').classList.add('open');
+  document.getElementById('mgmtConfirmOk').onclick=()=>doDeleteSubject(rowIndex);
+}
+
+async function doDeleteSubject(rowIndex){
+  const L=LANGS[currentLang];
+  closeMgmtConfirm();
+  try {
+    const text=await adminGet({action:'deleteSubject',rowIndex});
+    if(text.startsWith('ERROR')) throw new Error(text);
+    mgmtData=null;
+    await fetchManageData();
+    renderSubjectTable();
+    showToast(L.toastDeleted,'success');
+  } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
 }
 
 // ── Clear cache ───────────────────────────────────────
 async function doClearCache(){
   const L=LANGS[currentLang];
   try {
-    const resp=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'clearCache',token:adminToken})});
-    const text=await resp.text();
+    const text=await adminGet({action:'clearCache'});
     if(text.startsWith('ERROR')) throw new Error(text);
     mgmtData=null;
     showToast(L.toastCacheCleared,'success');
