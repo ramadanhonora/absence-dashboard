@@ -153,7 +153,7 @@
   <button class="tab"        onclick="showTab('analytics')"id="tab-analytics">📈 شیکاری</button>
   <button class="tab"        onclick="showTab('teachers')" id="tab-teachers">👨‍🏫 مامۆستایان</button>
   <button class="tab"        onclick="showTab('students')" id="tab-students">👨‍🎓 قوتابیان</button>
-  <button class="tab"        onclick="showTab('subjects')" id="tab-subjects">📚 بابەت</button>
+  <button class="tab"        onclick="showTab('subjects')" id="tab-subjects">🏫 پۆل و بابەت</button>
 </div>
 
 <!-- DAILY -->
@@ -301,10 +301,10 @@
 
 <!-- SUBJECTS TAB -->
 <div id="subjects" class="content-section">
-  <h2 class="section-title" id="dSubjectsTitle">📚 بەڕێوەبردنی بابەتان</h2>
-  <p class="section-sub" id="dSubjectsSub">بابەتان بە پێی پۆل زیادبکە یان دەسکاری بکە</p>
+  <h2 class="section-title" id="dSubjectsTitle">🏫 بەڕێوەبردنی پۆل و بابەتان</h2>
+  <p class="section-sub" id="dSubjectsSub">پۆلی نوی زیادبکە و بابەتێن وی دیاربکە، یان یێن هەبوو دەسکاری بکە</p>
   <div style="margin-bottom:16px;">
-    <button class="btn-add" onclick="openAddSubject()" id="btnAddSubject">➕ زیادکرنی بابەت</button>
+    <button class="btn-add" onclick="openAddSubject()" id="btnAddSubject">➕ زیادکرنی پۆل/بابەت</button>
   </div>
   <div class="table-wrap">
     <table class="mgmt-table" id="subjectTable">
@@ -477,7 +477,7 @@
 <!-- ── SUBJECT ADD/EDIT MODAL ── -->
 <div class="mgmt-modal-bg" id="subjectModal">
   <div class="mgmt-modal">
-    <h3 id="subjectModalTitle">➕ زیادکرنی بابەت</h3>
+    <h3 id="subjectModalTitle">➕ زیادکرنی پۆل/بابەت</h3>
     <div class="mgmt-form">
       <input type="hidden" id="smRowIndex">
       <div class="mgmt-field">
@@ -514,7 +514,7 @@ const LANGS = {
     sHighRiskSub:'≥15 نەهاتن', sAtRiskSub:'8-14 نەهاتن',
     tabDaily:'📅 ڕۆژانە', tabWeekly:'📊 هەفتانە', tabMonthly:'📅 مانگانە',
     tabRoster:'📋 لیست', tabAnalytics:'📈 شیکاری',
-    tabTeachers:'👨‍🏫 مامۆستایان', tabStudents:'👨‍🎓 قوتابیان', tabSubjects:'📚 بابەت',
+    tabTeachers:'👨‍🏫 مامۆستایان', tabStudents:'👨‍🎓 قوتابیان', tabSubjects:'🏫 پۆل و بابەت',
     dDailyTitle:'📅 ڕاپۆرتی ڕۆژانە', dDailySub:'کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە',
     dDateLabel:'📆 بەروار:', btnToday:'ئەمرۆ', btnYesterday:'دووێ',
     dWeeklyTitle:'📊 ڕاپۆرتی هەفتانە', dWeeklySub:'کۆی نەهاتنی هەفتەیەک',
@@ -550,10 +550,10 @@ const LANGS = {
     newClassStudentsLbl:'ناڤێن قوتابیان (هەر ناڤێ لە ستوری جیا)',
     newClassHint:'دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی',
     mgmtConfirmTitle:'دڵنیایت؟',
-    dSubjectsTitle:'📚 بەڕێوەبردنی بابەتان', dSubjectsSub:'بابەتان بە پێی پۆل زیادبکە یان دەسکاری بکە',
-    btnAddSubject:'➕ زیادکرنی بابەت', thSClass:'پۆل / قۆناغ', thSSubjects:'بابەتان',
+    dSubjectsTitle:'🏫 بەڕێوەبردنی پۆل و بابەتان', dSubjectsSub:'پۆلی نوی زیادبکە و بابەتێن وی دیاربکە، یان یێن هەبوو دەسکاری بکە',
+    btnAddSubject:'➕ زیادکرنی پۆل/بابەت', thSClass:'پۆل / قۆناغ', thSSubjects:'بابەتان',
     cacheNote3:'📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە', btnClearCache3:'🔄 نوێکرنەوەی داتا',
-    subjectModalTitle:'➕ زیادکرنی بابەت', editSubjectTitle:'✏️ دەسکاریکرنی بابەت',
+    subjectModalTitle:'➕ زیادکرنی پۆل/بابەت', editSubjectTitle:'✏️ دەسکاریکرنی پۆل/بابەت',
     smLblClass:'پۆل / قۆناغ (مثال: 1 یان 4pro)', smLblSubjects:'بابەتان (کۆما جیاکەرەوەیان)',
     btnSaveSubject:'تۆمارکرن',
     subjectFilterNote:'📌 بابەتان بە پێی پۆلە هەلبژێردراوەکان فلتەر دەبن',
@@ -589,7 +589,7 @@ const LANGS = {
     sHighRiskSub:'≥15 غياب', sAtRiskSub:'8-14 غياب',
     tabDaily:'📅 يومي', tabWeekly:'📊 أسبوعي', tabMonthly:'📅 شهري',
     tabRoster:'📋 كشف', tabAnalytics:'📈 تحليلات',
-    tabTeachers:'👨‍🏫 الأساتذة', tabStudents:'👨‍🎓 الطلاب', tabSubjects:'📚 المواد',
+    tabTeachers:'👨‍🏫 الأساتذة', tabStudents:'👨‍🎓 الطلاب', tabSubjects:'🏫 الشعب والمواد',
     dDailyTitle:'📅 التقرير اليومي', dDailySub:'عرض الغياب حصة بحصة',
     dDateLabel:'📆 التاريخ:', btnToday:'اليوم', btnYesterday:'أمس',
     dWeeklyTitle:'📊 التقرير الأسبوعي', dWeeklySub:'ملخص غياب الأسبوع',
@@ -625,10 +625,10 @@ const LANGS = {
     newClassStudentsLbl:'أسماء الطلاب (اسم في كل سطر)',
     newClassHint:'يمكنك نسخ الأسماء من Excel أو Word',
     mgmtConfirmTitle:'هل أنت متأكد؟',
-    dSubjectsTitle:'📚 إدارة المواد', dSubjectsSub:'إضافة أو تعديل المواد حسب المرحلة',
-    btnAddSubject:'➕ إضافة مواد', thSClass:'الشعبة / المرحلة', thSSubjects:'المواد',
+    dSubjectsTitle:'🏫 إدارة الشعب والمواد', dSubjectsSub:'أضف شعبة جديدة وحدد موادها، أو عدّل الموجود منها',
+    btnAddSubject:'➕ إضافة شعبة/مواد', thSClass:'الشعبة / المرحلة', thSSubjects:'المواد',
     cacheNote3:'📡 بعد كل تغيير يجب تحديث البيانات', btnClearCache3:'🔄 تحديث البيانات',
-    subjectModalTitle:'➕ إضافة مواد', editSubjectTitle:'✏️ تعديل المواد',
+    subjectModalTitle:'➕ إضافة شعبة/مواد', editSubjectTitle:'✏️ تعديل الشعبة/المواد',
     smLblClass:'الشعبة / المرحلة (مثال: 1 أو 4pro)', smLblSubjects:'المواد (مفصولة بفاصلة)',
     btnSaveSubject:'حفظ',
     subjectFilterNote:'📌 تُصفَّى المواد حسب الشعب المختارة',
@@ -664,7 +664,7 @@ const LANGS = {
     sHighRiskSub:'≥15 absences', sAtRiskSub:'8-14 absences',
     tabDaily:'📅 Daily', tabWeekly:'📊 Weekly', tabMonthly:'📅 Monthly',
     tabRoster:'📋 Roster', tabAnalytics:'📈 Analytics',
-    tabTeachers:'👨‍🏫 Teachers', tabStudents:'👨‍🎓 Students', tabSubjects:'📚 Subjects',
+    tabTeachers:'👨‍🏫 Teachers', tabStudents:'👨‍🎓 Students', tabSubjects:'🏫 Classes & Subjects',
     dDailyTitle:'📅 Daily Absence Report', dDailySub:'View absence breakdown by lecture and class',
     dDateLabel:'📆 Date:', btnToday:'Today', btnYesterday:'Yesterday',
     dWeeklyTitle:'📊 Weekly Report', dWeeklySub:'Weekly absence summaries',
@@ -700,11 +700,11 @@ const LANGS = {
     newClassStudentsLbl:'Student Names (one per line)',
     newClassHint:'You can paste names from Excel or Word',
     mgmtConfirmTitle:'Are you sure?',
-    dSubjectsTitle:'📚 Subject Management', dSubjectsSub:'Add or edit subjects per class stage',
-    btnAddSubject:'➕ Add Subjects', thSClass:'Class / Stage', thSSubjects:'Subjects',
+    dSubjectsTitle:'🏫 Manage Classes & Subjects', dSubjectsSub:'Add a new class and set its subjects, or edit an existing one',
+    btnAddSubject:'➕ Add Class/Subjects', thSClass:'Class / Stage', thSSubjects:'Subjects',
     cacheNote3:'📡 After any change, refresh data so teachers see updates immediately',
     btnClearCache3:'🔄 Refresh Data',
-    subjectModalTitle:'➕ Add Subjects', editSubjectTitle:'✏️ Edit Subjects',
+    subjectModalTitle:'➕ Add Class/Subjects', editSubjectTitle:'✏️ Edit Class/Subjects',
     smLblClass:'Class / Stage (e.g. 1 or 4pro)', smLblSubjects:'Subjects (comma-separated)',
     btnSaveSubject:'Save',
     subjectFilterNote:'📌 Subjects are filtered based on selected classes',
@@ -1672,7 +1672,7 @@ function renderSubjectTable(){
 
 function openAddSubject(){
   const L=LANGS[currentLang];
-  document.getElementById('subjectModalTitle').textContent=L.subjectModalTitle||'➕ زیادکرنی بابەت';
+  document.getElementById('subjectModalTitle').textContent=L.subjectModalTitle||'➕ زیادکرنی پۆل/بابەت';
   document.getElementById('smRowIndex').value='';
   document.getElementById('smClassKey').value='';
   document.getElementById('smSubjects').value='';
@@ -1682,7 +1682,7 @@ function openAddSubject(){
 
 function openEditSubject(row){
   const L=LANGS[currentLang];
-  document.getElementById('subjectModalTitle').textContent=L.editSubjectTitle||'✏️ دەسکاریکرنی بابەت';
+  document.getElementById('subjectModalTitle').textContent=L.editSubjectTitle||'✏️ دەسکاریکرنی پۆل/بابەت';
   document.getElementById('smRowIndex').value=row.rowIndex;
   document.getElementById('smClassKey').value=row.classKey;
   document.getElementById('smSubjects').value=row.subjects.join(', ');
