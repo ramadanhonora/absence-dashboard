@@ -461,6 +461,34 @@
   </div>
 </div>
 
+<!-- ── RENAME CLASS MODAL ── -->
+<div class="mgmt-modal-bg" id="renameClassModal">
+  <div class="mgmt-modal">
+    <h3 id="renameClassTitle">✏️ ناڤێ پۆلی بگۆڕە</h3>
+    <input type="hidden" id="renameClassOld">
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="renameClassOldLbl">ناڤێ ئێستا</label>
+        <p id="renameClassOldDisplay" style="font-weight:700;color:#667eea;margin:0 0 6px;"></p>
+      </div>
+      <div class="mgmt-field">
+        <label id="renameClassNewLbl">ناڤێ نوی</label>
+        <input type="text" id="renameClassNew" placeholder="مثال: 3B">
+      </div>
+      <div class="mgmt-field">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+          <input type="checkbox" id="renameClassHistory" style="width:auto;accent-color:#667eea;">
+          <span id="renameClassHistoryLbl">هەروەها تۆمارێن نەهاتنێ یێن پێشتر نوی بکە</span>
+        </label>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeRenameClass()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveRenameClass()" id="btnSaveRenameClass">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── DELETE CONFIRM MODAL ── -->
 <div class="mgmt-modal-bg" id="mgmtConfirmModal">
   <div class="mgmt-modal" style="max-width:380px;text-align:center;">
@@ -556,6 +584,8 @@ const LANGS = {
     subjectModalTitle:'➕ زیادکرنی پۆل/بابەت', editSubjectTitle:'✏️ دەسکاریکرنی پۆل/بابەت',
     smLblClass:'پۆل / قۆناغ (مثال: 1 یان 4pro)', smLblSubjects:'بابەتان (کۆما جیاکەرەوەیان)',
     btnSaveSubject:'تۆمارکرن',
+    renameClassTitle:'✏️ ناڤێ پۆلی بگۆڕە', renameClassOldLbl:'ناڤێ ئێستا', renameClassNewLbl:'ناڤێ نوی',
+    renameClassHistoryLbl:'هەروەها تۆمارێن نەهاتنێ یێن پێشتر نوی بکە', btnSaveRenameClass:'تۆمارکرن',
     subjectFilterNote:'📌 بابەتان بە پێی پۆلە هەلبژێردراوەکان فلتەر دەبن',
     weekend:'🏖️ دەرفەت — مکتەب نییە', noAbsences:'هیچ نەهاتنێک نینە',
     selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە', selectClass:'پۆلێک هەلبژێرە',
@@ -631,6 +661,8 @@ const LANGS = {
     subjectModalTitle:'➕ إضافة شعبة/مواد', editSubjectTitle:'✏️ تعديل الشعبة/المواد',
     smLblClass:'الشعبة / المرحلة (مثال: 1 أو 4pro)', smLblSubjects:'المواد (مفصولة بفاصلة)',
     btnSaveSubject:'حفظ',
+    renameClassTitle:'✏️ إعادة تسمية الشعبة', renameClassOldLbl:'الاسم الحالي', renameClassNewLbl:'الاسم الجديد',
+    renameClassHistoryLbl:'تحديث سجلات الغياب السابقة أيضًا', btnSaveRenameClass:'حفظ',
     subjectFilterNote:'📌 تُصفَّى المواد حسب الشعب المختارة',
     weekend:'🏖️ عطلة — لا دوام', noAbsences:'لا يوجد غياب',
     selectWeek:'اختر أسبوعاً', selectMonth:'اختر شهراً', selectClass:'اختر شعبة',
@@ -707,6 +739,8 @@ const LANGS = {
     subjectModalTitle:'➕ Add Class/Subjects', editSubjectTitle:'✏️ Edit Class/Subjects',
     smLblClass:'Class / Stage (e.g. 1 or 4pro)', smLblSubjects:'Subjects (comma-separated)',
     btnSaveSubject:'Save',
+    renameClassTitle:'✏️ Rename Class', renameClassOldLbl:'Current Name', renameClassNewLbl:'New Name',
+    renameClassHistoryLbl:'Also update past absence records', btnSaveRenameClass:'Save',
     subjectFilterNote:'📌 Subjects are filtered based on selected classes',
     weekend:'🏖️ Weekend — No School', noAbsences:'No absences recorded',
     selectWeek:'Select a week', selectMonth:'Select a month', selectClass:'Select a class',
@@ -779,7 +813,8 @@ function setLang(lang) {
     'moveStudentTitle','moveToLbl','newClassTitle','newClassLbl','newClassStudentsLbl','newClassHint',
     'mgmtConfirmTitle',
     'dSubjectsTitle','dSubjectsSub','btnAddSubject','thSClass','thSSubjects',
-    'cacheNote3','btnClearCache3','subjectModalTitle','smLblClass','smLblSubjects','btnSaveSubject'];
+    'cacheNote3','btnClearCache3','subjectModalTitle','smLblClass','smLblSubjects','btnSaveSubject',
+    'renameClassTitle','renameClassOldLbl','renameClassNewLbl','renameClassHistoryLbl','btnSaveRenameClass'];
   ids.forEach(id => { const el=document.getElementById(id); if(el && L[id]) el.textContent=L[id]; });
 
   ['daily','weekly','monthly','roster','analytics','teachers','students','subjects'].forEach(t => {
@@ -1446,10 +1481,17 @@ function renderStudentTab(){
   const grid=document.getElementById('classGrid');
   grid.innerHTML=sortClasses(mgmtData.classes).map(cls=>{
     const count=(mgmtData.students[cls]||[]).length;
-    return `<button class="class-btn ${selectedClass===cls?'selected':''}" onclick="selectClass('${cls}')">
-      <div class="cls-name">${cls}</div>
-      <div class="cls-count">${count} ${L.students||'قوتابی'}</div>
-    </button>`;
+    const safe=encodeURIComponent(cls);
+    return `<div style="margin-bottom:8px;">
+      <button class="class-btn ${selectedClass===cls?'selected':''}" onclick="selectClass('${cls}')" style="width:100%;">
+        <div class="cls-name">${cls}</div>
+        <div class="cls-count">${count} ${L.students||'قوتابی'}</div>
+      </button>
+      <div style="display:flex;gap:4px;margin-top:4px;">
+        <button class="btn-sm btn-move" style="flex:1;" onclick="openRenameClass('${safe}')">✏️</button>
+        <button class="btn-sm btn-del" style="flex:1;" onclick="askDeleteClass('${safe}')">🗑️</button>
+      </div>
+    </div>`;
   }).join('');
   if(selectedClass) renderStudentList(selectedClass);
   else document.getElementById('studentPanel').innerHTML=`<div style="text-align:center;padding:40px;color:#999;">${L.selectClassHint||'← پۆلێک هەلبژێرە'}</div>`;
@@ -1640,6 +1682,65 @@ async function saveNewClass(){
     showToast(`✅ ${className} — ${names.length} ${L.students||'قوتابی'}`,'success');
   } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
   finally { btn.textContent='دروستکرن'; btn.disabled=false; }
+}
+
+// ── Rename class ──────────────────────────────────────
+function openRenameClass(safeCls){
+  const cls=decodeURIComponent(safeCls);
+  document.getElementById('renameClassOld').value=cls;
+  document.getElementById('renameClassOldDisplay').textContent=cls;
+  document.getElementById('renameClassNew').value=cls;
+  document.getElementById('renameClassHistory').checked=false;
+  document.getElementById('renameClassModal').classList.add('open');
+  setTimeout(()=>{ const el=document.getElementById('renameClassNew'); el.focus(); el.select(); },100);
+}
+function closeRenameClass(){ document.getElementById('renameClassModal').classList.remove('open'); }
+async function saveRenameClass(){
+  const L=LANGS[currentLang];
+  const oldName=document.getElementById('renameClassOld').value;
+  const newName=document.getElementById('renameClassNew').value.trim();
+  const updateHistory=document.getElementById('renameClassHistory').checked;
+  if(!newName){showToast('❌ ناڤێ نوی بنووسە','error');return;}
+  if(newName===oldName){closeRenameClass();return;}
+  if(mgmtData&&mgmtData.classes.some(c=>c.toLowerCase()===newName.toLowerCase()&&c!==oldName)){
+    showToast('❌ ئەم ناڤە پێشتر هەیە','error');return;
+  }
+  const btn=document.getElementById('btnSaveRenameClass');
+  btn.textContent='⏳'; btn.disabled=true;
+  try {
+    const text=await adminGet({action:'renameClass',oldClassName:oldName,newClassName:newName,updateHistory:updateHistory});
+    if(text.startsWith('ERROR')) throw new Error(text);
+    closeRenameClass();
+    mgmtData=null;
+    await fetchManageData();
+    selectedClass=newName;
+    renderStudentTab();
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { btn.textContent=L.btnSaveRenameClass||'تۆمارکرن'; btn.disabled=false; }
+}
+
+// ── Delete class ──────────────────────────────────────
+function askDeleteClass(safeCls){
+  const cls=decodeURIComponent(safeCls);
+  const count=(mgmtData.students[cls]||[]).length;
+  const L=LANGS[currentLang];
+  document.getElementById('mgmtConfirmText').textContent=`${cls} — ${count} ${L.students||'قوتابی'}`;
+  document.getElementById('mgmtConfirmModal').classList.add('open');
+  document.getElementById('mgmtConfirmOk').onclick=()=>doDeleteClass(cls);
+}
+async function doDeleteClass(cls){
+  const L=LANGS[currentLang];
+  closeMgmtConfirm();
+  try {
+    const text=await adminGet({action:'deleteClass',className:cls});
+    if(text.startsWith('ERROR')) throw new Error(text);
+    if(selectedClass===cls) selectedClass=null;
+    mgmtData=null;
+    await fetchManageData();
+    renderStudentTab();
+    showToast(L.toastDeleted,'success');
+  } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
 }
 
 // ══════════════════════════════════════════════════════
