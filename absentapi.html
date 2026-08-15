@@ -154,6 +154,7 @@
   <button class="tab"        onclick="showTab('teachers')" id="tab-teachers">👨‍🏫 مامۆستایان</button>
   <button class="tab"        onclick="showTab('students')" id="tab-students">👨‍🎓 قوتابیان</button>
   <button class="tab"        onclick="showTab('subjects')" id="tab-subjects">🏫 پۆل و بابەت</button>
+  <button class="tab"        onclick="showTab('graduates')" id="tab-graduates">🎓 دەرچووان</button>
 </div>
 
 <!-- DAILY -->
@@ -324,7 +325,24 @@
   </div>
 </div>
 
+<!-- GRADUATES TAB -->
+<div id="graduates" class="content-section">
+  <h2 class="section-title" id="dGraduatesTitle">🎓 دەرچووان</h2>
+  <p class="section-sub" id="dGraduatesSub">لیستا قوتابیێن دەرچوویی، بەپێی ساڵێ</p>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label id="gradYearLabel">📆 ساڵ:</label>
+        <select id="gradYearFilter" onchange="renderGraduatesList()"></select>
+      </div>
+      <button class="btn btn-green" onclick="window.print()" id="btnPrintGrad">🖨️ چاپکرن</button>
+    </div>
+  </div>
+  <div id="graduatesList"></div>
+</div>
+
 </div><!-- /container -->
+
 
 <!-- STUDENT PROFILE MODAL -->
 <div class="modal" id="studentModal" onclick="if(event.target===this)closeModal()">
@@ -489,6 +507,44 @@
   </div>
 </div>
 
+<!-- ── PROMOTE / GRADUATE MODAL ── -->
+<div class="mgmt-modal-bg" id="promoteModal">
+  <div class="mgmt-modal" style="max-width:520px;">
+    <h3 id="promoteTitle">🎓 بەرزکرن / دەرچوون</h3>
+    <input type="hidden" id="promoteSourceClass">
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button type="button" class="btn" id="promoteModeMoveBtn" style="flex:1;" onclick="setPromoteMode('move')"></button>
+          <button type="button" class="btn" id="promoteModeGradBtn" style="flex:1;" onclick="setPromoteMode('graduate')"></button>
+        </div>
+      </div>
+      <div class="mgmt-field" id="promoteDestField">
+        <label id="promoteDestLbl">بۆ کام پۆل؟</label>
+        <input type="text" id="promoteDestClass" placeholder="مثال: 2A" list="promoteDestOptions">
+        <datalist id="promoteDestOptions"></datalist>
+      </div>
+      <div class="mgmt-field" id="promoteYearField" style="display:none;">
+        <label id="promoteYearLbl">ساڵا دەرچوونێ</label>
+        <input type="text" id="promoteYear">
+      </div>
+      <div class="mgmt-field">
+        <label id="promoteStudentsLbl">قوتابیان هەلبژێرە (هەمی بەسەرکەوتی هاتینە هەلبژارتن)</label>
+        <div style="display:flex;gap:10px;margin:6px 0;">
+          <a href="#" onclick="togglePromoteAll(true);return false;" id="promoteCheckAll">هەمی هەلبژێرە</a>
+          <a href="#" onclick="togglePromoteAll(false);return false;" id="promoteCheckNone">هیچ هەلمەبژێرە</a>
+        </div>
+        <div id="promoteStudentList" style="max-height:280px;overflow-y:auto;border:1px solid #e9ecef;border-radius:8px;padding:8px;"></div>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closePromoteModal()">هەڵوەستان</button>
+      <button class="btn-add" onclick="confirmPromote()" id="btnConfirmPromote">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- ── DELETE CONFIRM MODAL ── -->
 <div class="mgmt-modal-bg" id="mgmtConfirmModal">
   <div class="mgmt-modal" style="max-width:380px;text-align:center;">
@@ -542,7 +598,7 @@ const LANGS = {
     sHighRiskSub:'≥15 نەهاتن', sAtRiskSub:'8-14 نەهاتن',
     tabDaily:'📅 ڕۆژانە', tabWeekly:'📊 هەفتانە', tabMonthly:'📅 مانگانە',
     tabRoster:'📋 لیست', tabAnalytics:'📈 شیکاری',
-    tabTeachers:'👨‍🏫 مامۆستایان', tabStudents:'👨‍🎓 قوتابیان', tabSubjects:'🏫 پۆل و بابەت',
+    tabTeachers:'👨‍🏫 مامۆستایان', tabStudents:'👨‍🎓 قوتابیان', tabSubjects:'🏫 پۆل و بابەت', tabGraduates:'🎓 دەرچووان',
     dDailyTitle:'📅 ڕاپۆرتی ڕۆژانە', dDailySub:'کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە',
     dDateLabel:'📆 بەروار:', btnToday:'ئەمرۆ', btnYesterday:'دووێ',
     dWeeklyTitle:'📊 ڕاپۆرتی هەفتانە', dWeeklySub:'کۆی نەهاتنی هەفتەیەک',
@@ -586,6 +642,12 @@ const LANGS = {
     btnSaveSubject:'تۆمارکرن',
     renameClassTitle:'✏️ ناڤێ پۆلی بگۆڕە', renameClassOldLbl:'ناڤێ ئێستا', renameClassNewLbl:'ناڤێ نوی',
     renameClassHistoryLbl:'هەروەها تۆمارێن نەهاتنێ یێن پێشتر نوی بکە', btnSaveRenameClass:'تۆمارکرن',
+    dGraduatesTitle:'🎓 دەرچووان', dGraduatesSub:'لیستا قوتابیێن دەرچوویی، بەپێی ساڵێ', gradYearLabel:'📆 ساڵ:',
+    allYears:'هەمی ساڵان', promoteTitle:'🎓 بەرزکرن / دەرچوون',
+    promoteModeMoveBtn:'➡️ بەرزکرن بۆ پۆلێ دی', promoteModeGradBtn:'🎓 دەرچوون (ئارشیڤکرن)',
+    promoteDestLbl:'بۆ کام پۆل؟', promoteYearLbl:'ساڵا دەرچوونێ',
+    promoteStudentsLbl:'قوتابیان هەلبژێرە (هەمی بەسەرکەوتی هاتینە هەلبژارتن)',
+    promoteCheckAll:'هەمی هەلبژێرە', promoteCheckNone:'هیچ هەلمەبژێرە', btnConfirmPromote:'تۆمارکرن',
     subjectFilterNote:'📌 بابەتان بە پێی پۆلە هەلبژێردراوەکان فلتەر دەبن',
     weekend:'🏖️ دەرفەت — مکتەب نییە', noAbsences:'هیچ نەهاتنێک نینە',
     selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە', selectClass:'پۆلێک هەلبژێرە',
@@ -619,7 +681,7 @@ const LANGS = {
     sHighRiskSub:'≥15 غياب', sAtRiskSub:'8-14 غياب',
     tabDaily:'📅 يومي', tabWeekly:'📊 أسبوعي', tabMonthly:'📅 شهري',
     tabRoster:'📋 كشف', tabAnalytics:'📈 تحليلات',
-    tabTeachers:'👨‍🏫 الأساتذة', tabStudents:'👨‍🎓 الطلاب', tabSubjects:'🏫 الشعب والمواد',
+    tabTeachers:'👨‍🏫 الأساتذة', tabStudents:'👨‍🎓 الطلاب', tabSubjects:'🏫 الشعب والمواد', tabGraduates:'🎓 الخريجون',
     dDailyTitle:'📅 التقرير اليومي', dDailySub:'عرض الغياب حصة بحصة',
     dDateLabel:'📆 التاريخ:', btnToday:'اليوم', btnYesterday:'أمس',
     dWeeklyTitle:'📊 التقرير الأسبوعي', dWeeklySub:'ملخص غياب الأسبوع',
@@ -663,6 +725,12 @@ const LANGS = {
     btnSaveSubject:'حفظ',
     renameClassTitle:'✏️ إعادة تسمية الشعبة', renameClassOldLbl:'الاسم الحالي', renameClassNewLbl:'الاسم الجديد',
     renameClassHistoryLbl:'تحديث سجلات الغياب السابقة أيضًا', btnSaveRenameClass:'حفظ',
+    dGraduatesTitle:'🎓 الخريجون', dGraduatesSub:'قائمة الطلاب الخريجين، حسب السنة', gradYearLabel:'📆 السنة:',
+    allYears:'كل السنوات', promoteTitle:'🎓 ترفيع / تخريج',
+    promoteModeMoveBtn:'➡️ ترفيع إلى شعبة أخرى', promoteModeGradBtn:'🎓 تخريج (أرشفة)',
+    promoteDestLbl:'إلى أي شعبة؟', promoteYearLbl:'سنة التخرج',
+    promoteStudentsLbl:'اختر الطلاب (الجميع محدد افتراضيًا كناجحين)',
+    promoteCheckAll:'تحديد الكل', promoteCheckNone:'إلغاء التحديد', btnConfirmPromote:'حفظ',
     subjectFilterNote:'📌 تُصفَّى المواد حسب الشعب المختارة',
     weekend:'🏖️ عطلة — لا دوام', noAbsences:'لا يوجد غياب',
     selectWeek:'اختر أسبوعاً', selectMonth:'اختر شهراً', selectClass:'اختر شعبة',
@@ -696,7 +764,7 @@ const LANGS = {
     sHighRiskSub:'≥15 absences', sAtRiskSub:'8-14 absences',
     tabDaily:'📅 Daily', tabWeekly:'📊 Weekly', tabMonthly:'📅 Monthly',
     tabRoster:'📋 Roster', tabAnalytics:'📈 Analytics',
-    tabTeachers:'👨‍🏫 Teachers', tabStudents:'👨‍🎓 Students', tabSubjects:'🏫 Classes & Subjects',
+    tabTeachers:'👨‍🏫 Teachers', tabStudents:'👨‍🎓 Students', tabSubjects:'🏫 Classes & Subjects', tabGraduates:'🎓 Graduates',
     dDailyTitle:'📅 Daily Absence Report', dDailySub:'View absence breakdown by lecture and class',
     dDateLabel:'📆 Date:', btnToday:'Today', btnYesterday:'Yesterday',
     dWeeklyTitle:'📊 Weekly Report', dWeeklySub:'Weekly absence summaries',
@@ -741,6 +809,12 @@ const LANGS = {
     btnSaveSubject:'Save',
     renameClassTitle:'✏️ Rename Class', renameClassOldLbl:'Current Name', renameClassNewLbl:'New Name',
     renameClassHistoryLbl:'Also update past absence records', btnSaveRenameClass:'Save',
+    dGraduatesTitle:'🎓 Graduates', dGraduatesSub:'List of graduated students, by year', gradYearLabel:'📆 Year:',
+    allYears:'All Years', promoteTitle:'🎓 Promote / Graduate',
+    promoteModeMoveBtn:'➡️ Promote to another class', promoteModeGradBtn:'🎓 Graduate (archive)',
+    promoteDestLbl:'To which class?', promoteYearLbl:'Graduation Year',
+    promoteStudentsLbl:'Select students (everyone is checked as passing by default)',
+    promoteCheckAll:'Select All', promoteCheckNone:'Select None', btnConfirmPromote:'Save',
     subjectFilterNote:'📌 Subjects are filtered based on selected classes',
     weekend:'🏖️ Weekend — No School', noAbsences:'No absences recorded',
     selectWeek:'Select a week', selectMonth:'Select a month', selectClass:'Select a class',
@@ -814,16 +888,19 @@ function setLang(lang) {
     'mgmtConfirmTitle',
     'dSubjectsTitle','dSubjectsSub','btnAddSubject','thSClass','thSSubjects',
     'cacheNote3','btnClearCache3','subjectModalTitle','smLblClass','smLblSubjects','btnSaveSubject',
-    'renameClassTitle','renameClassOldLbl','renameClassNewLbl','renameClassHistoryLbl','btnSaveRenameClass'];
+    'renameClassTitle','renameClassOldLbl','renameClassNewLbl','renameClassHistoryLbl','btnSaveRenameClass',
+    'dGraduatesTitle','dGraduatesSub','gradYearLabel',
+    'promoteModeMoveBtn','promoteModeGradBtn','promoteDestLbl','promoteYearLbl','promoteStudentsLbl',
+    'promoteCheckAll','promoteCheckNone','btnConfirmPromote'];
   ids.forEach(id => { const el=document.getElementById(id); if(el && L[id]) el.textContent=L[id]; });
 
-  ['daily','weekly','monthly','roster','analytics','teachers','students','subjects'].forEach(t => {
+  ['daily','weekly','monthly','roster','analytics','teachers','students','subjects','graduates'].forEach(t => {
     const key = 'tab'+t.charAt(0).toUpperCase()+t.slice(1);
     const el  = document.getElementById('tab-'+t);
     if(el && L[key]) el.textContent = L[key];
   });
 
-  ['btnPrintW','btnPrintM','btnPrintR'].forEach(id => {
+  ['btnPrintW','btnPrintM','btnPrintR','btnPrintGrad'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.textContent = L.btnPrint;
   });
@@ -844,6 +921,7 @@ function setLang(lang) {
     if(id==='teachers')  renderTeacherTable();
     if(id==='students')  renderStudentTab();
     if(id==='subjects')  renderSubjectTable();
+    if(id==='graduates') renderGraduatesList();
   }
 }
 
@@ -1201,6 +1279,7 @@ function showTab(name){
   if(name==='teachers')  loadTeachersTab();
   if(name==='students')  loadStudentsTab();
   if(name==='subjects')  loadSubjectsTab();
+  if(name==='graduates') loadGraduatesTab();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1489,6 +1568,7 @@ function renderStudentTab(){
       </button>
       <div style="display:flex;gap:4px;margin-top:4px;">
         <button class="btn-sm btn-move" style="flex:1;" onclick="openRenameClass('${safe}')">✏️</button>
+        <button class="btn-sm" style="flex:1;background:#e8f5e9;color:#2e7d32;" onclick="openPromoteClass('${safe}')">🎓</button>
         <button class="btn-sm btn-del" style="flex:1;" onclick="askDeleteClass('${safe}')">🗑️</button>
       </div>
     </div>`;
@@ -1741,6 +1821,116 @@ async function doDeleteClass(cls){
     renderStudentTab();
     showToast(L.toastDeleted,'success');
   } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
+}
+
+// ── Promote / Graduate class ──────────────────────────
+let promoteMode = 'move'; // 'move' | 'graduate'
+
+function openPromoteClass(safeCls){
+  const cls=decodeURIComponent(safeCls);
+  const L=LANGS[currentLang];
+  document.getElementById('promoteSourceClass').value=cls;
+  document.getElementById('promoteTitle').textContent=(L.promoteTitle||'🎓 بەرزکرن / دەرچوون')+' — '+cls;
+  document.getElementById('promoteYear').value=new Date().getFullYear();
+  document.getElementById('promoteDestClass').value='';
+
+  const destOptions=document.getElementById('promoteDestOptions');
+  destOptions.innerHTML=sortClasses((mgmtData.classes||[]).filter(c=>c!==cls)).map(c=>`<option value="${c}">`).join('');
+
+  const students=(mgmtData.students[cls]||[]);
+  const listEl=document.getElementById('promoteStudentList');
+  if(!students.length){
+    listEl.innerHTML=`<div style="text-align:center;padding:20px;color:#999;">—</div>`;
+  } else {
+    listEl.innerHTML=students.map((name,i)=>{
+      const safe=encodeURIComponent(name);
+      return `<label style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid #f2f2f2;cursor:pointer;">
+        <input type="checkbox" class="promote-student-cb" value="${safe}" checked style="width:auto;accent-color:#667eea;">
+        <span>${i+1}. ${name}</span>
+      </label>`;
+    }).join('');
+  }
+
+  setPromoteMode('move');
+  document.getElementById('promoteModal').classList.add('open');
+}
+
+function setPromoteMode(mode){
+  promoteMode=mode;
+  const moveBtn=document.getElementById('promoteModeMoveBtn');
+  const gradBtn=document.getElementById('promoteModeGradBtn');
+  moveBtn.style.opacity = mode==='move' ? '1' : '0.55';
+  gradBtn.style.opacity = mode==='graduate' ? '1' : '0.55';
+  moveBtn.style.outline = mode==='move' ? '2px solid #667eea' : 'none';
+  gradBtn.style.outline = mode==='graduate' ? '2px solid #667eea' : 'none';
+  document.getElementById('promoteDestField').style.display = mode==='move' ? '' : 'none';
+  document.getElementById('promoteYearField').style.display = mode==='graduate' ? '' : 'none';
+}
+
+function togglePromoteAll(checked){
+  document.querySelectorAll('.promote-student-cb').forEach(cb=>cb.checked=checked);
+}
+
+function closePromoteModal(){ document.getElementById('promoteModal').classList.remove('open'); }
+
+async function confirmPromote(){
+  const L=LANGS[currentLang];
+  const sourceClass=document.getElementById('promoteSourceClass').value;
+  const checked=[...document.querySelectorAll('.promote-student-cb:checked')].map(cb=>decodeURIComponent(cb.value));
+  if(!checked.length){showToast('❌ لانی کەم قوتابیەک هەلبژێرە','error');return;}
+
+  const btn=document.getElementById('btnConfirmPromote');
+  btn.textContent='⏳'; btn.disabled=true;
+  try {
+    let text;
+    if(promoteMode==='graduate'){
+      const year=document.getElementById('promoteYear').value.trim();
+      if(!year){showToast('❌ ساڵێ بنووسە','error');btn.textContent=L.btnConfirmPromote||'تۆمارکرن';btn.disabled=false;return;}
+      text=await adminGet({action:'graduateClass',sourceClass,year,studentNames:checked.join('|||')});
+    } else {
+      const destClass=document.getElementById('promoteDestClass').value.trim();
+      if(!destClass){showToast('❌ پۆلی ئامانج بنووسە','error');btn.textContent=L.btnConfirmPromote||'تۆمارکرن';btn.disabled=false;return;}
+      if(destClass===sourceClass){showToast('❌ پۆلی ئامانج نابێت وەکو پۆلی سەرچاوە بیت','error');btn.textContent=L.btnConfirmPromote||'تۆمارکرن';btn.disabled=false;return;}
+      text=await adminGet({action:'promoteClass',sourceClass,destClass,studentNames:checked.join('|||')});
+    }
+    if(text.startsWith('ERROR')) throw new Error(text);
+    closePromoteModal();
+    mgmtData=null;
+    await fetchManageData();
+    renderStudentTab();
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { btn.textContent=L.btnConfirmPromote||'تۆمارکرن'; btn.disabled=false; }
+}
+
+// ── Graduates tab ──────────────────────────────────────
+async function loadGraduatesTab(){
+  if(!mgmtData) await fetchManageData();
+  const years=[...new Set((mgmtData.graduates||[]).map(g=>g.year))].sort().reverse();
+  const sel=document.getElementById('gradYearFilter');
+  const L=LANGS[currentLang];
+  sel.innerHTML=`<option value="">${L.allYears||'هەمی ساڵان'}</option>`+years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  renderGraduatesList();
+}
+
+function renderGraduatesList(){
+  const L=LANGS[currentLang];
+  const yearFilter=document.getElementById('gradYearFilter').value;
+  const list=(mgmtData.graduates||[]).filter(g=>!yearFilter||g.year===yearFilter);
+  const el=document.getElementById('graduatesList');
+  if(!list.length){
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:#999;">—</div>`;
+    return;
+  }
+  const byClass={};
+  list.forEach(g=>{ (byClass[g.className]=byClass[g.className]||[]).push(g.studentName); });
+  el.innerHTML=Object.keys(byClass).sort().map(cls=>`
+    <div style="margin-bottom:18px;">
+      <h3 style="color:#667eea;margin-bottom:8px;">🏫 ${cls} <span style="color:#999;font-size:0.8em;">(${byClass[cls].length} ${L.students||'قوتابی'})</span></h3>
+      <div style="background:#fff;border-radius:10px;border:1px solid #e9ecef;overflow:hidden;">
+        ${byClass[cls].map((n,i)=>`<div class="student-row"><span class="student-name">${i+1}. ${n}</span></div>`).join('')}
+      </div>
+    </div>`).join('');
 }
 
 // ══════════════════════════════════════════════════════
