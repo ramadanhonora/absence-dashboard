@@ -13,6 +13,7 @@
   <div class="header-text">
     <h1 id="hInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
     <p id="hSub">سیستەما تومارکرنا نەهاتنێ</p>
+    <p id="hYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:14px;"></p>
   </div>
   <div class="lang-switcher">
     <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
@@ -198,6 +199,7 @@ const LANGS = {
     loadingEdit:'ئامادەکرنا دەستکاریکرنێ...',
     toastEditReady:'✏️ زانیاری هاتە داخلکرن — دەستکاری بکە و دوبارە بنێرە.',
     noneAbsent:'هیچ نەهاتنێک نەبوو',
+    academicYearLabel:'ساڵا خوێندنی',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -228,6 +230,7 @@ const LANGS = {
     loadingEdit:'جارٍ تحضير التعديل...',
     toastEditReady:'✏️ تم تحميل البيانات — عدّل وأعد الإرسال.',
     noneAbsent:'لا غياب',
+    academicYearLabel:'السنة الدراسية',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -258,6 +261,7 @@ const LANGS = {
     loadingEdit:'Preparing edit...',
     toastEditReady:'✏️ Data loaded — fix and resubmit.',
     noneAbsent:'No absences',
+    academicYearLabel:'Academic Year',
   }
 };
 
@@ -269,6 +273,15 @@ let todayRows        = [];
 let pendingDeleteRow = null;
 let pendingEditRow   = null; // holds the full row object during edit flow
 
+// Kurdistan Region school year runs mid-September through May, so the
+// "current year" flips to the new label at the start of September —
+// e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
+function getAcademicYear(){
+  const now=new Date();
+  const y=now.getFullYear();
+  return now.getMonth()>=8 ? `${y}-${y+1}` : `${y-1}-${y}`;
+}
+
 // ── i18n apply ───────────────────────────────────────
 function setLang(lang) {
   if (!LANGS[lang]) return;
@@ -279,6 +292,7 @@ function setLang(lang) {
   document.documentElement.lang = L.htmlLang;
   document.getElementById('hInstName').textContent      = L.hInstName;
   document.getElementById('hSub').textContent           = L.hSub;
+  document.getElementById('hYear').textContent          = (L.academicYearLabel||'Academic Year')+': '+getAcademicYear();
   document.getElementById('step1').textContent          = L.step1;
   document.getElementById('step2').textContent          = L.step2;
   document.getElementById('labelDate').textContent      = L.labelDate;
