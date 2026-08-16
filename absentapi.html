@@ -126,6 +126,7 @@
     <div class="dash-titles" dir="rtl" style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;text-align:center;">
       <h1 id="dInstName" style="margin-bottom:5px;font-size:36px;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
       <h2 id="dSub" style="margin-top:0;color:#555;font-size:24px;">تومارا نەهاتنا قوتابیان</h2>
+      <p id="dAcademicYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:15px;"></p>
     </div>
     <img src="new-left-logo.jpg" alt="New Left Logo" class="logo-left">
   </div>
@@ -670,7 +671,7 @@ const LANGS = {
     toastSaved:'✅ تۆمارکرا.', toastSaveFail:'❌ تۆمارکرن سەرنەکەفت!',
     toastCacheCleared:'✅ داتا نوێبویەوە.', toastCacheFail:'❌ نوێکرنەوە سەرنەکەفت!',
     lastUpdated:'✅ دوایین نوێکرنەوە:', loading:'⏳ بارکرن...',
-    students:'قوتابی',
+    students:'قوتابی', academicYearLabel:'ساڵا خوێندنی',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -753,7 +754,7 @@ const LANGS = {
     toastSaved:'✅ تم الحفظ.', toastSaveFail:'❌ فشل الحفظ!',
     toastCacheCleared:'✅ تم تحديث البيانات.', toastCacheFail:'❌ فشل التحديث!',
     lastUpdated:'✅ آخر تحديث:', loading:'⏳ جارٍ التحميل...',
-    students:'طالب',
+    students:'طالب', academicYearLabel:'السنة الدراسية',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -837,7 +838,7 @@ const LANGS = {
     toastSaved:'✅ Saved successfully.', toastSaveFail:'❌ Save failed!',
     toastCacheCleared:'✅ Data refreshed.', toastCacheFail:'❌ Refresh failed!',
     lastUpdated:'✅ Last updated:', loading:'⏳ Loading...',
-    students:'students',
+    students:'students', academicYearLabel:'Academic Year',
   }
 };
 
@@ -864,6 +865,15 @@ function doLogout() {
 }
 
 // ── i18n ─────────────────────────────────────────────
+// Kurdistan Region school year runs mid-September through May, so the
+// "current year" flips to the new label at the start of September, not
+// on Jan 1 — e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
+function getAcademicYear(){
+  const now=new Date();
+  const y=now.getFullYear();
+  return now.getMonth()>=8 ? `${y}-${y+1}` : `${y-1}-${y}`;
+}
+
 function setLang(lang) {
   if (!LANGS[lang]) return;
   currentLang = lang;
@@ -871,6 +881,7 @@ function setLang(lang) {
   const L = LANGS[lang];
   document.documentElement.dir  = L.dir;
   document.documentElement.lang = L.htmlLang;
+  document.getElementById('dAcademicYear').textContent = (L.academicYearLabel||'Academic Year')+': '+getAcademicYear();
 
   const ids = ['dInstName','dSub','btnLogout','sTotalAbs','sStudents','sHighRisk','sAtRisk',
     'sClasses','sHighRiskSub','sAtRiskSub','dDailyTitle','dDailySub','dDateLabel',
@@ -1833,7 +1844,7 @@ function openPromoteClass(safeCls){
   const isFinal=getStageKey(cls).charAt(0)==='5';
   document.getElementById('promoteSourceClass').value=cls;
   document.getElementById('promoteTitle').textContent=(isFinal?(L.promoteTitleGrad||'🎓 دەرچوون'):(L.promoteTitleMove||'➡️ بەرزکرن'))+' — '+cls;
-  document.getElementById('promoteYear').value=new Date().getFullYear();
+  document.getElementById('promoteYear').value=getAcademicYear();
   document.getElementById('promoteDestClass').value='';
 
   const destOptions=document.getElementById('promoteDestOptions');
