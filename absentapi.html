@@ -513,8 +513,8 @@
     <h3 id="promoteTitle">🎓 بەرزکرن / دەرچوون</h3>
     <input type="hidden" id="promoteSourceClass">
     <div class="mgmt-form">
-      <div class="mgmt-field">
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <div class="mgmt-field" id="promoteModeRow">
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
           <button type="button" class="btn" id="promoteModeMoveBtn" style="flex:1;" onclick="setPromoteMode('move')"></button>
           <button type="button" class="btn" id="promoteModeGradBtn" style="flex:1;" onclick="setPromoteMode('graduate')"></button>
         </div>
@@ -643,7 +643,7 @@ const LANGS = {
     renameClassTitle:'✏️ ناڤێ پۆلی بگۆڕە', renameClassOldLbl:'ناڤێ ئێستا', renameClassNewLbl:'ناڤێ نوی',
     renameClassHistoryLbl:'هەروەها تۆمارێن نەهاتنێ یێن پێشتر نوی بکە', btnSaveRenameClass:'تۆمارکرن',
     dGraduatesTitle:'🎓 دەرچووان', dGraduatesSub:'لیستا قوتابیێن دەرچوویی، بەپێی ساڵێ', gradYearLabel:'📆 ساڵ:',
-    allYears:'هەمی ساڵان', promoteTitle:'🎓 بەرزکرن / دەرچوون',
+    allYears:'هەمی ساڵان', promoteTitleGrad:'🎓 دەرچوون', promoteTitleMove:'➡️ بەرزکرن بۆ پۆلێ دی',
     promoteModeMoveBtn:'➡️ بەرزکرن بۆ پۆلێ دی', promoteModeGradBtn:'🎓 دەرچوون (ئارشیڤکرن)',
     promoteDestLbl:'بۆ کام پۆل؟', promoteYearLbl:'ساڵا دەرچوونێ',
     promoteStudentsLbl:'قوتابیان هەلبژێرە (هەمی بەسەرکەوتی هاتینە هەلبژارتن)',
@@ -726,7 +726,7 @@ const LANGS = {
     renameClassTitle:'✏️ إعادة تسمية الشعبة', renameClassOldLbl:'الاسم الحالي', renameClassNewLbl:'الاسم الجديد',
     renameClassHistoryLbl:'تحديث سجلات الغياب السابقة أيضًا', btnSaveRenameClass:'حفظ',
     dGraduatesTitle:'🎓 الخريجون', dGraduatesSub:'قائمة الطلاب الخريجين، حسب السنة', gradYearLabel:'📆 السنة:',
-    allYears:'كل السنوات', promoteTitle:'🎓 ترفيع / تخريج',
+    allYears:'كل السنوات', promoteTitleGrad:'🎓 تخريج', promoteTitleMove:'➡️ ترفيع إلى شعبة أخرى',
     promoteModeMoveBtn:'➡️ ترفيع إلى شعبة أخرى', promoteModeGradBtn:'🎓 تخريج (أرشفة)',
     promoteDestLbl:'إلى أي شعبة؟', promoteYearLbl:'سنة التخرج',
     promoteStudentsLbl:'اختر الطلاب (الجميع محدد افتراضيًا كناجحين)',
@@ -810,7 +810,7 @@ const LANGS = {
     renameClassTitle:'✏️ Rename Class', renameClassOldLbl:'Current Name', renameClassNewLbl:'New Name',
     renameClassHistoryLbl:'Also update past absence records', btnSaveRenameClass:'Save',
     dGraduatesTitle:'🎓 Graduates', dGraduatesSub:'List of graduated students, by year', gradYearLabel:'📆 Year:',
-    allYears:'All Years', promoteTitle:'🎓 Promote / Graduate',
+    allYears:'All Years', promoteTitleGrad:'🎓 Graduate', promoteTitleMove:'➡️ Promote to another class',
     promoteModeMoveBtn:'➡️ Promote to another class', promoteModeGradBtn:'🎓 Graduate (archive)',
     promoteDestLbl:'To which class?', promoteYearLbl:'Graduation Year',
     promoteStudentsLbl:'Select students (everyone is checked as passing by default)',
@@ -1561,6 +1561,7 @@ function renderStudentTab(){
   grid.innerHTML=sortClasses(mgmtData.classes).map(cls=>{
     const count=(mgmtData.students[cls]||[]).length;
     const safe=encodeURIComponent(cls);
+    const isFinal=getStageKey(cls).charAt(0)==='5';
     return `<div style="margin-bottom:8px;">
       <button class="class-btn ${selectedClass===cls?'selected':''}" onclick="selectClass('${cls}')" style="width:100%;">
         <div class="cls-name">${cls}</div>
@@ -1568,7 +1569,7 @@ function renderStudentTab(){
       </button>
       <div style="display:flex;gap:4px;margin-top:4px;">
         <button class="btn-sm btn-move" style="flex:1;" onclick="openRenameClass('${safe}')">✏️</button>
-        <button class="btn-sm" style="flex:1;background:#e8f5e9;color:#2e7d32;" onclick="openPromoteClass('${safe}')">🎓</button>
+        <button class="btn-sm" style="flex:1;background:#e8f5e9;color:#2e7d32;" onclick="openPromoteClass('${safe}')">${isFinal?'🎓':'➡️'}</button>
         <button class="btn-sm btn-del" style="flex:1;" onclick="askDeleteClass('${safe}')">🗑️</button>
       </div>
     </div>`;
@@ -1829,8 +1830,9 @@ let promoteMode = 'move'; // 'move' | 'graduate'
 function openPromoteClass(safeCls){
   const cls=decodeURIComponent(safeCls);
   const L=LANGS[currentLang];
+  const isFinal=getStageKey(cls).charAt(0)==='5';
   document.getElementById('promoteSourceClass').value=cls;
-  document.getElementById('promoteTitle').textContent=(L.promoteTitle||'🎓 بەرزکرن / دەرچوون')+' — '+cls;
+  document.getElementById('promoteTitle').textContent=(isFinal?(L.promoteTitleGrad||'🎓 دەرچوون'):(L.promoteTitleMove||'➡️ بەرزکرن'))+' — '+cls;
   document.getElementById('promoteYear').value=new Date().getFullYear();
   document.getElementById('promoteDestClass').value='';
 
@@ -1851,18 +1853,16 @@ function openPromoteClass(safeCls){
     }).join('');
   }
 
-  setPromoteMode('move');
+  // Stage 5 only ever graduates (nothing to promote "up" to); every other
+  // stage only ever promotes forward — so the mode is locked per class,
+  // not a choice the admin has to make each time.
+  document.getElementById('promoteModeRow').style.display='none';
+  setPromoteMode(isFinal ? 'graduate' : 'move');
   document.getElementById('promoteModal').classList.add('open');
 }
 
 function setPromoteMode(mode){
   promoteMode=mode;
-  const moveBtn=document.getElementById('promoteModeMoveBtn');
-  const gradBtn=document.getElementById('promoteModeGradBtn');
-  moveBtn.style.opacity = mode==='move' ? '1' : '0.55';
-  gradBtn.style.opacity = mode==='graduate' ? '1' : '0.55';
-  moveBtn.style.outline = mode==='move' ? '2px solid #667eea' : 'none';
-  gradBtn.style.outline = mode==='graduate' ? '2px solid #667eea' : 'none';
   document.getElementById('promoteDestField').style.display = mode==='move' ? '' : 'none';
   document.getElementById('promoteYearField').style.display = mode==='graduate' ? '' : 'none';
 }
