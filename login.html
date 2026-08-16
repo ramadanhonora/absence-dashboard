@@ -13,6 +13,7 @@
   <div class="header-text">
     <h1 id="hInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
     <p id="hSub">سیستەما تومارکرنا نەهاتنێ</p>
+    <p id="hYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:14px;"></p>
   </div>
   <div class="lang-switcher">
     <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
@@ -86,6 +87,7 @@ const LANGS = {
     errFill:'تکایە هەمی خانەیێن پێدڤی داگرە!',
     errWrong:'ناڤ یا شێفرە شاشە! دیسا تاقی بکەڤە.',
     errConn:'پەيوەندی ب سێرڤەری نەهاتە کرن! تکایە دوبارە تاقی بکەڤە.',
+    academicYearLabel:'ساڵا خوێندنی',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -100,6 +102,7 @@ const LANGS = {
     errFill:'يرجى ملء جميع الحقول المطلوبة!',
     errWrong:'اسم المستخدم أو كلمة المرور غير صحيحة!',
     errConn:'فشل الاتصال بالخادم! يرجى المحاولة مرة أخرى.',
+    academicYearLabel:'السنة الدراسية',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -114,11 +117,21 @@ const LANGS = {
     errFill:'Please fill all required fields!',
     errWrong:'Wrong username or password!',
     errConn:'Could not connect to server! Please try again.',
+    academicYearLabel:'Academic Year',
   }
 };
 
 let currentLang = localStorage.getItem('aci_lang') || 'ku';
 let STUDENTS = {};
+
+// Kurdistan Region school year runs mid-September through May, so the
+// "current year" flips to the new label at the start of September —
+// e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
+function getAcademicYear(){
+  const now=new Date();
+  const y=now.getFullYear();
+  return now.getMonth()>=8 ? `${y}-${y+1}` : `${y-1}-${y}`;
+}
 
 function setLang(lang) {
   if (!LANGS[lang]) return;
@@ -127,6 +140,7 @@ function setLang(lang) {
   const L = LANGS[lang];
   document.documentElement.dir  = L.dir;
   document.documentElement.lang = L.htmlLang;
+  document.getElementById('hYear').textContent = (L.academicYearLabel||'Academic Year')+': '+getAcademicYear();
   document.getElementById('hInstName').textContent    = L.hInstName;
   document.getElementById('hSub').textContent         = L.hSub;
   document.getElementById('loginTitle').textContent   = L.loginTitle;
