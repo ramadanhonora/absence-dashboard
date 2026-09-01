@@ -1271,10 +1271,11 @@ async function executeAdminDelete(){
   const rowNum=adminPendingRow; closeAdminConfirm();
   const L=LANGS[currentLang];
   try {
-    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'deleteRow',rowNumber:rowNum,teacher:'admin',token:adminToken})});
+    const text = await adminGet({action:'deleteRow',rowNumber:rowNum,teacher:'admin'});
+    if(text.startsWith('ERROR')) throw new Error(text);
     allData=allData.filter(r=>r.rowNumber!==rowNum);
     filterDaily(); showToast(L.toastDeleted,'success');
-  } catch(err){ showToast(L.toastDeleteFail,'error'); }
+  } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
 }
 
 // ── TAB NAVIGATION ────────────────────────────────────
@@ -1335,7 +1336,10 @@ function renderTeacherTable(){
       <td style="direction:ltr;text-align:start;color:#999;font-size:0.82em;">••••••</td>
       <td>${(t.classes||[]).map(c=>`<span class="tag">${c}</span>`).join(' ')||'—'}</td>
       <td>${(t.subjects||[]).map(s=>`<span class="tag" style="background:#fff4e6;color:#ff8800;">${s}</span>`).join(' ')||'—'}</td>
-      <td><button class="btn-sm btn-move" onclick='openEditTeacher(${JSON.stringify(t)})'>${L.editBtn||'✏️'}</button></td>
+<td>
+  <button class="btn-sm btn-move" onclick='openEditTeacher(${JSON.stringify(t)})'>${L.editBtn||'✏️'}</button>
+  <button class="btn-sm btn-del" onclick="askDeleteTeacher('${encodeURIComponent(t.username)}','${encodeURIComponent(t.arabicName||t.displayName)}')">🗑️</button>
+</td>
     </tr>`).join('');
 }
 
@@ -1555,6 +1559,25 @@ async function saveTeacher(){
   }
 }
 
+function askDeleteTeacher(safeUsername, safeName){
+  const username = decodeURIComponent(safeUsername);
+  const name     = decodeURIComponent(safeName);
+  document.getElementById('mgmtConfirmText').textContent = `${name} — ${username}`;
+  document.getElementById('mgmtConfirmModal').classList.add('open');
+  document.getElementById('mgmtConfirmOk').onclick = () => doDeleteTeacher(username);
+}
+async function doDeleteTeacher(username){
+  const L = LANGS[currentLang];
+  closeMgmtConfirm();
+  try {
+    const text = await adminGet({ action:'deleteTeacher', username });
+    if (text.startsWith('ERROR')) throw new Error(text);
+    mgmtData = null;
+    await fetchManageData();
+    renderTeacherTable();
+    showToast(L.toastDeleted,'success');
+  } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
+}
 // ══════════════════════════════════════════════════════
 // ── STUDENTS TAB ─────────────────────────────────────
 // ══════════════════════════════════════════════════════
@@ -2048,11 +2071,21 @@ async function doClearCache(){
 }
 
 // ── Scheduling ────────────────────────────────────────
+let lastAutoFetch = 0;
 function scheduleRefresh(){
   const h=new Date().getHours();
-  if(h>=8&&h<14){ fetchData(); setTimeout(scheduleRefresh,300000); }
+  if(h>=8&&h<14){
+    if(document.visibilityState==='visible'){ fetchData(); lastAutoFetch=Date.now(); }
+    setTimeout(scheduleRefresh,300000);
+  }
   else { const next=new Date(); next.setDate(next.getDate()+(h>=14?1:0)); next.setHours(8,0,1,0); setTimeout(scheduleRefresh,next.getTime()-Date.now()); }
 }
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState==='visible'){
+    const h=new Date().getHours();
+    if(h>=8&&h<14 && Date.now()-lastAutoFetch>300000) { fetchData(); lastAutoFetch=Date.now(); }
+  }
+});
 
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',()=>{
