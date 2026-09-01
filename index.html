@@ -282,6 +282,13 @@ function getAcademicYear(){
   return now.getMonth()>=8 ? `${y}-${y+1}` : `${y-1}-${y}`;
 }
 
+// ── GET helper (CORS-safe, returns real response text) ──
+async function teacherGet(params){
+  const qs = Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
+  const resp = await fetch(SCRIPT_URL+'?'+qs+'&token='+encodeURIComponent(sessionStorage.getItem('aci_token')));
+  return (await resp.text()).trim();
+}
+
 // ── i18n apply ───────────────────────────────────────
 function setLang(lang) {
   if (!LANGS[lang]) return;
@@ -328,7 +335,6 @@ function setLang(lang) {
     b.classList.toggle('active', ['ku','ar','en'][i] === lang);
   });
 
-  // Re-render recent rows with new language
   if (todayRows.length) renderRecentRows();
 }
 
@@ -386,9 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('screenSubmit').style.display = '';
   restoreFormState();
 
-  // Show any rows already saved today (instant, no network)
   loadRowsFromStorage();
-  // Then fetch from server to get real row numbers for edit/delete
   loadTodayRows();
 });
 
@@ -402,7 +406,6 @@ function onClassChange() {
 }
 
 function renderStudents(cls, preSelected) {
-  // preSelected: optional Set of names to check automatically (edit flow)
   const L   = LANGS[currentLang];
   const con = document.getElementById('studentsContainer');
   if (!cls || !STUDENTS[cls]) {
@@ -511,7 +514,7 @@ function resetForm() {
   sessionStorage.removeItem('formState');
 }
 
-// ── Submit ────────────────────────────────────────────
+// ── Submit (GET-based, real response) ──────────────────
 async function doSubmit() {
   const L       = LANGS[currentLang];
   const date    = document.getElementById('fDate').value;
@@ -522,12 +525,11 @@ async function doSubmit() {
   if (!date || !subject || !lecture || !cls) { showToast(L.toastFill, 'error'); return; }
   if (new Date().getDay() === 5 || new Date().getDay() === 6) { showToast(L.toastWeekend, 'error'); return; }
 
-  // Only check duplicate if this is NOT an edit (edit already deleted the old row)
   if (!pendingEditRow) {
     const key = date + '|' + cls + '|' + subject + '|' + lecture;
     if (sessionStorage.getItem(key)) { showToast(L.toastDuplicate, 'error'); return; }
   }
-  pendingEditRow = null; // clear edit flag after check
+  pendingEditRow = null;
 
   showLoading(L.loadingSubmit);
   const now = new Date();
@@ -536,32 +538,30 @@ async function doSubmit() {
   const fmtDate = parseInt(mm)+'/'+parseInt(dd)+'/'+yyyy;
 
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: sessionStorage.getItem('aci_token'),
-        timestamp: ts, date: fmtDate,
-        teacherName: currentTeacher.displayName,
-        subject, lectureNo: lecture, classGroup: cls,
-        absentStudents: [...selectedAbsent].join(', ')
-      })
+    const resp = await teacherGet({
+      action: 'saveAbsence',
+      timestamp: ts, date: fmtDate,
+      teacherName: currentTeacher.displayName,
+      subject, lectureNo: lecture, classGroup: cls,
+      absentStudents: [...selectedAbsent].join(', ')
     });
+
+    if (resp.startsWith('BLOCKED')) { hideLoading(); showToast(L.toastWeekend, 'error'); return; }
+    if (resp === 'DUPLICATE')       { hideLoading(); showToast(L.toastDuplicate, 'error'); return; }
+    if (resp.startsWith('ERROR'))   throw new Error(resp);
+
     hideLoading();
     const key = date + '|' + cls + '|' + subject + '|' + lecture;
     sessionStorage.setItem(key, '1');
     sessionStorage.removeItem('formState');
 
-    // Capture absent string before resetForm clears selectedAbsent
     const absentStr = [...selectedAbsent].join(', ');
 
-    // Reset form now (date stays today, other fields clear) so it's ready when teacher clicks OK
     resetForm();
     document.getElementById('fDate').valueAsDate = new Date();
 
     showSuccess(fmtDate, subject, lecture, cls, absentStr);
 
-    // Fetch real row numbers from server, save to localStorage, update card
     loadTodayRows();
   } catch(err) {
     hideLoading();
@@ -614,7 +614,6 @@ async function loadTodayRows() {
     saveRowsToStorage();
     renderRecentRows();
   } catch(err) {
-    // Silent fail — card still shows whatever is in localStorage
     console.warn('loadTodayRows:', err.message);
   }
 }
@@ -670,7 +669,7 @@ function renderRecentRows() {
   body.innerHTML = html;
 }
 
-// ── Delete flow ───────────────────────────────────────
+// ── Delete flow (GET-based, real response) ─────────────
 function askDelete(rowNumber) {
   pendingDeleteRow = rowNumber;
   pendingEditRow   = null;
@@ -689,11 +688,8 @@ async function executeDelete() {
   const L = LANGS[currentLang];
   showLoading(L.loadingDel);
   try {
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'deleteRow', rowNumber:rowNum, teacher:currentTeacher.displayName, token:sessionStorage.getItem('aci_token') })
-    });
+    const resp = await teacherGet({ action:'deleteRow', rowNumber:rowNum, teacher:currentTeacher.displayName });
+    if (resp.startsWith('ERROR')) throw new Error(resp);
     hideLoading();
     todayRows = todayRows.filter(r => r.rowNumber !== rowNum);
     saveRowsToStorage();
@@ -706,11 +702,6 @@ async function executeDelete() {
 }
 
 // ── Edit flow (Option A) ──────────────────────────────
-// 1. Find the row in todayRows
-// 2. Delete it on the server
-// 3. Remove from todayRows, re-render recent card
-// 4. Auto-fill form fields + pre-select absent students
-// 5. Scroll to top + toast hint
 async function askEdit(rowNumber) {
   const r = todayRows.find(x => x.rowNumber === rowNumber);
   if (!r) return;
@@ -719,20 +710,13 @@ async function askEdit(rowNumber) {
   showLoading(L.loadingEdit);
 
   try {
-    // Delete the old row on the server
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'deleteRow', rowNumber:rowNumber, teacher:currentTeacher.displayName, token:sessionStorage.getItem('aci_token') })
-    });
+    const delResp = await teacherGet({ action:'deleteRow', rowNumber:rowNumber, teacher:currentTeacher.displayName });
+    if (delResp.startsWith('ERROR')) throw new Error(delResp);
 
-    // Remove from local list & re-render card
     todayRows = todayRows.filter(x => x.rowNumber !== rowNumber);
     saveRowsToStorage();
     renderRecentRows();
 
-    // Parse the stored date back to YYYY-MM-DD for the date input
-    // Stored format is M/D/YYYY
     const fmtDate = r.date || '';
     let isoDate = '';
     if (fmtDate) {
@@ -743,34 +727,28 @@ async function askEdit(rowNumber) {
       }
     }
 
-    // Fill form fields
     if (isoDate) document.getElementById('fDate').value    = isoDate;
     document.getElementById('fSubject').value  = r.subject    || '';
     document.getElementById('fLecture').value  = r.lectureNo  || '';
     document.getElementById('fClass').value    = r.classGroup || '';
 
-    // Build preSelected set from the absentStudents string
     const preSelected = new Set(
       (r.absentStudents || '').split(',').map(n => n.trim()).filter(Boolean)
     );
 
-    // Render students with pre-selections
     selectedAbsent = new Set(preSelected);
     renderStudents(r.classGroup || '', preSelected);
     updateAbsentCount();
     renderAbsentPreview();
 
-    // Clear duplicate guard for this slot so re-submit is allowed
     const key = (isoDate || '') + '|' + (r.classGroup||'') + '|' + (r.subject||'') + '|' + (r.lectureNo||'');
     sessionStorage.removeItem(key);
 
-    // Flag that we are in edit mode (skip duplicate check on next submit)
     pendingEditRow = r;
 
     hideLoading();
     showToast(L.toastEditReady, 'success');
 
-    // Scroll to top of form smoothly
     document.getElementById('screenSubmit').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   } catch(err) {
