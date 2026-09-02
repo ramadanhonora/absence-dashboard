@@ -89,6 +89,7 @@ const LANGS = {
     exportingPdf:'⏳ دروستکرنا PDF...', certTitle:'بەڵگەنامەیا نەهاتنێ',
     certSignature:'واژووی بەڕێوەبەر', certDate:'بەروار',
     reportGenerated:'ڕاپۆرت دروستکرا لە',
+    pdfExportError:'❌ نەشیا PDF دروست بکەت. تکایە دیسا هەوڵ بدە.',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -175,6 +176,7 @@ const LANGS = {
     exportingPdf:'⏳ جارٍ إنشاء PDF...', certTitle:'شهادة الغياب',
     certSignature:'توقيع الإدارة', certDate:'التاريخ',
     reportGenerated:'تم إنشاء التقرير في',
+    pdfExportError:'❌ تعذر إنشاء ملف PDF. يرجى المحاولة مرة أخرى.',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -262,6 +264,7 @@ const LANGS = {
     exportingPdf:'⏳ Generating PDF...', certTitle:'Absence Certificate',
     certSignature:'Admin Signature', certDate:'Date',
     reportGenerated:'Report generated on',
+    pdfExportError:'❌ Unable to generate the PDF. Please try again.',
   }
 };
 
