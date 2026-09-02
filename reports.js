@@ -128,25 +128,25 @@ function buildReportHeaderHTML(title, subtitle) {
       padding:28px 28px 20px;color:#222;box-sizing:border-box;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;
-        gap:14px;border-bottom:3px solid #667eea;padding-bottom:14px;margin-bottom:20px;">
+        gap:18px;border-bottom:3px solid #667eea;padding-bottom:18px;margin-bottom:20px;">
 
         <img src="aci.jpg"
-          style="width:58px;height:58px;object-fit:contain;flex-shrink:0;">
+          style="width:96px;height:96px;object-fit:contain;flex-shrink:0;">
 
-        <div style="text-align:center;flex:1;min-width:0;">
-          <div style="font-size:18px;font-weight:700;color:#333;">
+        <div style="text-align:center;flex:1;min-width:0;padding:0 10px;">
+          <div style="font-size:20px;font-weight:700;color:#333;line-height:1.3;">
             ${escapeHtml(L.dInstName)}
           </div>
-          <div style="font-size:13px;color:#667eea;font-weight:600;margin-top:3px;">
+          <div style="font-size:14px;color:#667eea;font-weight:600;margin-top:6px;">
             ${escapeHtml((L.academicYearLabel || 'Academic Year') + ': ' + (typeof getAcademicYear === 'function' ? getAcademicYear() : ''))}
           </div>
         </div>
 
         <img src="new-left-logo.jpg"
-          style="width:58px;height:58px;object-fit:contain;flex-shrink:0;">
+          style="width:96px;height:96px;object-fit:contain;flex-shrink:0;">
       </div>
 
-      <h2 style="color:#667eea;margin:0 0 5px;font-size:20px;line-height:1.3;">
+      <h2 style="color:#667eea;margin:0 0 6px;font-size:22px;line-height:1.3;">
         ${escapeHtml(title)}
       </h2>
 
@@ -157,7 +157,6 @@ function buildReportHeaderHTML(title, subtitle) {
       ` : ''}
   `;
 }
-
 function buildReportFooterHTML() {
   const L = LANGS[currentLang] || {};
   const now = new Date();
