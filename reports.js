@@ -1,8 +1,3 @@
-# Corrected `reports.js`
-
-This version keeps the original architecture and six export functions. PDFs are generated and downloaded in the browser only; nothing is saved to Google Drive.
-
-```javascript
 // ══════════════════════════════════════════════════════
 // PDF EXPORT ENGINE
 // Browser-only PDF generation. Files are NOT saved to Google Drive.
