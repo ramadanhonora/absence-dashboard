@@ -1,6 +1,6 @@
 const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
 const LOGIN_URL    = 'login.html';
-const SCHOOL_START = '9/21/2025';
+let   SCHOOL_START = '9/21/2025'; // fallback default; overwritten by loadSettings() from the persisted Settings sheet value
 
 // ── i18n ─────────────────────────────────────────────
 const LANGS = {
@@ -89,7 +89,20 @@ const LANGS = {
     exportingPdf:'⏳ دروستکرنا PDF...', certTitle:'بەڵگەنامەیا نەهاتنێ',
     certSignature:'واژووی بەڕێوەبەر', certDate:'بەروار',
     reportGenerated:'ڕاپۆرت دروستکرا لە',
-    pdfExportError:'❌ نەشیا PDF دروست بکەت. تکایە دیسا هەوڵ بدە.',
+    tabSettings:'⚙️ ڕێکخستن',
+    dSettingsTitle:'⚙️ ڕێکخستنێن سیستەمێ', dSettingsSub:'سیاسەتا نەهاتنێ، ساڵا خوێندنی و ناسنامەیا پەیمانگەهێ',
+    stPolicyTitle:'🎯 سیاسەتا نەهاتنێ',
+    setLecPerDayLbl:'ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:', setExpDaysLbl:'ژمارەی ڕۆژانی دابراون بۆ دەرکرن:',
+    setAtRiskLbl:'سنوورێ ئاگاداریێ:', setHighRiskLbl:'سنوورێ مەترسیێ:',
+    btnSavePolicy:'تۆمارکرنا سیاسەتێ',
+    stAcademicTitle:'📅 ساڵا خوێندنی',
+    setSchoolStartLbl:'دەستپێکا ساڵا خوێندنی:', btnSaveAcademicYear:'تۆمارکرنا ساڵا خوێندنی',
+    stBrandingTitle:'🏫 ناسنامەیا پەیمانگەهێ',
+    setNameKuLbl:'ناڤێ پەیمانگەهێ (کوردی)', setNameArLbl:'ناڤێ پەیمانگەهێ (عەرەبی)', setNameEnLbl:'ناڤێ پەیمانگەهێ (ئینگلیزی)',
+    btnSaveNames:'تۆمارکرنا ناڤان',
+    instituteLogoLbl:'لۆگۆیێ پەیمانگەهێ', ministryLogoLbl:'لۆگۆیێ وەزارەتێ',
+    btnUploadInstituteLogo:'⬆️ بارکرن', btnUploadMinistryLogo:'⬆️ بارکرن',
+    cacheNote4:'📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە', btnClearCache4:'🔄 نوێکرنەوەی داتا',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -176,7 +189,20 @@ const LANGS = {
     exportingPdf:'⏳ جارٍ إنشاء PDF...', certTitle:'شهادة الغياب',
     certSignature:'توقيع الإدارة', certDate:'التاريخ',
     reportGenerated:'تم إنشاء التقرير في',
-    pdfExportError:'❌ تعذر إنشاء ملف PDF. يرجى المحاولة مرة أخرى.',
+    tabSettings:'⚙️ الإعدادات',
+    dSettingsTitle:'⚙️ إعدادات النظام', dSettingsSub:'سياسة الغياب، السنة الدراسية، وهوية المعهد',
+    stPolicyTitle:'🎯 سياسة الغياب',
+    setLecPerDayLbl:'عدد الحصص الغائبة لتحتسب يوماً:', setExpDaysLbl:'عدد الأيام لاتخاذ قرار الفصل:',
+    setAtRiskLbl:'حد التحذير:', setHighRiskLbl:'حد الخطر:',
+    btnSavePolicy:'حفظ السياسة',
+    stAcademicTitle:'📅 السنة الدراسية',
+    setSchoolStartLbl:'بداية السنة الدراسية:', btnSaveAcademicYear:'حفظ السنة الدراسية',
+    stBrandingTitle:'🏫 هوية المعهد',
+    setNameKuLbl:'اسم المعهد (كردي)', setNameArLbl:'اسم المعهد (عربي)', setNameEnLbl:'اسم المعهد (إنجليزي)',
+    btnSaveNames:'حفظ الأسماء',
+    instituteLogoLbl:'شعار المعهد', ministryLogoLbl:'شعار الوزارة',
+    btnUploadInstituteLogo:'⬆️ رفع', btnUploadMinistryLogo:'⬆️ رفع',
+    cacheNote4:'📡 بعد كل تغيير يجب تحديث البيانات', btnClearCache4:'🔄 تحديث البيانات',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -264,7 +290,21 @@ const LANGS = {
     exportingPdf:'⏳ Generating PDF...', certTitle:'Absence Certificate',
     certSignature:'Admin Signature', certDate:'Date',
     reportGenerated:'Report generated on',
-    pdfExportError:'❌ Unable to generate the PDF. Please try again.',
+    tabSettings:'⚙️ Settings',
+    dSettingsTitle:'⚙️ System Settings', dSettingsSub:'Absence policy, academic year and institute identity',
+    stPolicyTitle:'🎯 Absence Policy',
+    setLecPerDayLbl:'Lectures missed to count as 1 day:', setExpDaysLbl:'Days missed threshold for dismissal:',
+    setAtRiskLbl:'At-risk threshold:', setHighRiskLbl:'High-risk threshold:',
+    btnSavePolicy:'Save Policy',
+    stAcademicTitle:'📅 Academic Year',
+    setSchoolStartLbl:'School year start date:', btnSaveAcademicYear:'Save Academic Year',
+    stBrandingTitle:'🏫 Institute Branding',
+    setNameKuLbl:'Institute Name (Kurdish)', setNameArLbl:'Institute Name (Arabic)', setNameEnLbl:'Institute Name (English)',
+    btnSaveNames:'Save Names',
+    instituteLogoLbl:'Institute Logo', ministryLogoLbl:'Ministry Logo',
+    btnUploadInstituteLogo:'⬆️ Upload', btnUploadMinistryLogo:'⬆️ Upload',
+    cacheNote4:'📡 After any change, refresh data so teachers see updates immediately',
+    btnClearCache4:'🔄 Refresh Data',
   }
 };
 
@@ -275,6 +315,11 @@ let adminPendingRow = null;
 
 // Management data
 let mgmtData = null; // { teachers, subjects, classes, students }
+
+// ── Settings ──────────────────────────────────────────
+let appSettings       = null;                // raw key/value map from getSettings, once loaded
+let instituteLogoUrl  = 'aci.jpg';            // fallback matches original hardcoded filename
+let ministryLogoUrl   = 'new-left-logo.jpg';  // fallback matches original hardcoded filename
 
 // ── Auth ──────────────────────────────────────────────
 function checkAuth() {
@@ -294,6 +339,9 @@ function doLogout() {
 // Kurdistan Region school year runs mid-September through May, so the
 // "current year" flips to the new label at the start of September, not
 // on Jan 1 — e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
+// NOTE: this calculation is intentionally independent of SCHOOL_START —
+// it only asks "what academic year is it right now?", never the saved
+// enumeration start date. SCHOOL_START only feeds getWeeks()/getMonths().
 function getAcademicYear(){
   const now=new Date();
   const y=now.getFullYear();
@@ -328,10 +376,15 @@ function setLang(lang) {
     'renameClassTitle','renameClassOldLbl','renameClassNewLbl','renameClassHistoryLbl','btnSaveRenameClass',
     'dGraduatesTitle','dGraduatesSub','gradYearLabel',
     'promoteModeMoveBtn','promoteModeGradBtn','promoteDestLbl','promoteYearLbl','promoteStudentsLbl',
-    'promoteCheckAll','promoteCheckNone','btnConfirmPromote'];
+    'promoteCheckAll','promoteCheckNone','btnConfirmPromote',
+    'dSettingsTitle','dSettingsSub','stPolicyTitle','setLecPerDayLbl','setExpDaysLbl','setAtRiskLbl',
+    'setHighRiskLbl','btnSavePolicy','stAcademicTitle','setSchoolStartLbl','btnSaveAcademicYear',
+    'stBrandingTitle','setNameKuLbl','setNameArLbl','setNameEnLbl','btnSaveNames',
+    'instituteLogoLbl','ministryLogoLbl','btnUploadInstituteLogo','btnUploadMinistryLogo',
+    'cacheNote4','btnClearCache4'];
   ids.forEach(id => { const el=document.getElementById(id); if(el && L[id]) el.textContent=L[id]; });
 
-  ['daily','weekly','monthly','roster','analytics','teachers','students','subjects','graduates'].forEach(t => {
+  ['daily','weekly','monthly','roster','analytics','teachers','students','subjects','graduates','settings'].forEach(t => {
     const key = 'tab'+t.charAt(0).toUpperCase()+t.slice(1);
     const el  = document.getElementById('tab-'+t);
     if(el && L[key]) el.textContent = L[key];
@@ -359,6 +412,7 @@ function setLang(lang) {
     if(id==='students')  renderStudentTab();
     if(id==='subjects')  renderSubjectTable();
     if(id==='graduates') renderGraduatesList();
+    if(id==='settings')  renderSettingsForm();
   }
 }
 
@@ -374,7 +428,14 @@ function normalizeDate(s){
 }
 function formatDate(d){ if(!d||isNaN(d.getTime())) return ''; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
 function getLectureCount(lec){ const s=String(lec).toLowerCase(); return (s.includes('merged')||s.includes('and')||/\d\s*-\s*\d/.test(s))?2:1; }
-function getSeverity(n){ return n>=15?'high':n>=8?'medium':'low'; }
+
+// Reads from persisted Settings (falls back to the original hardcoded
+// 8/15 if Settings hasn't loaded yet, so behavior is unchanged pre-load).
+function getSeverity(n){
+  const high = appSettings ? (parseInt(appSettings.high_risk_threshold)||15) : 15;
+  const at   = appSettings ? (parseInt(appSettings.at_risk_threshold)||8)   : 8;
+  return n>=high?'high':n>=at?'medium':'low';
+}
 function getBadge(n){
   const L=LANGS[currentLang]; const s=getSeverity(n);
   const t=s==='high'?L.badgeHigh:s==='medium'?L.badgeMedium:L.badgeLow;
@@ -488,11 +549,15 @@ async function fetchData(){
   }
 }
 
+// Reads from persisted Settings (falls back to the original hardcoded
+// 8/15 thresholds so the stat cards never break if Settings hasn't
+// loaded yet). Single-sourced from getSeverity() so this count and the
+// per-student badge shown elsewhere never disagree with each other.
 function updateStats(){
   let totalAbs=0; const students={};
   allData.forEach(r=>{ totalAbs+=r.lectureCount*r.absences.length; r.absences.forEach(n=>{const k=n.toLowerCase();students[k]=(students[k]||0)+r.lectureCount;}); });
   let high=0,medium=0;
-  Object.values(students).forEach(c=>{if(c>=15)high++;else if(c>=8)medium++;});
+  Object.values(students).forEach(c=>{ const sev=getSeverity(c); if(sev==='high') high++; else if(sev==='medium') medium++; });
   document.getElementById('totalAbsences').textContent=totalAbs;
   document.getElementById('totalStudents').textContent=Object.keys(students).length;
   document.getElementById('highRisk').textContent=high;
@@ -616,10 +681,22 @@ function filterRoster(){
 }
 
 // ── ANALYTICS ─────────────────────────────────────────
+// Reads lecturesPerDay/expulsionDays from persisted Settings instead of
+// the page-local inputs. The two <input> elements in the Analytics tab
+// remain visible as a read-only reference and are snapped back to the
+// persisted value on every render (editing now happens in the ⚙️
+// Settings tab → Absence Policy). absentapi.html will mark them
+// `disabled` and drop their onchange in the next pass, but this snap-back
+// keeps behavior correct even before that HTML change lands.
 function loadAnalytics(){
   const L=LANGS[currentLang];
-  const lpd=parseInt(document.getElementById('lecturesPerDay').value)||3;
-  const expD=parseInt(document.getElementById('expulsionDays').value)||21;
+  const lpd  = appSettings ? (parseInt(appSettings.lectures_per_day)||3)  : 3;
+  const expD = appSettings ? (parseInt(appSettings.expulsion_days)||21) : 21;
+  const lpdInput = document.getElementById('lecturesPerDay');
+  const expInput = document.getElementById('expulsionDays');
+  if(lpdInput) lpdInput.value = lpd;
+  if(expInput) expInput.value = expD;
+
   const dailyMap={};
   allData.forEach(entry=>{ entry.absences.forEach(name=>{ if(!dailyMap[name]) dailyMap[name]={}; dailyMap[name][entry.date]=(dailyMap[name][entry.date]||0)+entry.lectureCount; }); });
   const risk={};
@@ -721,6 +798,7 @@ function showTab(name){
   if(name==='students')  loadStudentsTab();
   if(name==='subjects')  loadSubjectsTab();
   if(name==='graduates') loadGraduatesTab();
+  if(name==='settings')  loadSettingsTab();
 }
 
 // ══════════════════════════════════════════════════════
@@ -1488,6 +1566,242 @@ async function doDeleteSubject(rowIndex){
   } catch(err){ showToast(L.toastDeleteFail+' '+err.message,'error'); }
 }
 
+// ══════════════════════════════════════════════════════
+// ── SETTINGS TAB ──────────────────────────────────────
+// ══════════════════════════════════════════════════════
+
+// Applies a freshly-fetched settings map to every runtime location that
+// needs it: LANGS name overrides, SCHOOL_START (feeds getWeeks()/
+// getMonths() only — see design discussion), header text, and the
+// dashboard's own logo <img> tags + reports.js's globals.
+function applySettings(s){
+  appSettings = s;
+
+  if(s.institute_name_ku) LANGS.ku.dInstName = s.institute_name_ku;
+  if(s.institute_name_ar) LANGS.ar.dInstName = s.institute_name_ar;
+  if(s.institute_name_en) LANGS.en.dInstName = s.institute_name_en;
+
+  if(s.school_year_start) SCHOOL_START = s.school_year_start;
+
+  if(s.institute_logo_url) instituteLogoUrl = s.institute_logo_url;
+  if(s.ministry_logo_url)  ministryLogoUrl  = s.ministry_logo_url;
+
+  // NOTE: #dashInstituteLogo / #dashMinistryLogo are new ids that must be
+  // added to the <img class="logo-right">/<img class="logo-left"> tags in
+  // absentapi.html (next file in the build order) — guarded with `if(el)`
+  // so this is a silent no-op, not a crash, until that HTML change lands.
+  const instLogoEl = document.getElementById('dashInstituteLogo');
+  const minLogoEl  = document.getElementById('dashMinistryLogo');
+  if(instLogoEl) instLogoEl.src = instituteLogoUrl;
+  if(minLogoEl)  minLogoEl.src  = ministryLogoUrl;
+
+  const nameEl = document.getElementById('dInstName');
+  if(nameEl) nameEl.textContent = LANGS[currentLang].dInstName;
+}
+
+// Fetches Settings from the backend and applies them. Any read failure is
+// non-fatal — the dashboard keeps working with the built-in fallback
+// defaults (matches pre-Settings hardcoded behavior exactly).
+async function loadSettings(){
+  try {
+    const url  = SCRIPT_URL+'?action=getSettings&token='+encodeURIComponent(adminToken);
+    const json = await (await fetch(url)).json();
+    if(json.error) throw new Error(json.error);
+    applySettings(json);
+  } catch(err){
+    console.warn('loadSettings:', err.message);
+  }
+}
+
+async function loadSettingsTab(){
+  if(!appSettings) await loadSettings();
+  renderSettingsForm();
+}
+
+function setVal(id, val){
+  const el=document.getElementById(id);
+  if(el && val!==undefined && val!==null) el.value=val;
+}
+
+// school_year_start is stored/consumed as 'M/D/YYYY' (matches the
+// original hardcoded SCHOOL_START format exactly), but <input
+// type="date"> needs 'YYYY-MM-DD'.
+function normalizeDateForInput(mdy){
+  if(!mdy) return '';
+  const d=new Date(mdy);
+  if(isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function denormalizeDateFromInput(iso){
+  if(!iso) return '';
+  const [y,m,d]=iso.split('-');
+  if(!y||!m||!d) return '';
+  return `${parseInt(m)}/${parseInt(d)}/${y}`;
+}
+
+function renderSettingsForm(){
+  if(!appSettings) return;
+  const L=LANGS[currentLang];
+
+  // Absence Policy
+  setVal('setLecturesPerDay',    appSettings.lectures_per_day);
+  setVal('setExpulsionDays',     appSettings.expulsion_days);
+  setVal('setAtRiskThreshold',   appSettings.at_risk_threshold);
+  setVal('setHighRiskThreshold', appSettings.high_risk_threshold);
+
+  // Academic Year
+  setVal('setSchoolYearStart', normalizeDateForInput(appSettings.school_year_start));
+  const ayEl = document.getElementById('setAcademicYearDisplay');
+  if(ayEl) ayEl.textContent = (L.academicYearLabel||'Academic Year')+': '+getAcademicYear();
+
+  // Institute Branding — names
+  setVal('setInstNameKu', appSettings.institute_name_ku);
+  setVal('setInstNameAr', appSettings.institute_name_ar);
+  setVal('setInstNameEn', appSettings.institute_name_en);
+
+  // Institute Branding — logo previews (current saved logo)
+  const instPrev = document.getElementById('instituteLogoPreview');
+  const minPrev  = document.getElementById('ministryLogoPreview');
+  if(instPrev) instPrev.src = instituteLogoUrl;
+  if(minPrev)  minPrev.src  = ministryLogoUrl;
+}
+
+async function savePolicySettings(){
+  const L=LANGS[currentLang];
+  const lectures_per_day    = document.getElementById('setLecturesPerDay').value.trim();
+  const expulsion_days      = document.getElementById('setExpulsionDays').value.trim();
+  const at_risk_threshold   = document.getElementById('setAtRiskThreshold').value.trim();
+  const high_risk_threshold = document.getElementById('setHighRiskThreshold').value.trim();
+  if(!lectures_per_day||!expulsion_days||!at_risk_threshold||!high_risk_threshold){
+    showToast(L.toastSaveFail,'error'); return;
+  }
+  const btn=document.getElementById('btnSavePolicy');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  try {
+    const text=await adminGet({action:'saveSettings', lectures_per_day, expulsion_days, at_risk_threshold, high_risk_threshold});
+    if(text.startsWith('ERROR')) throw new Error(text);
+    Object.assign(appSettings, {lectures_per_day, expulsion_days, at_risk_threshold, high_risk_threshold});
+    updateStats();
+    if(document.getElementById('analytics').classList.contains('active')) loadAnalytics();
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { if(btn){ btn.textContent=L.btnSavePolicy||'Save Policy'; btn.disabled=false; } }
+}
+
+async function saveAcademicYearSettings(){
+  const L=LANGS[currentLang];
+  const iso = document.getElementById('setSchoolYearStart').value;
+  if(!iso){ showToast(L.toastSaveFail,'error'); return; }
+  const school_year_start = denormalizeDateFromInput(iso);
+  const btn=document.getElementById('btnSaveAcademicYear');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  try {
+    const text=await adminGet({action:'saveSettings', school_year_start});
+    if(text.startsWith('ERROR')) throw new Error(text);
+    appSettings.school_year_start = school_year_start;
+    SCHOOL_START = school_year_start;
+    // Weeks/months are enumerated FROM SCHOOL_START — recompute and
+    // refresh whichever of those two tabs is currently open. Note:
+    // getAcademicYear()'s displayed value is untouched by this save,
+    // by design (see design discussion).
+    weeks=getWeeks(); months=getMonths();
+    if(document.getElementById('weekly').classList.contains('active'))  loadWeeklyDropdown();
+    if(document.getElementById('monthly').classList.contains('active')) loadMonthlyDropdown();
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { if(btn){ btn.textContent=L.btnSaveAcademicYear||'Save Academic Year'; btn.disabled=false; } }
+}
+
+async function saveNamesSettings(){
+  const L=LANGS[currentLang];
+  const institute_name_ku = document.getElementById('setInstNameKu').value.trim();
+  const institute_name_ar = document.getElementById('setInstNameAr').value.trim();
+  const institute_name_en = document.getElementById('setInstNameEn').value.trim();
+  if(!institute_name_ku||!institute_name_ar||!institute_name_en){ showToast(L.toastSaveFail,'error'); return; }
+  const btn=document.getElementById('btnSaveNames');
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  try {
+    const text=await adminGet({action:'saveSettings', institute_name_ku, institute_name_ar, institute_name_en});
+    if(text.startsWith('ERROR')) throw new Error(text);
+    Object.assign(appSettings, {institute_name_ku, institute_name_ar, institute_name_en});
+    LANGS.ku.dInstName = institute_name_ku;
+    LANGS.ar.dInstName = institute_name_ar;
+    LANGS.en.dInstName = institute_name_en;
+    const nameEl = document.getElementById('dInstName');
+    if(nameEl) nameEl.textContent = LANGS[currentLang].dInstName;
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { if(btn){ btn.textContent=L.btnSaveNames||'Save Names'; btn.disabled=false; } }
+}
+
+// ── Logo upload (POST — the one deliberate exception to the GET-only
+//    convention, since Apps Script doGet cannot receive file bytes) ──
+function readFileAsBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload = ()=> {
+      // reader.result is a data: URL ("data:image/png;base64,AAAA...") —
+      // strip everything before the comma to get raw base64.
+      const b64 = String(reader.result).split(',')[1] || '';
+      resolve(b64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function doUploadLogo(logoType){
+  const L=LANGS[currentLang];
+  const inputId = logoType==='institute' ? 'instituteLogoFile' : 'ministryLogoFile';
+  const btnId   = logoType==='institute' ? 'btnUploadInstituteLogo' : 'btnUploadMinistryLogo';
+  const prevId  = logoType==='institute' ? 'instituteLogoPreview' : 'ministryLogoPreview';
+
+  const input = document.getElementById(inputId);
+  const file  = input && input.files && input.files[0];
+  if(!file){ showToast(L.toastSaveFail,'error'); return; }
+
+  // Client-side checks mirror the backend's — a friendlier failure than
+  // waiting on a round-trip, but the backend re-validates regardless.
+  if(!file.type.startsWith('image/')){ showToast(L.toastSaveFail,'error'); return; }
+  if(file.size > 2*1024*1024){ showToast(L.toastSaveFail+' (>2MB)','error'); return; }
+
+  const btn=document.getElementById(btnId);
+  const originalLabel = btn ? btn.textContent : '';
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+
+  try {
+    const base64Data = await readFileAsBase64(file);
+    const resp = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      // text/plain avoids a CORS preflight against the Apps Script Web
+      // App deployment — see design notes from the earlier code.txt pass.
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'uploadLogo', logoType,
+        fileName: file.name, mimeType: file.type,
+        base64Data, token: adminToken
+      })
+    });
+    const text = (await resp.text()).trim();
+    if(text.startsWith('ERROR')) throw new Error(text);
+    const newUrl = text.slice(3); // strip leading "OK:"
+
+    if(logoType==='institute'){ instituteLogoUrl=newUrl; if(appSettings) appSettings.institute_logo_url=newUrl; }
+    else { ministryLogoUrl=newUrl; if(appSettings) appSettings.ministry_logo_url=newUrl; }
+
+    const prevEl = document.getElementById(prevId);
+    if(prevEl) prevEl.src = newUrl;
+    const instLogoEl = document.getElementById('dashInstituteLogo');
+    const minLogoEl  = document.getElementById('dashMinistryLogo');
+    if(logoType==='institute' && instLogoEl) instLogoEl.src = newUrl;
+    if(logoType==='ministry'  && minLogoEl)  minLogoEl.src  = newUrl;
+
+    if(input) input.value='';
+    showToast(L.toastSaved,'success');
+  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
+  finally { if(btn){ btn.textContent=originalLabel; btn.disabled=false; } }
+}
+
 // ── Clear cache ───────────────────────────────────────
 async function doClearCache(){
   const L=LANGS[currentLang];
@@ -1517,9 +1831,11 @@ document.addEventListener('visibilitychange', ()=>{
 });
 
 // ── Init ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
   if(!checkAuth()) return;
-  setLang(currentLang);
+  setLang(currentLang);   // paint immediately with fallback/hardcoded text — avoids a blank flash
+  await loadSettings();   // fetch persisted name/logos/SCHOOL_START and apply them
+  setLang(currentLang);   // repaint so translated static text reflects the real institute name
   fetchData();
   scheduleRefresh();
 });
