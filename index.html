@@ -9,12 +9,15 @@
 <body>
 
 <header class="site-header">
-  <div class="logo-badge">ACI</div>
+  <img id="portalInstituteLogo" src="aci.jpg" alt="ACI Logo"
+    style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 0 0 4px rgba(200,64,42,0.25);">
   <div class="header-text">
     <h1 id="hInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
     <p id="hSub">سیستەما تومارکرنا نەهاتنێ</p>
     <p id="hYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:14px;"></p>
   </div>
+  <img id="portalMinistryLogo" src="new-left-logo.jpg" alt="Ministry Logo"
+    style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">
   <div class="lang-switcher">
     <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
     <button class="lang-btn" onclick="setLang('ar')">عربي</button>
@@ -273,6 +276,10 @@ let todayRows        = [];
 let pendingDeleteRow = null;
 let pendingEditRow   = null; // holds the full row object during edit flow
 
+// ── Settings (name + logos) ───────────────────────────
+let portalInstituteLogoUrl = 'aci.jpg';           // fallback matches original hardcoded filename convention
+let portalMinistryLogoUrl  = 'new-left-logo.jpg';  // fallback matches original hardcoded filename convention
+
 // Kurdistan Region school year runs mid-September through May, so the
 // "current year" flips to the new label at the start of September —
 // e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
@@ -287,6 +294,45 @@ async function teacherGet(params){
   const qs = Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
   const resp = await fetch(SCRIPT_URL+'?'+qs+'&token='+encodeURIComponent(sessionStorage.getItem('aci_token')));
   return (await resp.text()).trim();
+}
+
+// ── Apply institute name + both logos, fetched post-login from the
+//    authenticated getSettings endpoint. Overrides LANGS.xx.hInstName in
+//    place (same 3 keys setLang() already reads), sets both logo <img>
+//    src attributes, then repaints via setLang() so whichever language is
+//    active shows the real name immediately. Every step guarded so a
+//    partial/missing response just leaves the hardcoded fallbacks above
+//    untouched — matches the exact pattern already confirmed in
+//    login.html's applyPublicBranding() and app.js's applySettings(). ──
+function applyPortalSettings(s) {
+  if (!s) return;
+  if (s.institute_name_ku) LANGS.ku.hInstName = s.institute_name_ku;
+  if (s.institute_name_ar) LANGS.ar.hInstName = s.institute_name_ar;
+  if (s.institute_name_en) LANGS.en.hInstName = s.institute_name_en;
+  if (s.institute_logo_url) portalInstituteLogoUrl = s.institute_logo_url;
+  if (s.ministry_logo_url)  portalMinistryLogoUrl  = s.ministry_logo_url;
+
+  const instEl = document.getElementById('portalInstituteLogo');
+  const minEl  = document.getElementById('portalMinistryLogo');
+  if (instEl) instEl.src = portalInstituteLogoUrl;
+  if (minEl)  minEl.src  = portalMinistryLogoUrl;
+
+  setLang(currentLang);
+}
+
+// Fetches Settings via the authenticated getSettings action (teacher
+// token is accepted — see verifyToken(token) with no role argument in
+// code.txt). Non-fatal on failure: the portal keeps working with the
+// hardcoded fallback name/logos, exactly like it always did.
+async function loadPortalSettings() {
+  try {
+    const url  = SCRIPT_URL + '?action=getSettings&token=' + encodeURIComponent(sessionStorage.getItem('aci_token'));
+    const json = await (await fetch(url)).json();
+    if (json.error) throw new Error(json.error);
+    applyPortalSettings(json);
+  } catch(err) {
+    console.warn('loadPortalSettings:', err.message);
+  }
 }
 
 // ── i18n apply ───────────────────────────────────────
@@ -361,6 +407,7 @@ function doLogout() {
 document.addEventListener('DOMContentLoaded', () => {
   if (!checkAuth()) return;
   setLang(currentLang);
+  loadPortalSettings(); // fire-and-forget, same pattern as the STUDENTS fetch below — never blocks the form from becoming usable
 
   const raw = sessionStorage.getItem('aci_students');
   if (raw) {
