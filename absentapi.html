@@ -97,12 +97,47 @@
 .cache-bar { background:#f4f6ff; border:2px solid #d0d7ff; border-radius:10px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; margin-top:24px; flex-wrap:wrap; gap:10px; }
 .cache-bar p { color:#667eea; font-size:0.88em; font-weight:600; margin:0; }
 
+/* ── SETTINGS TAB STYLES ────────────────────────────── */
+.settings-section {
+  background:#fff; border:2px solid #e9ecef; border-radius:14px;
+  padding:20px 22px; margin-bottom:20px;
+}
+.settings-section h3 {
+  color:#667eea; font-size:1.15em; margin-bottom:16px;
+  display:flex; align-items:center; gap:8px;
+}
+.settings-readonly {
+  background:#f4f6ff; border:2px solid #d0d7ff; border-radius:8px;
+  padding:10px 14px; font-weight:700; color:#667eea; font-size:0.92em;
+  margin-top:4px;
+}
+.settings-note {
+  font-size:0.78em; color:#999; margin-top:10px; line-height:1.5;
+}
+.logo-widgets { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:6px; }
+.logo-widget {
+  border:2px dashed #d0d7ff; border-radius:12px; padding:16px;
+  text-align:center; background:#f8f9ff;
+}
+.logo-widget-preview {
+  width:110px; height:110px; object-fit:contain; border-radius:10px;
+  background:#fff; border:1px solid #e9ecef; margin:0 auto 12px; display:block;
+}
+.logo-widget label.lw-title { font-weight:700; color:#667eea; display:block; margin-bottom:10px; font-size:0.92em; }
+.logo-widget input[type="file"] {
+  width:100%; font-size:0.8em; margin-bottom:10px; font-family:inherit;
+}
+.policy-disabled-note {
+  font-size:0.78em; color:#999; margin-top:6px; font-style:italic;
+}
+
 /* Responsive mgmt */
 @media(max-width:600px){
   .mgmt-table { font-size:0.78em; }
   .mgmt-table th, .mgmt-table td { padding:7px 8px; }
   .mgmt-modal { padding:18px 14px; }
   .class-grid { grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); }
+  .logo-widgets { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -122,13 +157,13 @@
   </div>
   <br>
   <div class="dash-header-top">
-    <img src="aci.jpg" alt="ACI Logo" class="logo-right">
+    <img src="aci.jpg" alt="ACI Logo" class="logo-right" id="dashInstituteLogo">
     <div class="dash-titles" dir="rtl" style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;text-align:center;">
       <h1 id="dInstName" style="margin-bottom:5px;font-size:36px;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
       <h2 id="dSub" style="margin-top:0;color:#555;font-size:24px;">تومارا نەهاتنا قوتابیان</h2>
       <p id="dAcademicYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:15px;"></p>
     </div>
-    <img src="new-left-logo.jpg" alt="New Left Logo" class="logo-left">
+    <img src="new-left-logo.jpg" alt="New Left Logo" class="logo-left" id="dashMinistryLogo">
   </div>
   <div class="search-wrap">
     <input type="text" id="searchInput" placeholder="🔍 ناڤێ یەکەم ی قوتابی بنووسە..." oninput="onSearch()">
@@ -156,6 +191,7 @@
   <button class="tab"        onclick="showTab('students')" id="tab-students">👨‍🎓 قوتابیان</button>
   <button class="tab"        onclick="showTab('subjects')" id="tab-subjects">🏫 پۆل و بابەت</button>
   <button class="tab"        onclick="showTab('graduates')" id="tab-graduates">🎓 دەرچووان</button>
+  <button class="tab"        onclick="showTab('settings')" id="tab-settings">⚙️ ڕێکخستن</button>
 </div>
 
 <!-- DAILY -->
@@ -237,13 +273,14 @@
     <div class="filter-row">
       <div class="filter-group">
         <label id="dLecPerDay">ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:</label>
-        <input type="number" id="lecturesPerDay" value="3" min="1" onchange="loadAnalytics()">
+        <input type="number" id="lecturesPerDay" value="3" min="1" disabled>
       </div>
       <div class="filter-group">
         <label id="dExpDays">ژمارەی ڕۆژانی دابراون بۆ دەرکرن:</label>
-        <input type="number" id="expulsionDays" value="21" min="1" onchange="loadAnalytics()">
+        <input type="number" id="expulsionDays" value="21" min="1" disabled>
       </div>
     </div>
+    <p class="policy-disabled-note">⚙️ ئەڤێن ژ ڕێکخستن ⚙️ Settings دەستکاری دبن</p>
   </div>
   <div id="analyticsContent"><div style="text-align:center;padding:50px;color:#667eea;font-size:1.1em;">⏳ بارکرن...</div></div>
 </div>
@@ -341,6 +378,99 @@
     </div>
   </div>
   <div id="graduatesList"></div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div id="settings" class="content-section">
+  <h2 class="section-title" id="dSettingsTitle">⚙️ ڕێکخستنێن سیستەمێ</h2>
+  <p class="section-sub" id="dSettingsSub">سیاسەتا نەهاتنێ، ساڵا خوێندنی و ناسنامەیا پەیمانگەهێ</p>
+
+  <!-- 🎯 ABSENCE POLICY -->
+  <div class="settings-section">
+    <h3 id="stPolicyTitle">🎯 سیاسەتا نەهاتنێ</h3>
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="setLecPerDayLbl">ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:</label>
+        <input type="number" id="setLecturesPerDay" min="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="setExpDaysLbl">ژمارەی ڕۆژانی دابراون بۆ دەرکرن:</label>
+        <input type="number" id="setExpulsionDays" min="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="setAtRiskLbl">سنوورێ ئاگاداریێ:</label>
+        <input type="number" id="setAtRiskThreshold" min="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="setHighRiskLbl">سنوورێ مەترسیێ:</label>
+        <input type="number" id="setHighRiskThreshold" min="1">
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn-add" onclick="savePolicySettings()" id="btnSavePolicy">تۆمارکرنا سیاسەتێ</button>
+    </div>
+  </div>
+
+  <!-- 📅 ACADEMIC YEAR -->
+  <div class="settings-section">
+    <h3 id="stAcademicTitle">📅 ساڵا خوێندنی</h3>
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="setSchoolStartLbl">دەستپێکا ساڵا خوێندنی:</label>
+        <input type="date" id="setSchoolYearStart">
+      </div>
+      <div class="mgmt-field">
+        <label>—</label>
+        <div class="settings-readonly" id="setAcademicYearDisplay"></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn-add" onclick="saveAcademicYearSettings()" id="btnSaveAcademicYear">تۆمارکرنا ساڵا خوێندنی</button>
+    </div>
+  </div>
+
+  <!-- 🏫 INSTITUTE BRANDING -->
+  <div class="settings-section">
+    <h3 id="stBrandingTitle">🏫 ناسنامەیا پەیمانگەهێ</h3>
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="setNameKuLbl">ناڤێ پەیمانگەهێ (کوردی)</label>
+        <input type="text" id="setInstNameKu">
+      </div>
+      <div class="mgmt-field">
+        <label id="setNameArLbl">ناڤێ پەیمانگەهێ (عەرەبی)</label>
+        <input type="text" id="setInstNameAr">
+      </div>
+      <div class="mgmt-field">
+        <label id="setNameEnLbl">ناڤێ پەیمانگەهێ (ئینگلیزی)</label>
+        <input type="text" id="setInstNameEn">
+      </div>
+    </div>
+    <div style="margin-top:16px;margin-bottom:22px;">
+      <button class="btn-add" onclick="saveNamesSettings()" id="btnSaveNames">تۆمارکرنا ناڤان</button>
+    </div>
+
+    <div class="logo-widgets">
+      <div class="logo-widget">
+        <label class="lw-title" id="instituteLogoLbl">لۆگۆیێ پەیمانگەهێ</label>
+        <img id="instituteLogoPreview" class="logo-widget-preview" src="aci.jpg" alt="Institute Logo">
+        <input type="file" id="instituteLogoFile" accept="image/*">
+        <button class="btn-add" style="width:100%;" onclick="doUploadLogo('institute')" id="btnUploadInstituteLogo">⬆️ بارکرن</button>
+      </div>
+      <div class="logo-widget">
+        <label class="lw-title" id="ministryLogoLbl">لۆگۆیێ وەزارەتێ</label>
+        <img id="ministryLogoPreview" class="logo-widget-preview" src="new-left-logo.jpg" alt="Ministry Logo">
+        <input type="file" id="ministryLogoFile" accept="image/*">
+        <button class="btn-add" style="width:100%;" onclick="doUploadLogo('ministry')" id="btnUploadMinistryLogo">⬆️ بارکرن</button>
+      </div>
+    </div>
+    <p class="settings-note">🖼️ زێدەتر ژ 2MB نابیت، وێنە بەس (jpg, png, webp...)</p>
+  </div>
+
+  <div class="cache-bar">
+    <p id="cacheNote4">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache4">🔄 نوێکرنەوەی داتا</button>
+  </div>
 </div>
 
 </div><!-- /container -->
