@@ -4,7 +4,8 @@
 // Snapshots HTML blocks for reliable Kurdish/Arabic text rendering.
 // Depends on globals from absentapi.html:
 // LANGS, currentLang, allData, mgmtData, classes, weeks, months,
-// getSeverity, showToast, normalizeDate, formatDate, getAcademicYear.
+// getSeverity, showToast, normalizeDate, formatDate, getAcademicYear,
+// instituteLogoUrl, ministryLogoUrl.
 // Requires jsPDF and html2canvas.
 // ══════════════════════════════════════════════════════
 
@@ -130,7 +131,7 @@ function buildReportHeaderHTML(title, subtitle) {
       <div style="display:flex;align-items:center;justify-content:space-between;
         gap:18px;border-bottom:3px solid #667eea;padding-bottom:18px;margin-bottom:20px;">
 
-        <img src="aci.jpg"
+        <img src="${escapeHtml(instituteLogoUrl)}"
           style="width:96px;height:96px;object-fit:contain;flex-shrink:0;">
 
         <div style="text-align:center;flex:1;min-width:0;padding:0 10px;">
@@ -142,7 +143,7 @@ function buildReportHeaderHTML(title, subtitle) {
           </div>
         </div>
 
-        <img src="new-left-logo.jpg"
+        <img src="${escapeHtml(ministryLogoUrl)}"
           style="width:96px;height:96px;object-fit:contain;flex-shrink:0;">
       </div>
 
