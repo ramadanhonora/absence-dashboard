@@ -9,7 +9,7 @@
 <body>
 
 <header class="site-header">
-  <img src="aci.jpg" alt="ACI Logo" class="logo-right" style="width: 80px; height: auto;">
+  <img src="aci.jpg" alt="ACI Logo" class="logo-right" id="loginInstituteLogo" style="width: 80px; height: auto;">
   <div class="header-text">
     <h1 id="hInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
     <p id="hSub">سیستەما تومارکرنا نەهاتنێ</p>
@@ -154,6 +154,24 @@ function setLang(lang) {
   });
 }
 
+// ── Apply public branding fetched from the backend (institute name in
+//    all 3 languages + institute logo URL). Overrides the hardcoded
+//    LANGS.xx.hInstName values in place, then repaints via setLang() so
+//    whichever language is currently active shows the saved name
+//    immediately. Silently a no-op if `settings` is missing/incomplete —
+//    the hardcoded fallback text above stays exactly as it was pre-Settings. ──
+function applyPublicBranding(settings) {
+  if (!settings) return;
+  if (settings.institute_name_ku) LANGS.ku.hInstName = settings.institute_name_ku;
+  if (settings.institute_name_ar) LANGS.ar.hInstName = settings.institute_name_ar;
+  if (settings.institute_name_en) LANGS.en.hInstName = settings.institute_name_en;
+  if (settings.institute_logo_url) {
+    const logoEl = document.getElementById('loginInstituteLogo');
+    if (logoEl) logoEl.src = settings.institute_logo_url;
+  }
+  setLang(currentLang);
+}
+
 // ── Auto-login check ──────────────────────────────────
 function checkAutoLogin() {
   if (sessionStorage.getItem('explicit_logout') === '1') return;
@@ -163,7 +181,7 @@ function checkAutoLogin() {
   if (token && role === 'teacher') { window.location.href = PORTAL_URL; return; }
 }
 
-// ── Load system data via GET — for students only ──────
+// ── Load system data via GET — students + public branding ─────
 function loadSystemData() {
   const L = LANGS[currentLang];
   showLoading(L.loading);
@@ -172,12 +190,15 @@ function loadSystemData() {
     .then(data => {
       hideLoading();
       STUDENTS = data.students || {};
+      applyPublicBranding(data.settings);
       document.getElementById('btnLogin').disabled = false;
       checkAutoLogin();
     })
     .catch(() => {
       hideLoading();
-      // Still enable login even if student data fails
+      // Still enable login even if student data (and branding) fails —
+      // the page falls back to the hardcoded name/logo above, exactly
+      // like it always did before Settings existed.
       document.getElementById('btnLogin').disabled = false;
       checkAutoLogin();
     });
