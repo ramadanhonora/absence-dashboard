@@ -283,6 +283,8 @@ let portalMinistryLogoUrl  = 'new-left-logo.jpg';  // fallback matches original 
 // Kurdistan Region school year runs mid-September through May, so the
 // "current year" flips to the new label at the start of September —
 // e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
+// ── Class-subject map (for filtering the Subject dropdown by class) ──
+let classSubjectMap = {}; // raw map from backend, keys as stored (e.g. '1','4pro')
 function getAcademicYear(){
   const now=new Date();
   const y=now.getFullYear();
