@@ -350,20 +350,7 @@ function getAcademicYear(){
   const y=now.getFullYear();
   return now.getMonth()>=8 ? `${y}-${y+1}` : `${y-1}-${y}`;
 }
-// ── Class-subject stage key (copied from app.js — index.html is
-//    self-contained and can't import it) ──
-// '1A','1B','1C','1D' → '1'  (single letter = group, strip it)
-// '4PRO','4pro'       → '4pro'  (multi-letter = department, keep lowercase)
-// '5NET','5WEB'       → '5net','5web'
-function getStageKey(className){
-  const m = String(className).toLowerCase().match(/^(\d+)([a-z]*)$/);
-  if(!m) return String(className).toLowerCase();
-  const num    = m[1];
-  const suffix = m[2];
-  if(!suffix) return num;
-  if(suffix.length === 1) return num;
-  return num + suffix;
-}
+
 function setLang(lang) {
   if (!LANGS[lang]) return;
   currentLang = lang;
