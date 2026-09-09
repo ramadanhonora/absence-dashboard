@@ -395,7 +395,8 @@ function populateSubjectOptions(cls) {
       || classSubjectMap[stageKey.toUpperCase()]
       || [];
     const classSubjectsLower = new Set(classSubjectsRaw.map(s => s.toLowerCase()));
-    available = teacherSubjects.filter(s => classSubjectsLower.has(s.toLowerCase()));
+    const filtered = teacherSubjects.filter(s => classSubjectsLower.has(s.toLowerCase()));
+    available = filtered.length ? filtered : teacherSubjects;
   }
 
   sel.innerHTML = `<option value="">${L.placeholder}</option>`;
