@@ -103,6 +103,7 @@ const LANGS = {
     instituteLogoLbl:'لۆگۆیێ پەیمانگەهێ', ministryLogoLbl:'لۆگۆیێ وەزارەتێ',
     btnUploadInstituteLogo:'⬆️ بارکرن', btnUploadMinistryLogo:'⬆️ بارکرن',
     cacheNote4:'📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە', btnClearCache4:'🔄 نوێکرنەوەی داتا',
+    policyDisabledNote:'⚙️ ئەڤێن ژ ڕێکخستن ⚙️ Settings دەستکاری دبن',
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -203,6 +204,7 @@ const LANGS = {
     instituteLogoLbl:'شعار المعهد', ministryLogoLbl:'شعار الوزارة',
     btnUploadInstituteLogo:'⬆️ رفع', btnUploadMinistryLogo:'⬆️ رفع',
     cacheNote4:'📡 بعد كل تغيير يجب تحديث البيانات', btnClearCache4:'🔄 تحديث البيانات',
+    policyDisabledNote:'⚙️ يتم تعديل هذه القيم من تبويب ⚙️ الإعدادات',
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -305,6 +307,7 @@ const LANGS = {
     btnUploadInstituteLogo:'⬆️ Upload', btnUploadMinistryLogo:'⬆️ Upload',
     cacheNote4:'📡 After any change, refresh data so teachers see updates immediately',
     btnClearCache4:'🔄 Refresh Data',
+    policyDisabledNote:'⚙️ These values are edited from the ⚙️ Settings tab',
   }
 };
 
@@ -361,7 +364,7 @@ function setLang(lang) {
     'sClasses','sHighRiskSub','sAtRiskSub','dDailyTitle','dDailySub','dDateLabel',
     'btnToday','btnYesterday','dWeeklyTitle','dWeeklySub','dWeekLabel','dMonthlyTitle',
     'dMonthlySub','dMonthLabel','dRosterTitle','dRosterSub','dClassLabel','dMinAbsLabel',
-    'dAnalyticsTitle','dAnalyticsSub','dPolicyTitle','dLecPerDay','dExpDays',
+    'dAnalyticsTitle','dAnalyticsSub','dPolicyTitle','dLecPerDay','dExpDays','policyDisabledNote',
     'adminConfTitle','adminConfWarning','adminCancelBtn','adminDeleteBtn',
     'dTeachersTitle','dTeachersSub','dStudentsTitle','dStudentsSub',
     'btnAddTeacher','thTName','thTUser','thTPass','thTClasses','thTSubjects',
