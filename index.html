@@ -9,20 +9,19 @@
 <body>
 
 <header class="site-header">
-  <img id="portalInstituteLogo" src="aci.jpg" alt="ACI Logo"
-    style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;box-shadow:0 0 0 4px rgba(200,64,42,0.25);">
+  <div class="logo-badge">ACI</div>
   <div class="header-text">
     <h1 id="hInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
     <p id="hSub">سیستەما تومارکرنا نەهاتنێ</p>
     <p id="hYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:14px;"></p>
   </div>
-  <img id="portalMinistryLogo" src="new-left-logo.jpg" alt="Ministry Logo"
-    style="width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+
   <div class="lang-switcher">
     <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
     <button class="lang-btn" onclick="setLang('ar')">عربي</button>
     <button class="lang-btn" onclick="setLang('en')">EN</button>
   </div>
+
   <div class="header-user">
     <div class="user-pill"><span class="dot"></span><span id="headerUserName"></span></div>
     <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪 دەرچوون</button>
@@ -35,13 +34,12 @@
     <p id="loadingText">بارکرن...</p>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
 
 <main>
-  <!-- SUBMISSION FORM -->
   <div class="form-wrap" id="screenSubmit" style="display:none">
 
-    <!-- WELCOME BANNER (no subs button anymore) -->
     <div class="welcome-banner">
       <div class="avatar" id="welcomeAvatar">م</div>
       <div style="flex:1">
@@ -50,7 +48,6 @@
       </div>
     </div>
 
-    <!-- CONFIRM DELETE -->
     <div class="confirm-overlay" id="confirmOverlay">
       <div class="confirm-box">
         <div class="confirm-icon">🗑️</div>
@@ -63,7 +60,6 @@
       </div>
     </div>
 
-    <!-- STEP 1 -->
     <div class="card">
       <div class="card-header">
         <div class="step-badge">١</div>
@@ -73,7 +69,7 @@
         <div class="form-row">
           <div class="form-group">
             <label><span id="labelDate">بەروار</span> <span class="req">*</span></label>
-            <input class="form-control" type="date" id="fDate" onchange="saveFormState()" />
+            <input class="form-control" type="date" id="fDate" onchange="saveFormState()">
           </div>
           <div class="form-group">
             <label><span id="labelLecture">ژمارەیا دەرسێ</span> <span class="req">*</span></label>
@@ -91,10 +87,11 @@
             </select>
           </div>
         </div>
+
         <div class="form-row">
           <div class="form-group">
             <label><span id="labelSubject">بابەت</span> <span class="req">*</span></label>
-            <select class="form-control" id="fSubject" onchange="saveFormState()">
+            <select class="form-control" id="fSubject" onchange="onSubjectChange()">
               <option value="">— هلبژێرە —</option>
             </select>
           </div>
@@ -108,7 +105,6 @@
       </div>
     </div>
 
-    <!-- STEP 2 -->
     <div class="card">
       <div class="card-header">
         <div class="step-badge">٢</div>
@@ -127,6 +123,7 @@
             </div>
           </div>
         </div>
+
         <div class="absent-preview" id="absentPreview">
           <h5 id="absentPreviewTitle">✗ قوتابیێن نەهاتی:</h5>
           <div class="absent-pills" id="absentPills"></div>
@@ -141,21 +138,17 @@
       </button>
     </div>
 
-    <!-- RECENT SUBMISSIONS CARD — hidden until at least one row exists -->
     <div class="card recent-card" id="recentCard" style="display:none">
       <div class="card-header recent-card-header">
         <span class="recent-card-icon">📋</span>
         <h3 id="recentTitle">تومارکرنێن ئەمرۆ</h3>
         <span class="recent-count-badge" id="recentCountBadge">0</span>
       </div>
-      <div class="card-body recent-card-body" id="recentCardBody">
-        <!-- filled by renderRecentRows() -->
-      </div>
+      <div class="card-body recent-card-body" id="recentCardBody"></div>
     </div>
 
   </div>
 
-  <!-- SUCCESS SCREEN -->
   <div class="success-wrap" id="screenSuccess" style="display:none">
     <div class="success-card">
       <div class="success-icon">✅</div>
@@ -168,29 +161,38 @@
 </main>
 
 <script>
-const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
-const LOGIN_URL   = 'login.html';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
+const LOGIN_URL = 'login.html';
 
-// ── i18n ─────────────────────────────────────────────
 const LANGS = {
   ku: {
     dir:'rtl', htmlLang:'ku',
-    hInstName:'پەیمانگەها کومپیوتەرێ ل ئاکرێ', hSub:'سیستەما تومارکرنا نەهاتنێ',
-    teacherPrefix:'مامۆستا ', welcomeSub:'تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە',
+    hInstName:'پەیمانگەها کومپیوتەرێ ل ئاکرێ',
+    hSub:'سیستەما تومارکرنا نەهاتنێ',
+    teacherPrefix:'مامۆستا ',
+    welcomeSub:'تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە',
     step1:'زانیارییێن دەرسێ', step2:'قوتابیێن نەهاتی',
     labelDate:'بەروار', labelLecture:'ژمارەیا دەرسێ', labelSubject:'بابەت', labelClass:'گروپا پۆلێ',
-    placeholder:'— هلبژێرە —', noStudents:'پۆلێ هلبژێرە دا کو لیستا قوتابیان دەرکەڤە',
-    studentsTitle:'هلبژارنا پۆلێ', absentLabel:'نەهاتی', absentPreview:'✗ قوتابیێن نەهاتی:',
+    placeholder:'— هلبژێرە —',
+    noStudents:'پۆلێ هلبژێرە دا کو لیستا قوتابیان دەرکەڤە',
+    studentsTitle:'هلبژارنا پۆلێ', absentLabel:'نەهاتی',
+    absentPreview:'✗ قوتابیێن نەهاتی:',
     btnReset:'🔄 سفرکرن', btnSubmit:'📤 شاندن و پاشەکەفتکرن',
-    successTitle:'سەرکەفتن! تومار کرا', successSub:'نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.',
+    successTitle:'سەرکەفتن! تومار کرا',
+    successSub:'نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.',
     btnNew:'✓ باشە', btnLogout:'🚪 دەرچوون',
     fDate:'بەروار', fTeacher:'مامۆستە', fSubject:'بابەت', fLecture:'دەرس',
     fClass:'پۆل', fAbsent:'ژمارەیا نەهاتی', students:'قوتابی',
     loadingSubmit:'تومارکرنا نەهاتنێ...',
+    loadingData:'بارکرنا زانیاریان...',
+    loadingDel:'سڕینەوەی تومارکرن...',
+    loadingEdit:'ئامادەکرنا دەستکاریکرنێ...',
     toastFill:'⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
     toastWeekend:'🚫 هەینی و شەممە روژێن دەرفەتê ne! تومارکرن نابێت.',
-    toastDuplicate:'⚠️ ئەم دەرسێ پێش ئێڤارێ تومار کراوە!',
-    toastError:'❌ پەيوەندی ب سێرڤەری نەهاتە کرن!',
+    toastDate:'⚠️ بەروارا تومارکرنێ دڤێت ئەمرۆ بیت.',
+    toastDuplicate:'⚠️ ئەم دەرسێ پێشتر تومار کراوە!',
+    toastUnauthorized:'❌ دەستگەهشتن نەهاتیە پەسەندکرن. تکایە دوبارە بچۆ ژوور.',
+    toastError:'❌ پەیوەندی ب سێرڤەری نەهاتە کرن!',
     recentTitle:'تومارکرنێن ئەمرۆ',
     thLecture:'دەرس', thSubject:'بابەت', thClass:'پۆل', thAbsentStudents:'قوتابیێن نەهاتی',
     thActions:'کارەکان',
@@ -198,11 +200,9 @@ const LANGS = {
     confirmTitle:'تومارکرن بسڕەوە؟', confirmMsg:'ئەم کارە نابێتە پووچەلکرن.',
     confirmCancel:'هەڵوەستان',
     toastDelOk:'✅ تومارکرن هاتە سڕینەوە.', toastDelFail:'❌ سڕینەوە سەرنەکەفت!',
-    loadingDel:'سڕینەوەی تومارکرن...',
-    loadingEdit:'ئامادەکرنا دەستکاریکرنێ...',
     toastEditReady:'✏️ زانیاری هاتە داخلکرن — دەستکاری بکە و دوبارە بنێرە.',
     noneAbsent:'هیچ نەهاتنێک نەبوو',
-    academicYearLabel:'ساڵا خوێندنی',
+    academicYearLabel:'ساڵا خوێندنی'
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -217,23 +217,21 @@ const LANGS = {
     btnNew:'✓ حسناً', btnLogout:'🚪 تسجيل الخروج',
     fDate:'التاريخ', fTeacher:'المعلم', fSubject:'المادة', fLecture:'المحاضرة',
     fClass:'المجموعة', fAbsent:'عدد الغائبين', students:'طالب',
-    loadingSubmit:'جارٍ حفظ الغياب...',
+    loadingSubmit:'جارٍ حفظ الغياب...', loadingData:'جارٍ تحميل البيانات...',
+    loadingDel:'جارٍ حذف السجل...', loadingEdit:'جارٍ تحضير التعديل...',
     toastFill:'⚠️ يرجى ملء جميع الحقول المطلوبة!',
     toastWeekend:'🚫 الجمعة والسبت أيام عطلة! لا يمكن التسجيل.',
-    toastDuplicate:'⚠️ تم تسجيل هذا الدرس مسبقاً!',
+    toastDate:'⚠️ يجب أن يكون تاريخ التسجيل هو تاريخ اليوم.',
+    toastDuplicate:'⚠️ تم تسجيل هذه المحاضرة مسبقاً!',
+    toastUnauthorized:'❌ انتهت صلاحية الدخول. يرجى تسجيل الدخول مرة أخرى.',
     toastError:'❌ فشل الاتصال بالخادم!',
     recentTitle:'سجلات اليوم',
     thLecture:'المحاضرة', thSubject:'المادة', thClass:'المجموعة', thAbsentStudents:'الطلاب الغائبون',
-    thActions:'الإجراءات',
-    btnEdit:'✏️ تعديل', confirmDelete:'🗑️ حذف',
+    thActions:'الإجراءات', btnEdit:'✏️ تعديل', confirmDelete:'🗑️ حذف',
     confirmTitle:'حذف السجل؟', confirmMsg:'لا يمكن التراجع عن هذا.',
-    confirmCancel:'إلغاء',
-    toastDelOk:'✅ تم حذف السجل.', toastDelFail:'❌ فشل الحذف!',
-    loadingDel:'جارٍ حذف السجل...',
-    loadingEdit:'جارٍ تحضير التعديل...',
+    confirmCancel:'إلغاء', toastDelOk:'✅ تم حذف السجل.', toastDelFail:'❌ فشل الحذف!',
     toastEditReady:'✏️ تم تحميل البيانات — عدّل وأعد الإرسال.',
-    noneAbsent:'لا غياب',
-    academicYearLabel:'السنة الدراسية',
+    noneAbsent:'لا غياب', academicYearLabel:'السنة الدراسية'
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -248,226 +246,62 @@ const LANGS = {
     btnNew:'✓ OK', btnLogout:'🚪 Logout',
     fDate:'Date', fTeacher:'Teacher', fSubject:'Subject', fLecture:'Lecture',
     fClass:'Class', fAbsent:'Absent Count', students:'students',
-    loadingSubmit:'Saving absence...',
+    loadingSubmit:'Saving absence...', loadingData:'Loading data...',
+    loadingDel:'Deleting submission...', loadingEdit:'Preparing edit...',
     toastFill:'⚠️ Please fill all required fields!',
     toastWeekend:'🚫 Friday & Saturday are holidays! No submissions.',
+    toastDate:'⚠️ Attendance date must be today.',
     toastDuplicate:'⚠️ This lesson was already submitted!',
+    toastUnauthorized:'❌ Your session is no longer valid. Please log in again.',
     toastError:'❌ Connection failed! Please try again.',
     recentTitle:"Today's Submissions",
     thLecture:'Lecture', thSubject:'Subject', thClass:'Class', thAbsentStudents:'Absent Students',
-    thActions:'Actions',
-    btnEdit:'✏️ Edit', confirmDelete:'🗑️ Delete',
+    thActions:'Actions', btnEdit:'✏️ Edit', confirmDelete:'🗑️ Delete',
     confirmTitle:'Delete submission?', confirmMsg:'This cannot be undone.',
-    confirmCancel:'Cancel',
-    toastDelOk:'✅ Submission deleted.', toastDelFail:'❌ Delete failed!',
-    loadingDel:'Deleting submission...',
-    loadingEdit:'Preparing edit...',
+    confirmCancel:'Cancel', toastDelOk:'✅ Submission deleted.', toastDelFail:'❌ Delete failed!',
     toastEditReady:'✏️ Data loaded — fix and resubmit.',
-    noneAbsent:'No absences',
-    academicYearLabel:'Academic Year',
+    noneAbsent:'No absences', academicYearLabel:'Academic Year'
   }
 };
 
-let currentLang      = localStorage.getItem('aci_lang') || 'ku';
-let currentTeacher   = null;
-let STUDENTS         = {};
-let selectedAbsent   = new Set();
-let todayRows        = [];
+let currentLang = localStorage.getItem('aci_lang') || 'ku';
+let currentTeacher = null;
+let STUDENTS = {};
+let CLASS_SUBJECT_MAP = {};
+let selectedAbsent = new Set();
+let todayRows = [];
 let pendingDeleteRow = null;
-let pendingEditRow   = null; // holds the full row object during edit flow
+let pendingEditRow = null;
 
-// ── Settings (name + logos) ───────────────────────────
-let portalInstituteLogoUrl = 'aci.jpg';           // fallback matches original hardcoded filename convention
-let portalMinistryLogoUrl  = 'new-left-logo.jpg';  // fallback matches original hardcoded filename convention
-
-// ── Class-subject map (for filtering the Subject dropdown by class) ──
-let classSubjectMap = {}; // raw map from backend, keys as stored (e.g. '1','4pro')
-
-// Kurdistan Region school year runs mid-September through May, so the
-// "current year" flips to the new label at the start of September —
-// e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
-function getAcademicYear(){
-  const now=new Date();
-  const y=now.getFullYear();
-  return now.getMonth()>=8 ? `${y}-${y+1}` : `${y-1}-${y}`;
+function getAcademicYear() {
+  const now = new Date();
+  const y = now.getFullYear();
+  return now.getMonth() >= 8 ? `${y}-${y+1}` : `${y-1}-${y}`;
 }
 
-// ── Class-subject stage key (copied from app.js — index.html is
-//    self-contained and can't import it) ──
-// '1A','1B','1C','1D' → '1'  (single letter = group, strip it)
-// '4PRO','4pro'       → '4pro'  (multi-letter = department, keep lowercase)
-// '5NET','5WEB'       → '5net','5web'
-function getStageKey(className){
-  const m = String(className).toLowerCase().match(/^(\d+)([a-z]*)$/);
-  if(!m) return String(className).toLowerCase();
-  const num    = m[1];
-  const suffix = m[2];
-  if(!suffix) return num;
-  if(suffix.length === 1) return num;
-  return num + suffix;
+function token() {
+  return sessionStorage.getItem('aci_token') || '';
 }
 
-// ── GET helper (CORS-safe, returns real response text) ──
-async function teacherGet(params){
-  const qs = Object.entries(params).map(([k,v])=>k+'='+encodeURIComponent(v)).join('&');
-  const resp = await fetch(SCRIPT_URL+'?'+qs+'&token='+encodeURIComponent(sessionStorage.getItem('aci_token')));
-  return (await resp.text()).trim();
-}
-
-// ── Apply institute name + both logos, fetched post-login from the
-//    authenticated getSettings endpoint. Overrides LANGS.xx.hInstName in
-//    place (same 3 keys setLang() already reads), sets both logo <img>
-//    src attributes, then repaints via setLang() so whichever language is
-//    active shows the real name immediately. Every step guarded so a
-//    partial/missing response just leaves the hardcoded fallbacks above
-//    untouched — matches the exact pattern already confirmed in
-//    login.html's applyPublicBranding() and app.js's applySettings(). ──
-function applyPortalSettings(s) {
-  if (!s) return;
-  if (s.institute_name_ku) LANGS.ku.hInstName = s.institute_name_ku;
-  if (s.institute_name_ar) LANGS.ar.hInstName = s.institute_name_ar;
-  if (s.institute_name_en) LANGS.en.hInstName = s.institute_name_en;
-  if (s.institute_logo_url) portalInstituteLogoUrl = s.institute_logo_url;
-  if (s.ministry_logo_url)  portalMinistryLogoUrl  = s.ministry_logo_url;
-
-  const instEl = document.getElementById('portalInstituteLogo');
-  const minEl  = document.getElementById('portalMinistryLogo');
-  if (instEl) instEl.src = portalInstituteLogoUrl;
-  if (minEl)  minEl.src  = portalMinistryLogoUrl;
-
-  setLang(currentLang);
-}
-
-// Fetches Settings via the authenticated getSettings action (teacher
-// token is accepted — see verifyToken(token) with no role argument in
-// code.txt). Non-fatal on failure: the portal keeps working with the
-// hardcoded fallback name/logos, exactly like it always did.
-async function loadPortalSettings() {
-  try {
-    const url  = SCRIPT_URL + '?action=getSettings&token=' + encodeURIComponent(sessionStorage.getItem('aci_token'));
-    const json = await (await fetch(url)).json();
-    if (json.error) throw new Error(json.error);
-    applyPortalSettings(json);
-  } catch(err) {
-    console.warn('loadPortalSettings:', err.message);
-  }
-}
-
-// Fetches the class→subject map so the Subject dropdown can be filtered
-// to only what the selected class actually offers. Any authenticated
-// role is accepted server-side (see getClassSubjectMap in code.txt).
-// Non-fatal on failure: populateSubjectOptions() falls back to showing
-// the teacher's full unfiltered subject list, exactly like before this
-// feature existed.
-async function loadClassSubjectMap() {
-  try {
-    const url  = SCRIPT_URL + '?action=getClassSubjectMap&token=' + encodeURIComponent(sessionStorage.getItem('aci_token'));
-    const json = await (await fetch(url)).json();
-    if (json.error) throw new Error(json.error);
-    classSubjectMap = json;
-    // Re-filter immediately if a class is already selected (covers the
-    // race where onClassChange() already ran once before this loaded).
-    populateSubjectOptions(document.getElementById('fClass').value);
-  } catch(err) {
-    console.warn('loadClassSubjectMap:', err.message);
-  }
-}
-
-// Fills the Subject <select> with the intersection of this teacher's
-// qualified subjects (currentTeacher.subjects) and the selected class's
-// real subject list (classSubjectMap, keyed by stage). With no class
-// selected, falls back to the teacher's full subject list — same as
-// original behavior. Preserves the current selection if it's still
-// valid after filtering; clears it otherwise.
-function populateSubjectOptions(cls) {
-  const L = LANGS[currentLang];
-  const sel = document.getElementById('fSubject');
-  const prevValue = sel.value;
-
-  const teacherSubjects = currentTeacher.subjects || [];
-  let available;
-
-  if (!cls) {
-    available = teacherSubjects;
-  } else {
-    const stageKey = getStageKey(cls);
-    const classSubjectsRaw = classSubjectMap[stageKey]
-      || classSubjectMap[stageKey.toUpperCase()]
-      || [];
-    const classSubjectsLower = new Set(classSubjectsRaw.map(s => s.toLowerCase()));
-    const filtered = teacherSubjects.filter(s => classSubjectsLower.has(s.toLowerCase()));
-    available = filtered.length ? filtered : teacherSubjects;
-  }
-
-  sel.innerHTML = `<option value="">${L.placeholder}</option>`;
-  available.forEach(s => {
-    const o = document.createElement('option');
-    o.value = s; o.textContent = s;
-    sel.appendChild(o);
-  });
-
-  sel.value = available.includes(prevValue) ? prevValue : '';
-}
-
-// ── i18n apply ───────────────────────────────────────
-function setLang(lang) {
-  if (!LANGS[lang]) return;
-  currentLang = lang;
-  localStorage.setItem('aci_lang', lang);
-  const L = LANGS[lang];
-  document.documentElement.dir  = L.dir;
-  document.documentElement.lang = L.htmlLang;
-  document.getElementById('hInstName').textContent      = L.hInstName;
-  document.getElementById('hSub').textContent           = L.hSub;
-  document.getElementById('hYear').textContent          = (L.academicYearLabel||'Academic Year')+': '+getAcademicYear();
-  document.getElementById('step1').textContent          = L.step1;
-  document.getElementById('step2').textContent          = L.step2;
-  document.getElementById('labelDate').textContent      = L.labelDate;
-  document.getElementById('labelLecture').textContent   = L.labelLecture;
-  document.getElementById('labelSubject').textContent   = L.labelSubject;
-  document.getElementById('labelClass').textContent     = L.labelClass;
-  document.getElementById('welcomeSub').textContent     = L.welcomeSub;
-  document.getElementById('btnReset').textContent       = L.btnReset;
-  document.getElementById('btnSubmitText').textContent  = L.btnSubmit;
-  document.getElementById('successTitle').textContent   = L.successTitle;
-  document.getElementById('successSub').textContent     = L.successSub;
-  document.getElementById('btnNew').textContent         = L.btnNew;
-  document.getElementById('btnLogout').textContent      = L.btnLogout;
-  document.getElementById('recentTitle').textContent    = L.recentTitle;
-  document.getElementById('noStudentsText').textContent = L.noStudents;
-  document.getElementById('absentPreviewTitle').textContent = L.absentPreview;
-  document.getElementById('confirmTitle').textContent   = L.confirmTitle;
-  document.getElementById('confirmMsg').textContent     = L.confirmMsg;
-  document.getElementById('confirmCancelBtn').textContent  = L.confirmCancel;
-  document.getElementById('confirmDeleteBtn').textContent  = L.confirmDelete;
-
-  document.querySelectorAll('select.form-control option[value=""]').forEach(o => {
-    o.textContent = L.placeholder;
-  });
-
-  updateAbsentCount();
-  if (currentTeacher) {
-    const tName = currentTeacher.arabicName || currentTeacher.displayName;
-    document.getElementById('welcomeName').textContent = L.teacherPrefix + tName;
-  }
-
-  document.querySelectorAll('.lang-btn').forEach((b, i) => {
-    b.classList.toggle('active', ['ku','ar','en'][i] === lang);
-  });
-
-  if (todayRows.length) renderRecentRows();
-}
-
-// ── Auth check ───────────────────────────────────────
 function checkAuth() {
-  const token   = sessionStorage.getItem('aci_token');
-  const role    = sessionStorage.getItem('aci_role');
-  const teacher = sessionStorage.getItem('aci_teacher');
-  if (!token || role !== 'teacher' || !teacher) {
+  const t = token();
+  const role = sessionStorage.getItem('aci_role');
+  if (!t || role !== 'teacher') {
     window.location.href = LOGIN_URL;
     return false;
   }
-  currentTeacher = JSON.parse(teacher);
+
+  try {
+    const raw = sessionStorage.getItem('aci_teacher');
+    currentTeacher = raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    currentTeacher = null;
+  }
+
+  if (!currentTeacher) {
+    window.location.href = LOGIN_URL;
+    return false;
+  }
   return true;
 }
 
@@ -477,323 +311,770 @@ function doLogout() {
   window.location.href = LOGIN_URL;
 }
 
-// ── Init ─────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  if (!checkAuth()) return;
-  setLang(currentLang);
-  loadPortalSettings();      // fire-and-forget, same pattern as the STUDENTS fetch below — never blocks the form from becoming usable
-  loadClassSubjectMap();     // fire-and-forget — see populateSubjectOptions() for the fallback behavior while this is in flight
+async function apiGet(params) {
+  const q = new URLSearchParams(params || {});
+  q.set('token', token());
 
-  const raw = sessionStorage.getItem('aci_students');
-  if (raw) {
-    STUDENTS = JSON.parse(raw);
-  } else {
-    fetch(SCRIPT_URL)
-      .then(r => r.json())
-      .then(d => {
-        STUDENTS = d.students || {};
-        sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
-      });
-  }
-
-  const tName = currentTeacher.arabicName || currentTeacher.displayName;
-  document.getElementById('welcomeName').textContent = LANGS[currentLang].teacherPrefix + tName;
-  document.getElementById('welcomeAvatar').textContent = tName.charAt(0);
-  document.getElementById('headerUserName').textContent = tName;
-
-  populateSubjectOptions('');
-  const clsSel = document.getElementById('fClass');
-  (currentTeacher.classes || []).forEach(c => {
-    const o = document.createElement('option'); o.value = c; o.textContent = c; clsSel.appendChild(o);
+  const response = await fetch(`${SCRIPT_URL}?${q.toString()}`, {
+    method: 'GET',
+    cache: 'no-store'
   });
 
-  document.getElementById('fDate').valueAsDate = new Date();
-  document.getElementById('screenSubmit').style.display = '';
+  const text = (await response.text()).trim();
+
+  if (!text) throw new Error('Empty server response');
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (_) {
+    return text;
+  }
+
+  if (data && (data.error === 'Unauthorized' || data.error === 'unauthorized')) {
+    throw new Error('Unauthorized');
+  }
+
+  return data;
+}
+
+function setLang(lang) {
+  if (!LANGS[lang]) return;
+
+  currentLang = lang;
+  localStorage.setItem('aci_lang', lang);
+
+  const L = LANGS[lang];
+  document.documentElement.dir = L.dir;
+  document.documentElement.lang = L.htmlLang;
+
+  setText('hInstName', L.hInstName);
+  setText('hSub', L.hSub);
+  setText('hYear', `${L.academicYearLabel}: ${getAcademicYear()}`);
+  setText('step1', L.step1);
+  setText('step2', L.step2);
+  setText('labelDate', L.labelDate);
+  setText('labelLecture', L.labelLecture);
+  setText('labelSubject', L.labelSubject);
+  setText('labelClass', L.labelClass);
+  setText('welcomeSub', L.welcomeSub);
+  setText('btnReset', L.btnReset);
+  setText('btnSubmitText', L.btnSubmit);
+  setText('successTitle', L.successTitle);
+  setText('successSub', L.successSub);
+  setText('btnNew', L.btnNew);
+  setText('btnLogout', L.btnLogout);
+  setText('recentTitle', L.recentTitle);
+  setText('noStudentsText', L.noStudents);
+  setText('absentPreviewTitle', L.absentPreview);
+  setText('confirmTitle', L.confirmTitle);
+  setText('confirmMsg', L.confirmMsg);
+  setText('confirmCancelBtn', L.confirmCancel);
+  setText('confirmDeleteBtn', L.confirmDelete);
+
+  document.querySelectorAll('select.form-control option[value=""]').forEach(o => {
+    o.textContent = L.placeholder;
+  });
+
+  if (currentTeacher) {
+    const name = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.username || '';
+    setText('welcomeName', L.teacherPrefix + name);
+    setText('headerUserName', name);
+  }
+
+  document.querySelectorAll('.lang-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['ku','ar','en'][i] === lang);
+  });
+
+  updateAbsentCount();
+  renderAbsentPreview();
+  if (todayRows.length) renderRecentRows();
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value == null ? '' : value;
+}
+
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function isWeekend() {
+  const day = new Date().getDay();
+  return day === 5 || day === 6;
+}
+
+function formatDateForDisplay(iso) {
+  if (!iso) return '';
+  const p = String(iso).split('-');
+  if (p.length !== 3) return iso;
+  return `${parseInt(p[1],10)}/${parseInt(p[2],10)}/${p[0]}`;
+}
+
+async function init() {
+  if (!checkAuth()) return;
+
+  setLang(currentLang);
+
+  const date = document.getElementById('fDate');
+  date.value = todayISO();
+  date.min = todayISO();
+  date.max = todayISO();
+
+  await loadTeacherData();
+
+  populateTeacherFields();
   restoreFormState();
 
+  document.getElementById('screenSubmit').style.display = '';
   loadRowsFromStorage();
-  loadTodayRows();
-});
+  await loadTodayRows();
+}
 
-// ── Students ──────────────────────────────────────────
+async function loadTeacherData() {
+  const L = LANGS[currentLang];
+  showLoading(L.loadingData);
+
+  try {
+    const data = await apiGet({action:'getTeacherData'});
+
+    if (!data || data.error) {
+      throw new Error(data && data.error ? data.error : 'Teacher data unavailable');
+    }
+
+    if (data.teacher) {
+      currentTeacher = data.teacher;
+      sessionStorage.setItem('aci_teacher', JSON.stringify(currentTeacher));
+    }
+
+    STUDENTS = data.students || {};
+    CLASS_SUBJECT_MAP = data.classSubjectMap || {};
+
+    sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
+    sessionStorage.setItem('aci_class_subject_map', JSON.stringify(CLASS_SUBJECT_MAP));
+
+    updateTeacherHeader();
+  } catch (err) {
+    console.error('loadTeacherData:', err);
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(L.toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+      return;
+    }
+
+    // Do not use the old public roster endpoint.
+    try {
+      const cached = JSON.parse(sessionStorage.getItem('aci_students') || '{}');
+      const cachedMap = JSON.parse(sessionStorage.getItem('aci_class_subject_map') || '{}');
+      STUDENTS = cached || {};
+      CLASS_SUBJECT_MAP = cachedMap || {};
+    } catch (_) {}
+
+    if (!Object.keys(STUDENTS).length) {
+      showToast(L.toastError, 'error');
+    }
+  } finally {
+    hideLoading();
+  }
+}
+
+function updateTeacherHeader() {
+  const name = currentTeacher
+    ? (currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.username || '')
+    : '';
+
+  setText('welcomeName', LANGS[currentLang].teacherPrefix + name);
+  setText('welcomeAvatar', name.charAt(0) || 'م');
+  setText('headerUserName', name);
+}
+
+function populateTeacherFields() {
+  const subjectSel = document.getElementById('fSubject');
+  const classSel = document.getElementById('fClass');
+
+  subjectSel.innerHTML = '';
+  classSel.innerHTML = '';
+
+  const placeholder = LANGS[currentLang].placeholder;
+
+  const so = document.createElement('option');
+  so.value = '';
+  so.textContent = placeholder;
+  subjectSel.appendChild(so);
+
+  const co = document.createElement('option');
+  co.value = '';
+  co.textContent = placeholder;
+  classSel.appendChild(co);
+
+  const classes = Array.isArray(currentTeacher?.classes) ? currentTeacher.classes : [];
+  classes.forEach(cls => {
+    const o = document.createElement('option');
+    o.value = cls;
+    o.textContent = cls;
+    classSel.appendChild(o);
+  });
+
+  const subjects = Array.isArray(currentTeacher?.subjects) ? currentTeacher.subjects : [];
+  subjects.forEach(sub => {
+    const o = document.createElement('option');
+    o.value = sub;
+    o.textContent = sub;
+    subjectSel.appendChild(o);
+  });
+
+  filterSubjectsForClass();
+}
+
 function onClassChange() {
-  const cls = document.getElementById('fClass').value;
   selectedAbsent.clear();
-  populateSubjectOptions(cls);
+  filterSubjectsForClass();
+
+  const cls = document.getElementById('fClass').value;
   renderStudents(cls);
   updateAbsentCount();
   renderAbsentPreview();
   saveFormState();
 }
 
-function renderStudents(cls, preSelected) {
-  const L   = LANGS[currentLang];
-  const con = document.getElementById('studentsContainer');
-  if (!cls || !STUDENTS[cls]) {
-    con.innerHTML = `<div class="no-students"><span class="icon">🎓</span><span>${L.noStudents}</span></div>`;
-    document.getElementById('studentsAreaTitle').textContent = '📋 ' + L.studentsTitle;
-    return;
-  }
-  const list = STUDENTS[cls];
-  document.getElementById('studentsAreaTitle').textContent = `📋 ${cls} — ${list.length} ${L.students}`;
-  let html = '<div class="students-grid">';
-  list.forEach(name => {
-    const safe    = name.replace(/'/g, "\\'");
-    const checked = preSelected && preSelected.has(name);
-    html += `<label class="student-check${checked ? ' checked' : ''}" onclick="toggleStudent(event,'${safe}')">
-      <input type="checkbox" value="${name}" ${checked ? 'checked' : ''} onchange="toggleStudent(event,'${safe}')">
-      <span class="sname">${name}</span></label>`;
-  });
-  html += '</div>';
-  con.innerHTML = html;
+function onSubjectChange() {
+  saveFormState();
 }
 
-function toggleStudent(e, name) {
-  e.stopPropagation();
-  const label = e.currentTarget.tagName === 'LABEL' ? e.currentTarget : e.currentTarget.closest('label');
-  if (!label) return;
-  const cb = label.querySelector('input');
-  if (selectedAbsent.has(name)) {
-    selectedAbsent.delete(name);
-    label.classList.remove('checked');
-    if (cb) cb.checked = false;
-  } else {
-    selectedAbsent.add(name);
-    label.classList.add('checked');
-    if (cb) cb.checked = true;
+function filterSubjectsForClass() {
+  const cls = document.getElementById('fClass').value;
+  const subjectSel = document.getElementById('fSubject');
+  const current = subjectSel.value;
+
+  const assigned = Array.isArray(currentTeacher?.subjects) ? currentTeacher.subjects : [];
+  let allowed = assigned.slice();
+
+  if (cls && Array.isArray(CLASS_SUBJECT_MAP[cls])) {
+    const classSubjects = CLASS_SUBJECT_MAP[cls].map(normalize);
+    allowed = assigned.filter(s => classSubjects.includes(normalize(s)));
   }
-  updateAbsentCount();
-  renderAbsentPreview();
+
+  subjectSel.innerHTML = '';
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = LANGS[currentLang].placeholder;
+  subjectSel.appendChild(ph);
+
+  allowed.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s;
+    o.textContent = s;
+    subjectSel.appendChild(o);
+  });
+
+  if (allowed.includes(current)) subjectSel.value = current;
+}
+
+function normalize(v) {
+  return String(v == null ? '' : v).trim().toLowerCase();
+}
+
+function renderStudents(cls, preSelected) {
+  const L = LANGS[currentLang];
+  const con = document.getElementById('studentsContainer');
+
+  if (!cls || !Array.isArray(STUDENTS[cls])) {
+    con.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'no-students';
+
+    const icon = document.createElement('span');
+    icon.className = 'icon';
+    icon.textContent = '🎓';
+
+    const msg = document.createElement('span');
+    msg.id = 'noStudentsText';
+    msg.textContent = L.noStudents;
+
+    box.appendChild(icon);
+    box.appendChild(msg);
+    con.appendChild(box);
+
+    setText('studentsAreaTitle', '📋 ' + L.studentsTitle);
+    return;
+  }
+
+  const list = STUDENTS[cls];
+  const selected = preSelected || selectedAbsent;
+
+  setText('studentsAreaTitle', `📋 ${cls} — ${list.length} ${L.students}`);
+
+  const grid = document.createElement('div');
+  grid.className = 'students-grid';
+
+  list.forEach(name => {
+    const label = document.createElement('label');
+    label.className = 'student-check';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = name;
+    checkbox.checked = selected.has(name);
+
+    const span = document.createElement('span');
+    span.className = 'sname';
+    span.textContent = name;
+
+    if (checkbox.checked) label.classList.add('checked');
+
+    label.appendChild(checkbox);
+    label.appendChild(span);
+
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        selectedAbsent.add(name);
+        label.classList.add('checked');
+      } else {
+        selectedAbsent.delete(name);
+        label.classList.remove('checked');
+      }
+      updateAbsentCount();
+      renderAbsentPreview();
+    });
+
+    label.addEventListener('click', e => {
+      if (e.target !== checkbox) {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
+      }
+    });
+
+    grid.appendChild(label);
+  });
+
+  con.innerHTML = '';
+  con.appendChild(grid);
 }
 
 function updateAbsentCount() {
-  document.getElementById('absentCount').textContent =
-    selectedAbsent.size + ' ' + LANGS[currentLang].absentLabel;
+  const L = LANGS[currentLang];
+  setText('absentCount', `${selectedAbsent.size} ${L.absentLabel}`);
 }
 
 function renderAbsentPreview() {
   const preview = document.getElementById('absentPreview');
-  const pills   = document.getElementById('absentPills');
-  if (!selectedAbsent.size) { preview.classList.remove('show'); return; }
+  const pills = document.getElementById('absentPills');
+
+  if (!selectedAbsent.size) {
+    preview.classList.remove('show');
+    pills.innerHTML = '';
+    return;
+  }
+
   preview.classList.add('show');
-  pills.innerHTML = [...selectedAbsent].map(n => {
-    const safe = n.replace(/'/g, "\\'");
-    return `<span class="absent-pill">${n}<span class="remove-pill" onclick="removeAbsent('${safe}')">✕</span></span>`;
-  }).join('');
+  pills.innerHTML = '';
+
+  [...selectedAbsent].forEach(name => {
+    const pill = document.createElement('span');
+    pill.className = 'absent-pill';
+
+    const text = document.createElement('span');
+    text.textContent = name;
+
+    const remove = document.createElement('span');
+    remove.className = 'remove-pill';
+    remove.textContent = '✕';
+    remove.title = 'Remove';
+    remove.addEventListener('click', e => {
+      e.stopPropagation();
+      removeAbsent(name);
+    });
+
+    pill.appendChild(text);
+    pill.appendChild(remove);
+    pills.appendChild(pill);
+  });
 }
 
 function removeAbsent(name) {
   selectedAbsent.delete(name);
-  document.querySelectorAll('.student-check').forEach(l => {
-    if (l.querySelector('.sname').textContent === name) {
-      l.classList.remove('checked');
-      l.querySelector('input').checked = false;
+
+  document.querySelectorAll('.student-check').forEach(label => {
+    const span = label.querySelector('.sname');
+    const cb = label.querySelector('input');
+    if (span && span.textContent === name) {
+      label.classList.remove('checked');
+      if (cb) cb.checked = false;
     }
   });
+
   updateAbsentCount();
   renderAbsentPreview();
 }
 
 function resetStudents() {
   selectedAbsent.clear();
-  const L = LANGS[currentLang];
-  document.getElementById('studentsContainer').innerHTML =
-    `<div class="no-students"><span class="icon">🎓</span><span>${L.noStudents}</span></div>`;
+  const cls = document.getElementById('fClass').value;
+  if (cls) renderStudents(cls);
+  else {
+    const con = document.getElementById('studentsContainer');
+    con.innerHTML = `<div class="no-students"><span class="icon">🎓</span><span id="noStudentsText">${LANGS[currentLang].noStudents}</span></div>`;
+  }
   updateAbsentCount();
-  document.getElementById('absentPreview').classList.remove('show');
+  renderAbsentPreview();
 }
 
-// ── Form state ────────────────────────────────────────
 function saveFormState() {
   if (!currentTeacher) return;
+
   sessionStorage.setItem('formState', JSON.stringify({
     username: currentTeacher.username,
-    date:    document.getElementById('fDate').value,
+    date: document.getElementById('fDate').value,
     subject: document.getElementById('fSubject').value,
     lecture: document.getElementById('fLecture').value,
-    cls:     document.getElementById('fClass').value,
+    cls: document.getElementById('fClass').value
   }));
 }
 
 function restoreFormState() {
   try {
-    const s = JSON.parse(sessionStorage.getItem('formState'));
-    if (!s || s.username !== currentTeacher.username) return;
-    if (s.date)    document.getElementById('fDate').value    = s.date;
+    const s = JSON.parse(sessionStorage.getItem('formState') || 'null');
+    if (!s || s.username !== currentTeacher?.username) return;
+
+    const today = todayISO();
+    if (s.date === today) document.getElementById('fDate').value = s.date;
+    if (s.cls) {
+      document.getElementById('fClass').value = s.cls;
+      filterSubjectsForClass();
+    }
     if (s.subject) document.getElementById('fSubject').value = s.subject;
     if (s.lecture) document.getElementById('fLecture').value = s.lecture;
-    if (s.cls)     { document.getElementById('fClass').value = s.cls; onClassChange(); }
-  } catch(e) {}
+
+    if (s.cls) renderStudents(s.cls);
+  } catch (_) {}
 }
 
 function resetForm() {
+  pendingEditRow = null;
+  document.getElementById('fDate').value = todayISO();
   document.getElementById('fSubject').value = '';
-  document.getElementById('fClass').value   = '';
+  document.getElementById('fClass').value = '';
   document.getElementById('fLecture').value = '';
-  document.getElementById('fDate').valueAsDate = new Date();
-  resetStudents();
   sessionStorage.removeItem('formState');
+
+  populateTeacherFields();
+  resetStudents();
 }
 
-// ── Submit (GET-based, real response) ──────────────────
+function localDuplicateKey(date, cls, subject, lecture) {
+  return `aci_dup_${currentTeacher.username}_${date}_${cls}_${subject}_${lecture}`;
+}
+
+function isLocallyDuplicate(date, cls, subject, lecture) {
+  return !!sessionStorage.getItem(localDuplicateKey(date, cls, subject, lecture));
+}
+
+function markLocalDuplicate(date, cls, subject, lecture) {
+  sessionStorage.setItem(localDuplicateKey(date, cls, subject, lecture), '1');
+}
+
+function clearLocalDuplicate(date, cls, subject, lecture) {
+  sessionStorage.removeItem(localDuplicateKey(date, cls, subject, lecture));
+}
+
 async function doSubmit() {
-  const L       = LANGS[currentLang];
-  const date    = document.getElementById('fDate').value;
+  const L = LANGS[currentLang];
+  const date = document.getElementById('fDate').value;
   const subject = document.getElementById('fSubject').value;
   const lecture = document.getElementById('fLecture').value;
-  const cls     = document.getElementById('fClass').value;
+  const cls = document.getElementById('fClass').value;
 
-  if (!date || !subject || !lecture || !cls) { showToast(L.toastFill, 'error'); return; }
-  if (new Date().getDay() === 5 || new Date().getDay() === 6) { showToast(L.toastWeekend, 'error'); return; }
-
-  if (!pendingEditRow) {
-    const key = date + '|' + cls + '|' + subject + '|' + lecture;
-    if (sessionStorage.getItem(key)) { showToast(L.toastDuplicate, 'error'); return; }
+  if (!date || !subject || !lecture || !cls) {
+    showToast(L.toastFill, 'error');
+    return;
   }
-  pendingEditRow = null;
+
+  if (date !== todayISO()) {
+    showToast(L.toastDate, 'error');
+    return;
+  }
+
+  if (isWeekend()) {
+    showToast(L.toastWeekend, 'error');
+    return;
+  }
+
+  if (!pendingEditRow && isLocallyDuplicate(date, cls, subject, lecture)) {
+    showToast(L.toastDuplicate, 'error');
+    return;
+  }
 
   showLoading(L.loadingSubmit);
-  const now = new Date();
-  const ts  = (now.getMonth()+1)+'/'+now.getDate()+'/'+now.getFullYear()+' '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
-  const [yyyy,mm,dd] = date.split('-');
-  const fmtDate = parseInt(mm)+'/'+parseInt(dd)+'/'+yyyy;
 
   try {
-    const resp = await teacherGet({
-      action: 'saveAbsence',
-      timestamp: ts, date: fmtDate,
-      teacherName: currentTeacher.displayName,
-      subject, lectureNo: lecture, classGroup: cls,
-      absentStudents: [...selectedAbsent].join(', ')
+    const response = await apiGet({
+      action:'saveAbsence',
+      date:formatDateForDisplay(date),
+      subject:subject,
+      lectureNo:lecture,
+      classGroup:cls,
+      absentStudents:[...selectedAbsent].join(', ')
     });
 
-    if (resp.startsWith('BLOCKED')) { hideLoading(); showToast(L.toastWeekend, 'error'); return; }
-    if (resp === 'DUPLICATE')       { hideLoading(); showToast(L.toastDuplicate, 'error'); return; }
-    if (resp.startsWith('ERROR'))   throw new Error(resp);
+    const text = typeof response === 'string' ? response : '';
 
-    hideLoading();
-    const key = date + '|' + cls + '|' + subject + '|' + lecture;
-    sessionStorage.setItem(key, '1');
+    if (text.startsWith('BLOCKED')) {
+      hideLoading();
+      showToast(L.toastWeekend, 'error');
+      return;
+    }
+
+    if (text === 'DUPLICATE') {
+      hideLoading();
+      showToast(L.toastDuplicate, 'error');
+      return;
+    }
+
+    if (text.startsWith('ERROR')) {
+      if (text.toLowerCase().includes('unauthorized')) {
+        showToast(L.toastUnauthorized, 'error');
+        hideLoading();
+        setTimeout(doLogout, 1200);
+        return;
+      }
+      throw new Error(text);
+    }
+
+    if (text !== 'OK') {
+      throw new Error('Unexpected server response');
+    }
+
+    markLocalDuplicate(date, cls, subject, lecture);
+
+    const absentNames = [...selectedAbsent];
+    const details = {
+      date, subject, lecture, cls,
+      absent: absentNames.length
+    };
+
+    pendingEditRow = null;
     sessionStorage.removeItem('formState');
 
-    const absentStr = [...selectedAbsent].join(', ');
-
     resetForm();
-    document.getElementById('fDate').valueAsDate = new Date();
-
-    showSuccess(fmtDate, subject, lecture, cls, absentStr);
-
-    loadTodayRows();
-  } catch(err) {
     hideLoading();
-    showToast(L.toastError, 'error');
+
+    showSuccess(details);
+
+    await loadTodayRows();
+  } catch (err) {
+    hideLoading();
+    console.error('doSubmit:', err);
+
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(L.toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+    } else {
+      showToast(L.toastError, 'error');
+    }
   }
 }
 
-function showSuccess(date, subject, lecture, cls, absent) {
-  const L   = LANGS[currentLang];
-  const arr = absent ? absent.split(',').filter(Boolean) : [];
-  const tD  = currentTeacher.displayName;
-  document.getElementById('successDetails').innerHTML =
-    row(L.fDate, date) + row(L.fTeacher, tD) + row(L.fSubject, subject) +
-    row(L.fLecture, lecture) + row(L.fClass, cls) +
-    `<div class="detail-row"><span class="label">${L.fAbsent}</span><span class="val" style="color:var(--accent)">${arr.length} ${L.students}</span></div>`;
+function showSuccess(details) {
+  const L = LANGS[currentLang];
+  const tName = currentTeacher?.arabicName || currentTeacher?.displayName || currentTeacher?.username || '';
+
+  document.getElementById('successDetails').innerHTML = '';
+  addDetail(L.fDate, formatDateForDisplay(details.date));
+  addDetail(L.fTeacher, tName);
+  addDetail(L.fSubject, details.subject);
+  addDetail(L.fLecture, details.lecture);
+  addDetail(L.fClass, details.cls);
+  addDetail(L.fAbsent, `${details.absent} ${L.students}`);
+
   document.getElementById('screenSubmit').style.display = 'none';
   document.getElementById('screenSuccess').style.display = '';
 }
-function row(l,v){ return `<div class="detail-row"><span class="label">${l}</span><span class="val">${v}</span></div>`; }
+
+function addDetail(label, value) {
+  const row = document.createElement('div');
+  row.className = 'detail-row';
+
+  const l = document.createElement('span');
+  l.className = 'label';
+  l.textContent = label;
+
+  const v = document.createElement('span');
+  v.className = 'val';
+  v.textContent = value;
+
+  row.appendChild(l);
+  row.appendChild(v);
+  document.getElementById('successDetails').appendChild(row);
+}
+
 function newSubmission() {
   document.getElementById('screenSuccess').style.display = 'none';
   document.getElementById('screenSubmit').style.display = '';
 }
 
-// ── localStorage helpers ─────────────────────────────
 function todayKey() {
   const t = currentTeacher ? currentTeacher.username : 'unknown';
-  const d = new Date();
-  return 'aci_rows_' + t + '_' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+  return `aci_rows_${t}_${todayISO()}`;
 }
+
 function saveRowsToStorage() {
-  try { localStorage.setItem(todayKey(), JSON.stringify(todayRows)); } catch(e) {}
+  try {
+    localStorage.setItem(todayKey(), JSON.stringify(todayRows));
+  } catch (_) {}
 }
+
 function loadRowsFromStorage() {
   try {
     const raw = localStorage.getItem(todayKey());
-    if (raw) { todayRows = JSON.parse(raw); renderRecentRows(); }
-  } catch(e) {}
+    if (raw) {
+      todayRows = JSON.parse(raw) || [];
+      renderRecentRows();
+    }
+  } catch (_) {}
 }
 
-// ── Load today's rows from server ────────────────────
 async function loadTodayRows() {
   try {
-    const url  = SCRIPT_URL + '?action=getTodayRows&teacher='
-               + encodeURIComponent(currentTeacher.displayName)
-               + '&token=' + encodeURIComponent(sessionStorage.getItem('aci_token'));
-    const data = await (await fetch(url)).json();
-    if (data.error) throw new Error(data.error);
-    todayRows = data.rows || [];
+    const data = await apiGet({action:'getTodayRows'});
+
+    if (!data || data.error) {
+      throw new Error(data?.error || 'Unable to load rows');
+    }
+
+    todayRows = Array.isArray(data.rows) ? data.rows : [];
     saveRowsToStorage();
     renderRecentRows();
-  } catch(err) {
-    console.warn('loadTodayRows:', err.message);
+  } catch (err) {
+    console.warn('loadTodayRows:', err);
+
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(LANGS[currentLang].toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+    }
   }
 }
 
-// ── Render recent submissions card ───────────────────
 function renderRecentRows() {
-  const L    = LANGS[currentLang];
+  const L = LANGS[currentLang];
   const card = document.getElementById('recentCard');
   const body = document.getElementById('recentCardBody');
   const badge = document.getElementById('recentCountBadge');
 
   if (!todayRows.length) {
     card.style.display = 'none';
+    body.innerHTML = '';
     return;
   }
 
   card.style.display = '';
-  badge.textContent  = todayRows.length;
+  badge.textContent = todayRows.length;
 
-  let html = `<div class="recent-table-wrap"><table class="recent-table">
-    <thead><tr>
-      <th>${L.thLecture}</th>
-      <th>${L.thSubject}</th>
-      <th>${L.thClass}</th>
-      <th>${L.thAbsentStudents}</th>
-      <th>${L.thActions}</th>
-    </tr></thead><tbody>`;
+  const wrap = document.createElement('div');
+  wrap.className = 'recent-table-wrap';
+
+  const table = document.createElement('table');
+  table.className = 'recent-table';
+
+  const thead = document.createElement('thead');
+  const trh = document.createElement('tr');
+
+  [L.thLecture, L.thSubject, L.thClass, L.thAbsentStudents, L.thActions]
+    .forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      trh.appendChild(th);
+    });
+
+  thead.appendChild(trh);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
 
   todayRows.forEach(r => {
-    const names = r.absentStudents
-      ? r.absentStudents.split(',').map(n => n.trim()).filter(Boolean)
-      : [];
+    const tr = document.createElement('tr');
 
-    const pillsHtml = names.length
-      ? names.map(n => `<span class="rt-name-pill">${n.split(' ').slice(0,2).join(' ')}</span>`).join('')
-      : `<span class="rt-none">${L.noneAbsent}</span>`;
+    const lecture = document.createElement('td');
+    const lectureStrong = document.createElement('strong');
+    lectureStrong.className = 'rt-lecture';
+    lectureStrong.textContent = r.lectureNo || '—';
+    lecture.appendChild(lectureStrong);
 
-    html += `<tr>
-      <td><strong class="rt-lecture">${r.lectureNo || '—'}</strong></td>
-      <td>${r.subject || '—'}</td>
-      <td><span class="rt-class">${r.classGroup || '—'}</span></td>
-      <td><div class="rt-pills">${pillsHtml}</div></td>
-      <td>
-        <div class="rt-actions">
-          <button class="btn-rt-edit"   onclick="askEdit(${r.rowNumber})">${L.btnEdit}</button>
-          <button class="btn-rt-delete" onclick="askDelete(${r.rowNumber})">${L.confirmDelete}</button>
-        </div>
-      </td>
-    </tr>`;
+    const subject = document.createElement('td');
+    subject.textContent = r.subject || '—';
+
+    const cls = document.createElement('td');
+    const clsSpan = document.createElement('span');
+    clsSpan.className = 'rt-class';
+    clsSpan.textContent = r.classGroup || '—';
+    cls.appendChild(clsSpan);
+
+    const absent = document.createElement('td');
+    const pills = document.createElement('div');
+    pills.className = 'rt-pills';
+
+    const names = String(r.absentStudents || '')
+      .split(',')
+      .map(n => n.trim())
+      .filter(Boolean);
+
+    if (names.length) {
+      names.forEach(n => {
+        const pill = document.createElement('span');
+        pill.className = 'rt-name-pill';
+        pill.textContent = n.split(' ').slice(0,2).join(' ');
+        pills.appendChild(pill);
+      });
+    } else {
+      const none = document.createElement('span');
+      none.className = 'rt-none';
+      none.textContent = L.noneAbsent;
+      pills.appendChild(none);
+    }
+
+    absent.appendChild(pills);
+
+    const actions = document.createElement('td');
+    const actionWrap = document.createElement('div');
+    actionWrap.className = 'rt-actions';
+
+    const edit = document.createElement('button');
+    edit.className = 'btn-rt-edit';
+    edit.textContent = L.btnEdit;
+    edit.addEventListener('click', () => askEdit(r.rowNumber));
+
+    const del = document.createElement('button');
+    del.className = 'btn-rt-delete';
+    del.textContent = L.confirmDelete;
+    del.addEventListener('click', () => askDelete(r.rowNumber));
+
+    actionWrap.appendChild(edit);
+    actionWrap.appendChild(del);
+    actions.appendChild(actionWrap);
+
+    tr.appendChild(lecture);
+    tr.appendChild(subject);
+    tr.appendChild(cls);
+    tr.appendChild(absent);
+    tr.appendChild(actions);
+    tbody.appendChild(tr);
   });
 
-  html += '</tbody></table></div>';
-  body.innerHTML = html;
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+
+  body.innerHTML = '';
+  body.appendChild(wrap);
 }
 
-// ── Delete flow (GET-based, real response) ─────────────
 function askDelete(rowNumber) {
   pendingDeleteRow = rowNumber;
-  pendingEditRow   = null;
+  pendingEditRow = null;
   document.getElementById('confirmOverlay').classList.add('show');
 }
 
@@ -804,25 +1085,54 @@ function closeConfirm() {
 
 async function executeDelete() {
   if (!pendingDeleteRow) return;
-  const rowNum = pendingDeleteRow;
+
+  const rowNumber = pendingDeleteRow;
   closeConfirm();
+
   const L = LANGS[currentLang];
   showLoading(L.loadingDel);
+
   try {
-    const resp = await teacherGet({ action:'deleteRow', rowNumber:rowNum, teacher:currentTeacher.displayName });
-    if (resp.startsWith('ERROR')) throw new Error(resp);
-    hideLoading();
-    todayRows = todayRows.filter(r => r.rowNumber !== rowNum);
+    const response = await apiGet({
+      action:'deleteRow',
+      rowNumber:String(rowNumber)
+    });
+
+    const text = typeof response === 'string' ? response : '';
+
+    if (text.startsWith('ERROR')) {
+      if (text.toLowerCase().includes('unauthorized')) {
+        throw new Error('Unauthorized');
+      }
+      throw new Error(text);
+    }
+
+    if (text !== 'DELETED') throw new Error('Unexpected delete response');
+
+    const removed = todayRows.find(r => r.rowNumber === rowNumber);
+    if (removed) {
+      const date = normalizeDateForInput(removed.date);
+      clearLocalDuplicate(date, removed.classGroup, removed.subject, removed.lectureNo);
+    }
+
+    todayRows = todayRows.filter(r => r.rowNumber !== rowNumber);
     saveRowsToStorage();
     renderRecentRows();
-    showToast(L.toastDelOk, 'success');
-  } catch(err) {
+
     hideLoading();
-    showToast(L.toastDelFail, 'error');
+    showToast(L.toastDelOk, 'success');
+  } catch (err) {
+    hideLoading();
+
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(L.toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+    } else {
+      showToast(L.toastDelFail, 'error');
+    }
   }
 }
 
-// ── Edit flow (Option A) ──────────────────────────────
 async function askEdit(rowNumber) {
   const r = todayRows.find(x => x.rowNumber === rowNumber);
   if (!r) return;
@@ -831,66 +1141,116 @@ async function askEdit(rowNumber) {
   showLoading(L.loadingEdit);
 
   try {
-    const delResp = await teacherGet({ action:'deleteRow', rowNumber:rowNumber, teacher:currentTeacher.displayName });
-    if (delResp.startsWith('ERROR')) throw new Error(delResp);
+    // The current secure backend has no separate update endpoint.
+    // Edit is therefore implemented as delete + resubmit, exactly as before,
+    // but the server decides whether the authenticated teacher may delete it.
+    const response = await apiGet({
+      action:'deleteRow',
+      rowNumber:String(rowNumber)
+    });
+
+    const text = typeof response === 'string' ? response : '';
+    if (text !== 'DELETED') {
+      if (text.toLowerCase().includes('unauthorized')) throw new Error('Unauthorized');
+      throw new Error(text || 'Delete failed');
+    }
 
     todayRows = todayRows.filter(x => x.rowNumber !== rowNumber);
     saveRowsToStorage();
     renderRecentRows();
 
-    const fmtDate = r.date || '';
-    let isoDate = '';
-    if (fmtDate) {
-      const parts = fmtDate.split('/');
-      if (parts.length === 3) {
-        const [m, d, y] = parts;
-        isoDate = y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-      }
-    }
+    const isoDate = normalizeDateForInput(r.date);
+    if (isoDate) document.getElementById('fDate').value = isoDate;
 
-    if (isoDate) document.getElementById('fDate').value    = isoDate;
-    document.getElementById('fSubject').value  = r.subject    || '';
-    document.getElementById('fLecture').value  = r.lectureNo  || '';
-    document.getElementById('fClass').value    = r.classGroup || '';
+    document.getElementById('fClass').value = r.classGroup || '';
+    filterSubjectsForClass();
+    document.getElementById('fSubject').value = r.subject || '';
+    document.getElementById('fLecture').value = r.lectureNo || '';
 
-    const preSelected = new Set(
-      (r.absentStudents || '').split(',').map(n => n.trim()).filter(Boolean)
+    selectedAbsent = new Set(
+      String(r.absentStudents || '')
+        .split(',')
+        .map(n => n.trim())
+        .filter(Boolean)
     );
 
-    selectedAbsent = new Set(preSelected);
-    renderStudents(r.classGroup || '', preSelected);
+    renderStudents(r.classGroup || '', selectedAbsent);
     updateAbsentCount();
     renderAbsentPreview();
 
-    const key = (isoDate || '') + '|' + (r.classGroup||'') + '|' + (r.subject||'') + '|' + (r.lectureNo||'');
-    sessionStorage.removeItem(key);
+    clearLocalDuplicate(
+      isoDate,
+      r.classGroup || '',
+      r.subject || '',
+      r.lectureNo || ''
+    );
 
     pendingEditRow = r;
+    sessionStorage.removeItem('formState');
 
     hideLoading();
     showToast(L.toastEditReady, 'success');
 
-    document.getElementById('screenSubmit').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  } catch(err) {
+    document.getElementById('screenSubmit').scrollIntoView({
+      behavior:'smooth',
+      block:'start'
+    });
+  } catch (err) {
     hideLoading();
-    showToast(LANGS[currentLang].toastDelFail, 'error');
+
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(L.toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+    } else {
+      showToast(L.toastDelFail, 'error');
+    }
   }
 }
 
-// ── Helpers ───────────────────────────────────────────
+function normalizeDateForInput(value) {
+  if (!value) return '';
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return String(value);
+
+  const p = String(value).split('/');
+  if (p.length === 3) {
+    let a = parseInt(p[0],10);
+    let b = parseInt(p[1],10);
+    let y = parseInt(p[2],10);
+
+    if (String(p[0]).length === 4) {
+      y = parseInt(p[0],10);
+      a = parseInt(p[1],10);
+      b = parseInt(p[2],10);
+    }
+
+    if (y && a && b) {
+      return `${y}-${String(a).padStart(2,'0')}-${String(b).padStart(2,'0')}`;
+    }
+  }
+
+  return '';
+}
+
 function showLoading(msg) {
-  document.getElementById('loadingText').textContent = msg||'...';
+  setText('loadingText', msg || '...');
   document.getElementById('loadingOverlay').classList.add('show');
 }
-function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
 function showToast(msg, type) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.className = 'toast' + (type?' '+type:'');
+  t.className = 'toast' + (type ? ' ' + type : '');
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 3500);
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.remove('show'), 3500);
 }
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
