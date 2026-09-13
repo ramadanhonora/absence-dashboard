@@ -1273,40 +1273,75 @@ async function doDeleteStudent(name,cls){
 }
 
 function openNewClass(){
-  document.getElementById('newClassName').value='';
-  document.getElementById('newClassStudents').value='';
-  document.getElementById('newClassPreview').className='paste-preview';
+  document.getElementById('newClassStage').value='4';
+  document.getElementById('newClassGroup').value='';
+  updateClassGroupPreview();
   document.getElementById('newClassModal').classList.add('open');
-  setTimeout(()=>document.getElementById('newClassName').focus(),100);
+  setTimeout(()=>document.getElementById('newClassGroup').focus(),100);
 }
-function closeNewClass(){ document.getElementById('newClassModal').classList.remove('open'); }
-function previewNewClass(){
-  const raw=document.getElementById('newClassStudents').value;
-  const names=cleanPastedNames(raw);
-  const preview=document.getElementById('newClassPreview');
-  if(!names.length){preview.className='paste-preview';return;}
-  preview.className='paste-preview show';
-  preview.innerHTML=`<div style="font-size:0.75em;color:#667eea;font-weight:700;margin-bottom:4px;">✅ ${names.length} ناڤ:</div>`+
-    names.map(n=>`<div class="paste-preview-item">• ${n}</div>`).join('');
+
+function closeNewClass(){
+  document.getElementById('newClassModal').classList.remove('open');
 }
+
+function updateClassGroupPreview(){
+  const stage=document.getElementById('newClassStage').value;
+  const group=document.getElementById('newClassGroup').value.trim();
+  document.getElementById('newClassPreview').textContent=stage+group;
+}
+
 async function saveNewClass(){
   const L=LANGS[currentLang];
-  const className=document.getElementById('newClassName').value.trim();
-  if(!className){showToast('❌ ناڤی پۆل بنووسە','error');return;}
-  if(mgmtData&&mgmtData.classes.includes(className)){showToast('❌ ئەم پۆلە پێشتر هەیە','error');return;}
-  const names=cleanPastedNames(document.getElementById('newClassStudents').value);
+  const stage=document.getElementById('newClassStage').value;
+  const group=document.getElementById('newClassGroup').value.trim();
+
+  if(!stage){
+    showToast('❌ اختر المرحلة','error');
+    return;
+  }
+
+  if(!group){
+    showToast('❌ اكتب Group / Program','error');
+    return;
+  }
+
+  const className=stage+group;
+
+  if(mgmtData&&mgmtData.classes.some(c=>c.toLowerCase()===className.toLowerCase())){
+    showToast('❌ ئەم پۆلە پێشتر هەیە','error');
+    return;
+  }
+
   const btn=document.getElementById('btnSaveNewClass');
-  btn.textContent='⏳'; btn.disabled=true;
-  try {
-    const text=await adminGet({action:'addClass',className,names:names.join('|||')});
+  btn.textContent='⏳';
+  btn.disabled=true;
+
+  try{
+    const text=await adminGet({
+      action:'addClass',
+      stage:stage,
+      group:group
+    });
+
     if(text.startsWith('ERROR')) throw new Error(text);
+
     closeNewClass();
-    if(mgmtData){ mgmtData.classes.push(className); mgmtData.students[className]=[...names]; }
+
+    if(mgmtData){
+      mgmtData.classes.push(className);
+      mgmtData.students[className]=[];
+    }
+
     selectedClass=className;
     renderStudentTab();
-    showToast(`✅ ${className} — ${names.length} ${L.students||'قوتابی'}`,'success');
-  } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
-  finally { btn.textContent='دروستکرن'; btn.disabled=false; }
+
+    showToast(`✅ ${className}`,'success');
+  }catch(err){
+    showToast(L.toastSaveFail+' '+err.message,'error');
+  }finally{
+    btn.textContent='دروستکرن';
+    btn.disabled=false;
+  }
 }
 
 // ── Rename class ──────────────────────────────────────
