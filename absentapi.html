@@ -588,25 +588,50 @@
   </div>
 </div>
 
-<!-- ── NEW CLASS MODAL ── -->
+<!-- ── NEW CLASS GROUP MODAL ── -->
 <div class="mgmt-modal-bg" id="newClassModal">
   <div class="mgmt-modal">
     <h3 id="newClassTitle">🏫 پۆلێ نوی دروستبکە</h3>
+
     <div class="mgmt-form">
+
       <div class="mgmt-field">
-        <label id="newClassLbl">ناڤی پۆل</label>
-        <input type="text" id="newClassName" placeholder="مثال: 3B">
+        <label id="newClassStageLbl">Stage</label>
+        <select id="newClassStage" onchange="updateClassGroupPreview()">
+          <option value="1">1st Stage</option>
+          <option value="2">2nd Stage</option>
+          <option value="3">3rd Stage</option>
+          <option value="4" selected>4th Stage</option>
+          <option value="5">5th Stage</option>
+        </select>
       </div>
+
       <div class="mgmt-field">
-        <label id="newClassStudentsLbl">ناڤێن قوتابیان (هەر ناڤێ لە ستوری جیا)</label>
-        <textarea id="newClassStudents" placeholder="Ahmed Ali&#10;Sara Hassan&#10;Ali Mohammed" oninput="previewNewClass()" style="min-height:130px;"></textarea>
-        <span class="paste-hint" id="newClassHint">دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی</span>
+        <label id="newClassGroupLbl">Group / Program</label>
+        <input
+          type="text"
+          id="newClassGroup"
+          placeholder="WEB, NET, C, A, B..."
+          oninput="updateClassGroupPreview()"
+          autocomplete="off">
       </div>
-      <div id="newClassPreview" class="paste-preview"></div>
+
+      <div class="mgmt-field">
+        <label id="newClassPreviewLbl">Class Group</label>
+        <div
+          id="newClassPreview"
+          style="font-size:2em;font-weight:800;color:#667eea;text-align:center;padding:12px 0;">
+          4
+        </div>
+      </div>
+
     </div>
+
     <div class="mgmt-modal-btns">
       <button class="btn-secondary" onclick="closeNewClass()">هەڵوەستان</button>
-      <button class="btn-add" onclick="saveNewClass()" id="btnSaveNewClass">دروستکرن</button>
+      <button class="btn-add" onclick="saveNewClass()" id="btnSaveNewClass">
+        دروستکرن
+      </button>
     </div>
   </div>
 </div>
