@@ -551,15 +551,39 @@ function filterSubjectsForClass() {
   const subjectSel = document.getElementById('fSubject');
   const current = subjectSel.value;
 
-  const assigned = Array.isArray(currentTeacher?.subjects) ? currentTeacher.subjects : [];
+  const assigned = Array.isArray(currentTeacher?.subjects)
+    ? currentTeacher.subjects
+    : [];
+
   let allowed = assigned.slice();
 
-  if (cls && Array.isArray(CLASS_SUBJECT_MAP[cls])) {
-    const classSubjects = CLASS_SUBJECT_MAP[cls].map(normalize);
-    allowed = assigned.filter(s => classSubjects.includes(normalize(s)));
+  if (cls) {
+    // First try the exact class, e.g. 1C
+    const exact = CLASS_SUBJECT_MAP[cls]
+      || CLASS_SUBJECT_MAP[String(cls).toUpperCase()];
+
+    // If the exact class is not found, fall back to the stage,
+    // e.g. 1C -> 1, 2WEB -> 2
+    const m = String(cls).toLowerCase().match(/^(\d+)([a-z]+)$/);
+    const stageKey = m && m[2].length === 1 ? m[1] : '';
+
+    const classSubjects = Array.isArray(exact)
+      ? exact
+      : (stageKey && Array.isArray(CLASS_SUBJECT_MAP[stageKey])
+          ? CLASS_SUBJECT_MAP[stageKey]
+          : []);
+
+    if (classSubjects.length) {
+      const normalized = classSubjects.map(normalize);
+
+      allowed = assigned.filter(s =>
+        normalized.includes(normalize(s))
+      );
+    }
   }
 
   subjectSel.innerHTML = '';
+
   const ph = document.createElement('option');
   ph.value = '';
   ph.textContent = LANGS[currentLang].placeholder;
@@ -572,7 +596,9 @@ function filterSubjectsForClass() {
     subjectSel.appendChild(o);
   });
 
-  if (allowed.includes(current)) subjectSel.value = current;
+  if (allowed.includes(current)) {
+    subjectSel.value = current;
+  }
 }
 
 function normalize(v) {
