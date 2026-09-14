@@ -21,7 +21,14 @@ select.form-control{appearance:auto!important;-webkit-appearance:auto!important;
 .today-chip{margin-top:9px;font-size:12px;color:var(--muted);font-weight:700;text-align:center}.today-chip strong{color:var(--aci)}
 .students-area{background:#fafbfe;border:1px solid #edf0f5;border-radius:15px;padding:12px}.students-area-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.students-area-header h4{margin:0!important}.students-count{font-weight:900!important;color:#fff;background:var(--danger);padding:6px 10px;border-radius:999px;font-size:12px;white-space:nowrap}.student-hint{font-size:11px;color:var(--muted);margin-top:3px}
 .students-grid{display:flex!important;flex-direction:column!important;gap:7px!important;padding:2px 0!important}.student-check{position:relative;display:flex!important;align-items:center;gap:10px;min-height:58px;padding:10px 12px!important;border:1px solid #e4e8ef!important;border-radius:13px!important;background:#fff!important;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .12s,border .12s;direction:inherit}.student-check input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}.student-no{font-size:11px;color:#a0a8b6;min-width:27px;text-align:center;font-weight:900}.student-check .sname{font-size:16px!important;font-weight:750!important;flex:1;line-height:1.3;margin-inline-start:2px}.student-check::after{content:'✓';margin-inline-start:auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#edf8f1;color:var(--ok);font-weight:900;font-size:16px;flex:none}.student-check.checked{background:#fff4f4!important;border-color:#efb9bc!important}.student-check.checked::after{content:'×';background:#fee6e7;color:var(--danger)}.student-check.checked .sname{color:var(--danger)}
-.absent-preview{display:none!important}.absent-preview.show{display:none!important}
+.absent-preview{display:none;margin-bottom:8px}
+.absent-preview.show{display:block;animation:fadeUp .2s ease}
+.absent-preview h5{font-size:11px;color:var(--muted);font-weight:800;margin-bottom:6px}
+.absent-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.absent-pills::-webkit-scrollbar{height:4px}
+.absent-pill{display:flex!important;align-items:center;gap:6px;flex:none;background:#fff4f4;border:1px solid #efb9bc;color:var(--danger);font-size:12px;font-weight:700;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.absent-pill .remove-pill{cursor:pointer;opacity:.7;font-weight:900}
+.absent-pill .remove-pill:hover{opacity:1}
 .action-row{position:sticky;bottom:0;z-index:40;display:flex;gap:10px;background:rgba(244,246,250,.96);backdrop-filter:blur(10px);padding:12px 0 calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e1e6ee}.btn-submit{min-height:56px!important;border-radius:14px!important;font-size:16px!important;font-weight:900!important;flex:1}.btn-secondary{min-height:56px!important;border-radius:14px!important;min-width:110px}
 .recent-table-wrap{overflow:visible!important}.recent-table{width:100%}.rt-actions{display:flex;gap:7px;flex-wrap:wrap}
 @media(max-width:700px){
@@ -113,9 +120,6 @@ select.form-control{appearance:auto!important;-webkit-appearance:auto!important;
             <label><span id="labelLecture">ژمارەیا دەرسێ</span> <span class="req">*</span></label>
             <select class="form-control" id="fLecture" onchange="saveFormState()">
               <option value="">— هلبژێرە —</option>
-              <option>Lecture 1</option><option>Lecture 2</option><option>Lecture 3</option>
-              <option>Lecture 4</option><option>Lecture 5</option><option>Lecture 6</option>
-              <option>Lectures 1-2 (Merged)</option><option>Lectures 3-4 (Merged)</option><option>Lectures 5-6 (Merged)</option>
             </select>
           </div>
         </div>
@@ -135,6 +139,9 @@ select.form-control{appearance:auto!important;-webkit-appearance:auto!important;
             <div><h4 id="studentsAreaTitle">📋 هلبژارنا پۆلێ</h4><div class="student-hint" id="studentsHint"></div></div>
             <span class="students-count" id="absentCount">0 نەهاتی</span>
           </div>
+          <input type="text" class="form-control student-search" id="studentSearch"
+                 style="display:none;margin-bottom:9px;height:44px;line-height:44px;font-size:14px"
+                 oninput="filterStudentRows(this.value)" />
           <div id="studentsContainer">
             <div class="no-students">
               <span class="icon">🎓</span>
@@ -143,11 +150,12 @@ select.form-control{appearance:auto!important;-webkit-appearance:auto!important;
           </div>
         </div>
 
-        <div class="absent-preview" id="absentPreview">
-          <h5 id="absentPreviewTitle">✗ قوتابیێن نەهاتی:</h5>
-          <div class="absent-pills" id="absentPills"></div>
-        </div>
       </div>
+    </div>
+
+    <div class="absent-preview" id="absentPreview">
+      <h5 id="absentPreviewTitle">✗ قوتابیێن نەهاتی:</h5>
+      <div class="absent-pills" id="absentPills"></div>
     </div>
 
     <div class="action-row">
@@ -221,7 +229,8 @@ const LANGS = {
     toastDelOk:'✅ تومارکرن هاتە سڕینەوە.', toastDelFail:'❌ سڕینەوە سەرنەکەفت!',
     toastEditReady:'✏️ زانیاری هاتە داخلکرن — دەستکاری بکە و دوبارە بنێرە.',
     noneAbsent:'هیچ نەهاتنێک نەبوو',
-    academicYearLabel:'ساڵا خوێندنی', todayLabel:'ئەمرۆ', studentsHint:'بۆ هلبژارتنا نەهاتی، ل سەر ناڤێ قوتابی بکەڤە'
+    academicYearLabel:'ساڵا خوێندنی', todayLabel:'ئەمرۆ', studentsHint:'بۆ هلبژارتنا نەهاتی، ل سەر ناڤێ قوتابی بکەڤە',
+    studentSearchPH:'🔍 گەڕان ب ناڤێ قوتابی...', noSearchResults:'قوتابیەک ب ڤی ناڤی نەهاتە دیتن'
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -250,7 +259,8 @@ const LANGS = {
     confirmTitle:'حذف السجل؟', confirmMsg:'لا يمكن التراجع عن هذا.',
     confirmCancel:'إلغاء', toastDelOk:'✅ تم حذف السجل.', toastDelFail:'❌ فشل الحذف!',
     toastEditReady:'✏️ تم تحميل البيانات — عدّل وأعد الإرسال.',
-    noneAbsent:'لا غياب', academicYearLabel:'السنة الدراسية', todayLabel:'اليوم', studentsHint:'اضغط على اسم الطالب لتغيير حالته'
+    noneAbsent:'لا غياب', academicYearLabel:'السنة الدراسية', todayLabel:'اليوم', studentsHint:'اضغط على اسم الطالب لتغيير حالته',
+    studentSearchPH:'🔍 ابحث عن اسم الطالب...', noSearchResults:'لا يوجد طالب بهذا الاسم'
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -279,9 +289,42 @@ const LANGS = {
     confirmTitle:'Delete submission?', confirmMsg:'This cannot be undone.',
     confirmCancel:'Cancel', toastDelOk:'✅ Submission deleted.', toastDelFail:'❌ Delete failed!',
     toastEditReady:'✏️ Data loaded — fix and resubmit.',
-    noneAbsent:'No absences', academicYearLabel:'Academic Year', todayLabel:'Today', studentsHint:'Tap a student row to mark absent or present'
+    noneAbsent:'No absences', academicYearLabel:'Academic Year', todayLabel:'Today', studentsHint:'Tap a student row to mark absent or present',
+    studentSearchPH:'🔍 Search student name...', noSearchResults:'No student matches that name'
   }
 };
+
+// Canonical values sent to the server (must stay stable so duplicate
+// checks and historical spreadsheet rows keep matching) vs. the label
+// shown to the teacher, which is localized per language.
+const LECTURE_VALUES = ['Lecture 1','Lecture 2','Lecture 3','Lecture 4','Lecture 5','Lecture 6',
+  'Lectures 1-2 (Merged)','Lectures 3-4 (Merged)','Lectures 5-6 (Merged)'];
+const LECTURE_LABELS = {
+  ku: ['دەرسا ١','دەرسا ٢','دەرسا ٣','دەرسا ٤','دەرسا ٥','دەرسا ٦',
+    'دەرسا ١-٢ (تێکەلکری)','دەرسا ٣-٤ (تێکەلکری)','دەرسا ٥-٦ (تێکەلکری)'],
+  ar: ['المحاضرة 1','المحاضرة 2','المحاضرة 3','المحاضرة 4','المحاضرة 5','المحاضرة 6',
+    'المحاضرة 1-2 (مدمجة)','المحاضرة 3-4 (مدمجة)','المحاضرة 5-6 (مدمجة)'],
+  en: ['Lecture 1','Lecture 2','Lecture 3','Lecture 4','Lecture 5','Lecture 6',
+    'Lectures 1-2 (Merged)','Lectures 3-4 (Merged)','Lectures 5-6 (Merged)']
+};
+
+function populateLectureOptions() {
+  const sel = document.getElementById('fLecture');
+  const current = sel.value;
+  const labels = LECTURE_LABELS[currentLang] || LECTURE_LABELS.en;
+  sel.innerHTML = '';
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = LANGS[currentLang].placeholder;
+  sel.appendChild(ph);
+  LECTURE_VALUES.forEach((value, i) => {
+    const o = document.createElement('option');
+    o.value = value;
+    o.textContent = labels[i] || value;
+    sel.appendChild(o);
+  });
+  if (LECTURE_VALUES.includes(current)) sel.value = current;
+}
 
 let currentLang = localStorage.getItem('aci_lang') || 'ku';
 let currentTeacher = null;
@@ -378,6 +421,7 @@ function setLang(lang) {
   setText('labelSubject', L.labelSubject);
   setText('labelClass', L.labelClass);
   setText('studentsHint', L.studentsHint || '');
+  document.getElementById('studentSearch').placeholder = L.studentSearchPH || '';
   setText('todayLabel', L.todayLabel || 'Today');
   setText('todayValue', formatDateForDisplay(todayISO()));
   setText('welcomeSub', L.welcomeSub);
@@ -398,6 +442,7 @@ function setLang(lang) {
   document.querySelectorAll('select.form-control option[value=""]').forEach(o => {
     o.textContent = L.placeholder;
   });
+  populateLectureOptions();
 
   if (currentTeacher) {
     const name = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.username || '';
@@ -460,14 +505,16 @@ async function init() {
   date.min = todayISO();
   date.max = todayISO();
 
-  await loadTeacherData();
+  document.getElementById('screenSubmit').style.display = '';
+  loadRowsFromStorage();
+
+  // Both calls only read data and don't depend on each other, so fire
+  // them together instead of one after another — roughly halves the
+  // wait on a slow connection / cold Apps Script start.
+  await Promise.all([loadTeacherData(), loadTodayRows()]);
 
   populateTeacherFields();
   restoreFormState();
-
-  document.getElementById('screenSubmit').style.display = '';
-  loadRowsFromStorage();
-  await loadTodayRows();
 }
 
 async function loadTeacherData() {
@@ -618,6 +665,7 @@ function normalize(v) {
 function renderStudents(cls, preSelected) {
   const L = LANGS[currentLang];
   const con = document.getElementById('studentsContainer');
+  const searchBox = document.getElementById('studentSearch');
 
   if (!cls || !Array.isArray(STUDENTS[cls])) {
     con.innerHTML = '';
@@ -627,6 +675,8 @@ function renderStudents(cls, preSelected) {
     const msg = document.createElement('span'); msg.id = 'noStudentsText'; msg.textContent = L.noStudents;
     box.appendChild(icon); box.appendChild(msg); con.appendChild(box);
     setText('studentsAreaTitle', '📋 ' + L.studentsTitle);
+    searchBox.style.display = 'none';
+    searchBox.value = '';
     return;
   }
 
@@ -634,12 +684,16 @@ function renderStudents(cls, preSelected) {
   const selected = preSelected || selectedAbsent;
   setText('studentsAreaTitle', `📋 ${cls} — ${list.length} ${L.students}`);
 
+  searchBox.value = '';
+  searchBox.style.display = list.length > 6 ? '' : 'none';
+
   const grid = document.createElement('div');
   grid.className = 'students-grid';
 
   list.forEach((name, index) => {
     const row = document.createElement('label');
     row.className = 'student-check' + (selected.has(name) ? ' checked' : '');
+    row.dataset.name = name.toLowerCase();
     row.setAttribute('role','button');
     row.setAttribute('tabindex','0');
     row.setAttribute('aria-pressed', selected.has(name) ? 'true' : 'false');
@@ -744,9 +798,34 @@ function resetStudents() {
   else {
     const con = document.getElementById('studentsContainer');
     con.innerHTML = `<div class="no-students"><span class="icon">🎓</span><span id="noStudentsText">${LANGS[currentLang].noStudents}</span></div>`;
+    document.getElementById('studentSearch').style.display = 'none';
   }
   updateAbsentCount();
   renderAbsentPreview();
+}
+
+function filterStudentRows(query) {
+  const q = String(query || '').trim().toLowerCase();
+  const rows = document.querySelectorAll('#studentsContainer .student-check');
+  let visibleCount = 0;
+  rows.forEach(row => {
+    const match = !q || (row.dataset.name || '').includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visibleCount++;
+  });
+
+  const con = document.getElementById('studentsContainer');
+  let emptyMsg = con.querySelector('.search-empty');
+  if (q && visibleCount === 0) {
+    if (!emptyMsg) {
+      emptyMsg = document.createElement('div');
+      emptyMsg.className = 'no-students search-empty';
+      emptyMsg.innerHTML = `<span class="icon">🔍</span><span>${LANGS[currentLang].noSearchResults}</span>`;
+      con.appendChild(emptyMsg);
+    }
+  } else if (emptyMsg) {
+    emptyMsg.remove();
+  }
 }
 
 function saveFormState() {
@@ -779,17 +858,28 @@ function restoreFormState() {
   } catch (_) {}
 }
 
-function resetForm() {
+function resetForm(keepClassSubject) {
   pendingEditRow = null;
   setText('btnSubmitText', LANGS[currentLang].btnSubmit);
   document.getElementById('fDate').value = todayISO();
-  document.getElementById('fSubject').value = '';
-  document.getElementById('fClass').value = '';
   document.getElementById('fLecture').value = '';
-  sessionStorage.removeItem('formState');
 
-  populateTeacherFields();
-  resetStudents();
+  if (keepClassSubject) {
+    // After a successful submit, teachers very often log the next
+    // lecture for the same class/subject — keep those two selections
+    // so only the lecture number and absentee list need re-entering.
+    const subj = document.getElementById('fSubject').value;
+    filterSubjectsForClass();
+    document.getElementById('fSubject').value = subj;
+    resetStudents();
+    saveFormState();
+  } else {
+    document.getElementById('fSubject').value = '';
+    document.getElementById('fClass').value = '';
+    sessionStorage.removeItem('formState');
+    populateTeacherFields();
+    resetStudents();
+  }
 }
 
 function localDuplicateKey(date, cls, subject, lecture) {
@@ -891,7 +981,7 @@ async function doSubmit() {
     pendingEditRow = null;
     sessionStorage.removeItem('formState');
 
-    resetForm();
+    resetForm(true);
     hideLoading();
 
     showSuccess(details);
@@ -924,6 +1014,16 @@ function showSuccess(details) {
 
   document.getElementById('screenSubmit').style.display = 'none';
   document.getElementById('screenSuccess').style.display = '';
+
+  // Auto-return to the form shortly after — teachers logging several
+  // lectures in a row don't need to tap "OK" every time. The button
+  // still works instantly if they want to move on right away.
+  clearTimeout(showSuccess._timer);
+  showSuccess._timer = setTimeout(() => {
+    if (document.getElementById('screenSuccess').style.display !== 'none') {
+      newSubmission();
+    }
+  }, 1600);
 }
 
 function addDetail(label, value) {
@@ -944,6 +1044,7 @@ function addDetail(label, value) {
 }
 
 function newSubmission() {
+  clearTimeout(showSuccess._timer);
   document.getElementById('screenSuccess').style.display = 'none';
   document.getElementById('screenSubmit').style.display = '';
 }
