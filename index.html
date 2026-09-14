@@ -5,6 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>پەیمانگەها کومپیوتەرێ ل ئاکرێ — تومارا نەهاتنێ</title>
 <link rel="stylesheet" href="portal.css">
+<style>
+/* ACI Teacher Portal — mobile-first attendance UI */
+body{background:#f5f7fb}
+.form-wrap{max-width:900px;margin:auto}
+.lesson-mobile-note{font-size:12px;color:#7b8494;margin-top:6px}
+.students-grid{display:flex!important;flex-direction:column;gap:8px!important;padding:4px 0!important}
+.student-check{position:relative;display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:12px 14px!important;border:1px solid #e7ebf2!important;border-radius:14px!important;background:#fff!important;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:.15s ease}
+.student-check input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}
+.student-check .sname{font-size:16px!important;font-weight:700!important;flex:1;line-height:1.35}
+.student-check::after{content:'✓';width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#edf7f0;color:#23834b;font-weight:900;font-size:16px;flex:none}
+.student-check.checked{background:#fff5f5!important;border-color:#f0b9b9!important;box-shadow:0 2px 8px rgba(190,50,50,.06)}
+.student-check.checked::after{content:'×';background:#fee8e8;color:#c73b3b}
+.student-check.checked .sname{color:#b93434}
+.students-area-header{gap:10px}
+.students-count{font-weight:800}
+.absent-preview{display:none!important}
+.absent-preview.show{display:block!important}
+.action-row{position:sticky;bottom:0;z-index:20;background:rgba(245,247,251,.94);backdrop-filter:blur(8px);padding:12px 0 calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e5e9f0}
+.btn-submit{min-height:54px!important;border-radius:14px!important;font-size:16px!important;font-weight:800!important;flex:1}
+.btn-secondary{min-height:54px!important;border-radius:14px!important}
+.recent-table-wrap{overflow:visible!important}
+.recent-table{width:100%}
+.rt-actions{display:flex;gap:7px;flex-wrap:wrap}
+@media(max-width:700px){
+ .site-header{position:sticky;top:0;z-index:30;padding:10px 12px!important}
+ .header-text h1{font-size:14px!important}.header-text p{display:none}
+ .lang-switcher{gap:3px!important}.lang-btn{padding:6px 7px!important;font-size:11px!important}
+ .header-user .user-pill{display:none}.btn-logout{padding:8px 10px!important;font-size:12px!important}
+ main{padding:12px!important;margin:0!important}
+ .welcome-banner{margin-bottom:12px!important;padding:14px!important}
+ .welcome-banner h3{font-size:18px!important}
+ .card{border-radius:16px!important;margin-bottom:12px!important}
+ .card-header{padding:13px 14px!important}.card-body{padding:14px!important}
+ .form-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
+ .form-row:first-child .form-group:first-child{grid-column:1/-1}
+ .form-control{min-height:50px!important;font-size:15px!important}
+ #studentsAreaTitle{font-size:15px!important}
+ .student-check{min-height:60px!important;padding:12px!important}
+ .student-check .sname{font-size:16px!important}
+ .action-row{margin:0 -12px;padding-left:12px;padding-right:12px}
+ .btn-secondary{width:30%;font-size:12px!important}.btn-submit{width:70%}
+ .recent-table thead{display:none}
+ .recent-table,.recent-table tbody,.recent-table tr,.recent-table td{display:block;width:100%}
+ .recent-table tr{padding:12px;border:1px solid #e7ebf2;border-radius:14px;margin-bottom:9px;background:#fff}
+ .recent-table td{padding:4px 0!important;border:0!important}
+ .recent-table td:nth-child(1)::before{content:'Lecture: ';font-weight:700;color:#7b8494}
+ .recent-table td:nth-child(2)::before{content:'Subject: ';font-weight:700;color:#7b8494}
+ .recent-table td:nth-child(3)::before{content:'Class: ';font-weight:700;color:#7b8494}
+ .recent-table td:nth-child(4)::before{content:'Absent: ';font-weight:700;color:#7b8494}
+ .recent-table td:nth-child(5){margin-top:7px}
+ .rt-actions{width:100%}.btn-rt-edit,.btn-rt-delete{flex:1;min-height:44px!important}
+}
+@media(min-width:701px){
+ .student-check:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,45,70,.08)}
+}
+
+.lesson-row{grid-template-columns:1fr 1fr 1fr!important}.today-chip{margin-top:10px;font-size:12px;color:#687386}.student-hint{font-size:11px;color:#8a93a3;margin-top:3px}.student-no{font-size:12px;color:#9aa2b0;min-width:28px;text-align:center;font-weight:700}.student-check .sname{margin-inline-start:4px}
+@media(max-width:700px){.lesson-row{grid-template-columns:1fr 1fr!important}.lecture-field{grid-column:1/-1}.today-chip{text-align:center}.student-check{direction:inherit}}
+</style>
 </head>
 <body>
 
@@ -65,43 +124,32 @@
         <div class="step-badge">١</div>
         <h3 id="step1">زانیارییێن دەرسێ</h3>
       </div>
-      <div class="card-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label><span id="labelDate">بەروار</span> <span class="req">*</span></label>
-            <input class="form-control" type="date" id="fDate" onchange="saveFormState()">
-          </div>
-          <div class="form-group">
-            <label><span id="labelLecture">ژمارەیا دەرسێ</span> <span class="req">*</span></label>
-            <select class="form-control" id="fLecture" onchange="saveFormState()">
-              <option value="">— هلبژێرە —</option>
-              <option>Lecture 1</option>
-              <option>Lecture 2</option>
-              <option>Lecture 3</option>
-              <option>Lecture 4</option>
-              <option>Lecture 5</option>
-              <option>Lecture 6</option>
-              <option>Lectures 1-2 (Merged)</option>
-              <option>Lectures 3-4 (Merged)</option>
-              <option>Lectures 5-6 (Merged)</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label><span id="labelSubject">بابەت</span> <span class="req">*</span></label>
-            <select class="form-control" id="fSubject" onchange="onSubjectChange()">
-              <option value="">— هلبژێرە —</option>
-            </select>
-          </div>
+      <div class="card-body lesson-body">
+        <input type="hidden" id="fDate">
+        <div class="form-row lesson-row">
           <div class="form-group">
             <label><span id="labelClass">گروپا پۆلێ</span> <span class="req">*</span></label>
             <select class="form-control" id="fClass" onchange="onClassChange()">
               <option value="">— هلبژێرە —</option>
             </select>
           </div>
+          <div class="form-group">
+            <label><span id="labelSubject">بابەت</span> <span class="req">*</span></label>
+            <select class="form-control" id="fSubject" onchange="onSubjectChange()">
+              <option value="">— هلبژێرە —</option>
+            </select>
+          </div>
+          <div class="form-group lecture-field">
+            <label><span id="labelLecture">ژمارەیا دەرسێ</span> <span class="req">*</span></label>
+            <select class="form-control" id="fLecture" onchange="saveFormState()">
+              <option value="">— هلبژێرە —</option>
+              <option>Lecture 1</option><option>Lecture 2</option><option>Lecture 3</option>
+              <option>Lecture 4</option><option>Lecture 5</option><option>Lecture 6</option>
+              <option>Lectures 1-2 (Merged)</option><option>Lectures 3-4 (Merged)</option><option>Lectures 5-6 (Merged)</option>
+            </select>
+          </div>
         </div>
+        <div class="today-chip">📅 <span id="todayLabel">Today</span>: <strong id="todayValue"></strong></div>
       </div>
     </div>
 
@@ -113,7 +161,7 @@
       <div class="card-body">
         <div class="students-area">
           <div class="students-area-header">
-            <h4 id="studentsAreaTitle">📋 هلبژارنا پۆلێ</h4>
+            <div><h4 id="studentsAreaTitle">📋 هلبژارنا پۆلێ</h4><div class="student-hint" id="studentsHint"></div></div>
             <span class="students-count" id="absentCount">0 نەهاتی</span>
           </div>
           <div id="studentsContainer">
@@ -177,7 +225,7 @@ const LANGS = {
     noStudents:'پۆلێ هلبژێرە دا کو لیستا قوتابیان دەرکەڤە',
     studentsTitle:'هلبژارنا پۆلێ', absentLabel:'نەهاتی',
     absentPreview:'✗ قوتابیێن نەهاتی:',
-    btnReset:'🔄 سفرکرن', btnSubmit:'📤 شاندن و پاشەکەفتکرن',
+    btnReset:'🔄 سفرکرن', btnSubmit:'📤 شاندن و پاشەکەفتکرن', btnUpdate:'💾 نویکرن و پاشەکەفتکرن',
     successTitle:'سەرکەفتن! تومار کرا',
     successSub:'نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.',
     btnNew:'✓ باشە', btnLogout:'🚪 دەرچوون',
@@ -202,7 +250,7 @@ const LANGS = {
     toastDelOk:'✅ تومارکرن هاتە سڕینەوە.', toastDelFail:'❌ سڕینەوە سەرنەکەفت!',
     toastEditReady:'✏️ زانیاری هاتە داخلکرن — دەستکاری بکە و دوبارە بنێرە.',
     noneAbsent:'هیچ نەهاتنێک نەبوو',
-    academicYearLabel:'ساڵا خوێندنی'
+    academicYearLabel:'ساڵا خوێندنی', todayLabel:'ئەمرۆ', studentsHint:'بۆ هلبژارتنا نەهاتی، ل سەر ناڤێ قوتابی بکەڤە'
   },
   ar: {
     dir:'rtl', htmlLang:'ar',
@@ -212,7 +260,7 @@ const LANGS = {
     labelDate:'التاريخ', labelLecture:'رقم المحاضرة', labelSubject:'المادة', labelClass:'المجموعة',
     placeholder:'— اختر —', noStudents:'اختر المجموعة لعرض قائمة الطلاب',
     studentsTitle:'اختيار المجموعة', absentLabel:'غائب', absentPreview:'✗ الطلاب الغائبون:',
-    btnReset:'🔄 إعادة تعيين', btnSubmit:'📤 إرسال وحفظ',
+    btnReset:'🔄 إعادة تعيين', btnSubmit:'📤 إرسال وحفظ', btnUpdate:'💾 تحديث وحفظ',
     successTitle:'تم الحفظ بنجاح!', successSub:'تم تسجيل غياب الطلاب بنجاح.',
     btnNew:'✓ حسناً', btnLogout:'🚪 تسجيل الخروج',
     fDate:'التاريخ', fTeacher:'المعلم', fSubject:'المادة', fLecture:'المحاضرة',
@@ -231,7 +279,7 @@ const LANGS = {
     confirmTitle:'حذف السجل؟', confirmMsg:'لا يمكن التراجع عن هذا.',
     confirmCancel:'إلغاء', toastDelOk:'✅ تم حذف السجل.', toastDelFail:'❌ فشل الحذف!',
     toastEditReady:'✏️ تم تحميل البيانات — عدّل وأعد الإرسال.',
-    noneAbsent:'لا غياب', academicYearLabel:'السنة الدراسية'
+    noneAbsent:'لا غياب', academicYearLabel:'السنة الدراسية', todayLabel:'اليوم', studentsHint:'اضغط على اسم الطالب لتغيير حالته'
   },
   en: {
     dir:'ltr', htmlLang:'en',
@@ -241,7 +289,7 @@ const LANGS = {
     labelDate:'Date', labelLecture:'Lecture No.', labelSubject:'Subject', labelClass:'Class Group',
     placeholder:'— Select —', noStudents:'Select a class to show the student list',
     studentsTitle:'Select Class', absentLabel:'absent', absentPreview:'✗ Absent students:',
-    btnReset:'🔄 Reset', btnSubmit:'📤 Submit',
+    btnReset:'🔄 Reset', btnSubmit:'📤 Submit', btnUpdate:'💾 Update & Save',
     successTitle:'Submitted Successfully!', successSub:'Student absences have been recorded.',
     btnNew:'✓ OK', btnLogout:'🚪 Logout',
     fDate:'Date', fTeacher:'Teacher', fSubject:'Subject', fLecture:'Lecture',
@@ -260,7 +308,7 @@ const LANGS = {
     confirmTitle:'Delete submission?', confirmMsg:'This cannot be undone.',
     confirmCancel:'Cancel', toastDelOk:'✅ Submission deleted.', toastDelFail:'❌ Delete failed!',
     toastEditReady:'✏️ Data loaded — fix and resubmit.',
-    noneAbsent:'No absences', academicYearLabel:'Academic Year'
+    noneAbsent:'No absences', academicYearLabel:'Academic Year', todayLabel:'Today', studentsHint:'Tap a student row to mark absent or present'
   }
 };
 
@@ -357,9 +405,12 @@ function setLang(lang) {
   setText('labelLecture', L.labelLecture);
   setText('labelSubject', L.labelSubject);
   setText('labelClass', L.labelClass);
+  setText('studentsHint', L.studentsHint || '');
+  setText('todayLabel', L.todayLabel || 'Today');
+  setText('todayValue', formatDateForDisplay(todayISO()));
   setText('welcomeSub', L.welcomeSub);
   setText('btnReset', L.btnReset);
-  setText('btnSubmitText', L.btnSubmit);
+  setText('btnSubmitText', pendingEditRow ? (L.btnUpdate || L.btnSubmit) : L.btnSubmit);
   setText('successTitle', L.successTitle);
   setText('successSub', L.successSub);
   setText('btnNew', L.btnNew);
@@ -551,39 +602,15 @@ function filterSubjectsForClass() {
   const subjectSel = document.getElementById('fSubject');
   const current = subjectSel.value;
 
-  const assigned = Array.isArray(currentTeacher?.subjects)
-    ? currentTeacher.subjects
-    : [];
-
+  const assigned = Array.isArray(currentTeacher?.subjects) ? currentTeacher.subjects : [];
   let allowed = assigned.slice();
 
-  if (cls) {
-    // First try the exact class, e.g. 1C
-    const exact = CLASS_SUBJECT_MAP[cls]
-      || CLASS_SUBJECT_MAP[String(cls).toUpperCase()];
-
-    // If the exact class is not found, fall back to the stage,
-    // e.g. 1C -> 1, 2WEB -> 2
-    const m = String(cls).toLowerCase().match(/^(\d+)([a-z]+)$/);
-    const stageKey = m && m[2].length === 1 ? m[1] : '';
-
-    const classSubjects = Array.isArray(exact)
-      ? exact
-      : (stageKey && Array.isArray(CLASS_SUBJECT_MAP[stageKey])
-          ? CLASS_SUBJECT_MAP[stageKey]
-          : []);
-
-    if (classSubjects.length) {
-      const normalized = classSubjects.map(normalize);
-
-      allowed = assigned.filter(s =>
-        normalized.includes(normalize(s))
-      );
-    }
+  if (cls && Array.isArray(CLASS_SUBJECT_MAP[cls])) {
+    const classSubjects = CLASS_SUBJECT_MAP[cls].map(normalize);
+    allowed = assigned.filter(s => classSubjects.includes(normalize(s)));
   }
 
   subjectSel.innerHTML = '';
-
   const ph = document.createElement('option');
   ph.value = '';
   ph.textContent = LANGS[currentLang].placeholder;
@@ -596,9 +623,7 @@ function filterSubjectsForClass() {
     subjectSel.appendChild(o);
   });
 
-  if (allowed.includes(current)) {
-    subjectSel.value = current;
-  }
+  if (allowed.includes(current)) subjectSel.value = current;
 }
 
 function normalize(v) {
@@ -613,70 +638,58 @@ function renderStudents(cls, preSelected) {
     con.innerHTML = '';
     const box = document.createElement('div');
     box.className = 'no-students';
-
-    const icon = document.createElement('span');
-    icon.className = 'icon';
-    icon.textContent = '🎓';
-
-    const msg = document.createElement('span');
-    msg.id = 'noStudentsText';
-    msg.textContent = L.noStudents;
-
-    box.appendChild(icon);
-    box.appendChild(msg);
-    con.appendChild(box);
-
+    const icon = document.createElement('span'); icon.className = 'icon'; icon.textContent = '🎓';
+    const msg = document.createElement('span'); msg.id = 'noStudentsText'; msg.textContent = L.noStudents;
+    box.appendChild(icon); box.appendChild(msg); con.appendChild(box);
     setText('studentsAreaTitle', '📋 ' + L.studentsTitle);
     return;
   }
 
   const list = STUDENTS[cls];
   const selected = preSelected || selectedAbsent;
-
   setText('studentsAreaTitle', `📋 ${cls} — ${list.length} ${L.students}`);
 
   const grid = document.createElement('div');
   grid.className = 'students-grid';
 
-  list.forEach(name => {
-    const label = document.createElement('label');
-    label.className = 'student-check';
+  list.forEach((name, index) => {
+    const row = document.createElement('label');
+    row.className = 'student-check' + (selected.has(name) ? ' checked' : '');
+    row.setAttribute('role','button');
+    row.setAttribute('tabindex','0');
+    row.setAttribute('aria-pressed', selected.has(name) ? 'true' : 'false');
 
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = name;
-    checkbox.checked = selected.has(name);
+    const number = document.createElement('span');
+    number.className = 'student-no';
+    number.textContent = String(index + 1).padStart(2,'0');
 
     const span = document.createElement('span');
     span.className = 'sname';
     span.textContent = name;
 
-    if (checkbox.checked) label.classList.add('checked');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = name;
+    cb.checked = selected.has(name);
 
-    label.appendChild(checkbox);
-    label.appendChild(span);
+    row.appendChild(number); row.appendChild(span); row.appendChild(cb);
 
-    checkbox.addEventListener('change', () => {
-      if (checkbox.checked) {
-        selectedAbsent.add(name);
-        label.classList.add('checked');
-      } else {
-        selectedAbsent.delete(name);
-        label.classList.remove('checked');
-      }
-      updateAbsentCount();
-      renderAbsentPreview();
+    const toggle = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (selectedAbsent.has(name)) selectedAbsent.delete(name);
+      else selectedAbsent.add(name);
+      row.classList.toggle('checked', selectedAbsent.has(name));
+      cb.checked = selectedAbsent.has(name);
+      row.setAttribute('aria-pressed', selectedAbsent.has(name) ? 'true' : 'false');
+      updateAbsentCount(); renderAbsentPreview();
+    };
+
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') toggle(e);
     });
-
-    label.addEventListener('click', e => {
-      if (e.target !== checkbox) {
-        e.preventDefault();
-        checkbox.checked = !checkbox.checked;
-        checkbox.dispatchEvent(new Event('change'));
-      }
-    });
-
-    grid.appendChild(label);
+    grid.appendChild(row);
   });
 
   con.innerHTML = '';
@@ -783,6 +796,7 @@ function restoreFormState() {
 
 function resetForm() {
   pendingEditRow = null;
+  setText('btnSubmitText', LANGS[currentLang].btnSubmit);
   document.getElementById('fDate').value = todayISO();
   document.getElementById('fSubject').value = '';
   document.getElementById('fClass').value = '';
@@ -840,7 +854,8 @@ async function doSubmit() {
 
   try {
     const response = await apiGet({
-      action:'saveAbsence',
+      action: pendingEditRow ? 'updateAbsence' : 'saveAbsence',
+      rowNumber: pendingEditRow ? String(pendingEditRow.rowNumber) : '',
       date:formatDateForDisplay(date),
       subject:subject,
       lectureNo:lecture,
@@ -872,10 +887,14 @@ async function doSubmit() {
       throw new Error(text);
     }
 
-    if (text !== 'OK') {
+    if (text !== 'OK' && text !== 'UPDATED') {
       throw new Error('Unexpected server response');
     }
 
+    if (pendingEditRow) {
+      const oldDate = normalizeDateForInput(pendingEditRow.date);
+      clearLocalDuplicate(oldDate, pendingEditRow.classGroup, pendingEditRow.subject, pendingEditRow.lectureNo);
+    }
     markLocalDuplicate(date, cls, subject, lecture);
 
     const absentNames = [...selectedAbsent];
@@ -1164,73 +1183,28 @@ async function askEdit(rowNumber) {
   if (!r) return;
 
   const L = LANGS[currentLang];
-  showLoading(L.loadingEdit);
+  const isoDate = normalizeDateForInput(r.date);
 
-  try {
-    // The current secure backend has no separate update endpoint.
-    // Edit is therefore implemented as delete + resubmit, exactly as before,
-    // but the server decides whether the authenticated teacher may delete it.
-    const response = await apiGet({
-      action:'deleteRow',
-      rowNumber:String(rowNumber)
-    });
+  document.getElementById('fDate').value = isoDate || todayISO();
+  document.getElementById('fClass').value = r.classGroup || '';
+  filterSubjectsForClass();
+  document.getElementById('fSubject').value = r.subject || '';
+  document.getElementById('fLecture').value = r.lectureNo || '';
 
-    const text = typeof response === 'string' ? response : '';
-    if (text !== 'DELETED') {
-      if (text.toLowerCase().includes('unauthorized')) throw new Error('Unauthorized');
-      throw new Error(text || 'Delete failed');
-    }
+  selectedAbsent = new Set(
+    String(r.absentStudents || '').split(',').map(n => n.trim()).filter(Boolean)
+  );
+  renderStudents(r.classGroup || '', selectedAbsent);
+  updateAbsentCount();
+  renderAbsentPreview();
 
-    todayRows = todayRows.filter(x => x.rowNumber !== rowNumber);
-    saveRowsToStorage();
-    renderRecentRows();
+  pendingEditRow = r;
+  sessionStorage.removeItem('formState');
 
-    const isoDate = normalizeDateForInput(r.date);
-    if (isoDate) document.getElementById('fDate').value = isoDate;
-
-    document.getElementById('fClass').value = r.classGroup || '';
-    filterSubjectsForClass();
-    document.getElementById('fSubject').value = r.subject || '';
-    document.getElementById('fLecture').value = r.lectureNo || '';
-
-    selectedAbsent = new Set(
-      String(r.absentStudents || '')
-        .split(',')
-        .map(n => n.trim())
-        .filter(Boolean)
-    );
-
-    renderStudents(r.classGroup || '', selectedAbsent);
-    updateAbsentCount();
-    renderAbsentPreview();
-
-    clearLocalDuplicate(
-      isoDate,
-      r.classGroup || '',
-      r.subject || '',
-      r.lectureNo || ''
-    );
-
-    pendingEditRow = r;
-    sessionStorage.removeItem('formState');
-
-    hideLoading();
-    showToast(L.toastEditReady, 'success');
-
-    document.getElementById('screenSubmit').scrollIntoView({
-      behavior:'smooth',
-      block:'start'
-    });
-  } catch (err) {
-    hideLoading();
-
-    if (String(err.message).toLowerCase().includes('unauthorized')) {
-      showToast(L.toastUnauthorized, 'error');
-      setTimeout(doLogout, 1200);
-    } else {
-      showToast(L.toastDelFail, 'error');
-    }
-  }
+  setText('btnSubmitText', L.btnUpdate || L.btnSubmit);
+  hideLoading();
+  showToast(L.toastEditReady, 'success');
+  document.getElementById('screenSubmit').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 function normalizeDateForInput(value) {
