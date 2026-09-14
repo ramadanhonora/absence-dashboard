@@ -16,7 +16,7 @@
 }
 .mgmt-subtab.active { background:#667eea; color:#fff; }
 .mgmt-panel { display:none; }
-.mgmt-panel.active { display:block; }
+.mgmt-panel.active { display:block; }f
 
 /* Teacher table */
 .mgmt-table { width:100%; border-collapse:collapse; margin-top:10px; }
@@ -130,7 +130,64 @@
 .policy-disabled-note {
   font-size:0.78em; color:#999; margin-top:6px; font-style:italic;
 }
+/* ── WORKING DAYS ───────────────────────────────────── */
+.working-days-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:10px;
+  margin-top:8px;
+}
 
+.working-day-item {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  border:2px solid #e9ecef;
+  border-radius:10px;
+  padding:11px 13px;
+  background:#fafafa;
+  cursor:pointer;
+  user-select:none;
+  transition:all 0.2s;
+}
+
+.working-day-item:hover {
+  border-color:#667eea;
+  background:#f4f6ff;
+}
+
+.working-day-item input {
+  width:18px;
+  height:18px;
+  accent-color:#667eea;
+  cursor:pointer;
+}
+
+.working-day-item.checked {
+  border-color:#667eea;
+  background:#eef0ff;
+  color:#667eea;
+  font-weight:700;
+}
+
+.working-day-name {
+  font-size:0.9em;
+}
+
+.working-days-hint {
+  font-size:0.78em;
+  color:#999;
+  line-height:1.5;
+  margin-top:8px;
+}
+
+.working-days-status {
+  display:inline-block;
+  margin-inline-start:8px;
+  font-size:0.78em;
+  font-weight:700;
+  color:#667eea;
+}
 /* Responsive mgmt */
 @media(max-width:600px){
   .mgmt-table { font-size:0.78em; }
@@ -428,7 +485,70 @@
       <button class="btn-add" onclick="saveAcademicYearSettings()" id="btnSaveAcademicYear">تۆمارکرنا ساڵا خوێندنی</button>
     </div>
   </div>
+<!-- 📅 WORKING DAYS -->
+<div class="settings-section">
+  <h3 id="workingDaysTitle">📅 Working Days</h3>
 
+  <div class="working-days-grid" id="workingDaysBox">
+
+    <label class="working-day-item" data-day="Sunday">
+      <input type="checkbox" value="Sunday">
+      <span class="working-day-name">Sunday</span>
+    </label>
+
+    <label class="working-day-item" data-day="Monday">
+      <input type="checkbox" value="Monday">
+      <span class="working-day-name">Monday</span>
+    </label>
+
+    <label class="working-day-item" data-day="Tuesday">
+      <input type="checkbox" value="Tuesday">
+      <span class="working-day-name">Tuesday</span>
+    </label>
+
+    <label class="working-day-item" data-day="Wednesday">
+      <input type="checkbox" value="Wednesday">
+      <span class="working-day-name">Wednesday</span>
+    </label>
+
+    <label class="working-day-item" data-day="Thursday">
+      <input type="checkbox" value="Thursday">
+      <span class="working-day-name">Thursday</span>
+    </label>
+
+    <label class="working-day-item" data-day="Friday">
+      <input type="checkbox" value="Friday">
+      <span class="working-day-name">Friday</span>
+    </label>
+
+    <label class="working-day-item" data-day="Saturday">
+      <input type="checkbox" value="Saturday">
+      <span class="working-day-name">Saturday</span>
+    </label>
+
+  </div>
+
+  <p class="working-days-hint" id="workingDaysHint">
+    Select only the days when the institute operates.
+    Attendance submission is blocked on other days.
+  </p>
+
+  <div style="margin-top:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+
+    <button
+      class="btn-add"
+      onclick="saveWorkingDays()"
+      id="btnSaveWorkingDays">
+      💾 Save Working Days
+    </button>
+
+    <span
+      class="working-days-status"
+      id="workingDaysStatus">
+    </span>
+
+  </div>
+</div>
   <!-- 🏫 INSTITUTE BRANDING -->
   <div class="settings-section">
     <h3 id="stBrandingTitle">🏫 ناسنامەیا پەیمانگەهێ</h3>
@@ -743,5 +863,261 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="reports.js"></script>
 <script src="app.js"></script>
+
+<script>
+(function () {
+
+  const DEFAULT_WORKING_DAYS = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday'
+  ];
+
+  function getSettingsObject() {
+    if (typeof appSettings === 'object' && appSettings) {
+      return appSettings;
+    }
+
+    if (typeof settings === 'object' && settings) {
+      return settings;
+    }
+
+    return {};
+  }
+
+  function applyWorkingDays() {
+    const box = document.getElementById('workingDaysBox');
+
+    if (!box) return;
+
+    const settings = getSettingsObject();
+
+    const raw = String(
+      settings.working_days ||
+      DEFAULT_WORKING_DAYS.join(',')
+    );
+
+    const selected = raw
+      .split(',')
+      .map(function (day) {
+        return day.trim().toLowerCase();
+      })
+      .filter(Boolean);
+
+    box.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+
+      const checked =
+        selected.indexOf(
+          checkbox.value.toLowerCase()
+        ) !== -1;
+
+      checkbox.checked = checked;
+
+      const item =
+        checkbox.closest('.working-day-item');
+
+      if (item) {
+        item.classList.toggle('checked', checked);
+      }
+
+    });
+  }
+
+  function installWorkingDayListeners() {
+
+    document
+      .querySelectorAll(
+        '#workingDaysBox input[type="checkbox"]'
+      )
+      .forEach(function (checkbox) {
+
+        if (checkbox.dataset.bound === '1') {
+          return;
+        }
+
+        checkbox.dataset.bound = '1';
+
+        checkbox.addEventListener(
+          'change',
+          function () {
+
+            const item =
+              checkbox.closest('.working-day-item');
+
+            if (item) {
+              item.classList.toggle(
+                'checked',
+                checkbox.checked
+              );
+            }
+
+          }
+        );
+
+      });
+  }
+
+  window.saveWorkingDays = async function () {
+
+    const status =
+      document.getElementById(
+        'workingDaysStatus'
+      );
+
+    const button =
+      document.getElementById(
+        'btnSaveWorkingDays'
+      );
+
+    const selected =
+      Array.from(
+        document.querySelectorAll(
+          '#workingDaysBox input[type="checkbox"]:checked'
+        )
+      ).map(function (checkbox) {
+        return checkbox.value;
+      });
+
+    if (!selected.length) {
+
+      if (status) {
+        status.textContent =
+          '❌ Select at least one working day.';
+      }
+
+      return;
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = '⏳ Saving...';
+    }
+
+    try {
+
+      if (typeof adminGet !== 'function') {
+        throw new Error(
+          'Admin API is not ready.'
+        );
+      }
+
+      const value = selected.join(',');
+
+      const result = await adminGet({
+        action: 'saveSettings',
+        working_days: value
+      });
+
+      if (String(result).startsWith('ERROR')) {
+        throw new Error(result);
+      }
+
+      if (
+        typeof appSettings === 'object' &&
+        appSettings
+      ) {
+        appSettings.working_days = value;
+      }
+
+      if (
+        typeof settings === 'object' &&
+        settings
+      ) {
+        settings.working_days = value;
+      }
+
+      if (status) {
+        status.textContent =
+          '✅ Working days saved successfully.';
+      }
+
+      applyWorkingDays();
+
+    } catch (error) {
+
+      if (status) {
+        status.textContent =
+          '❌ ' + error.message;
+      }
+
+    } finally {
+
+      if (button) {
+        button.disabled = false;
+        button.textContent =
+          '💾 Save Working Days';
+      }
+
+    }
+
+  };
+
+  function syncWorkingDays() {
+    installWorkingDayListeners();
+    applyWorkingDays();
+  }
+
+  document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+      syncWorkingDays();
+
+      let count = 0;
+
+      const timer = setInterval(
+        function () {
+
+          syncWorkingDays();
+
+          count++;
+
+          if (count > 30) {
+            clearInterval(timer);
+          }
+
+        },
+        500
+      );
+
+    }
+  );
+
+  const originalShowTab =
+    window.showTab;
+
+  if (typeof originalShowTab === 'function') {
+
+    window.showTab = function (name) {
+
+      const result =
+        originalShowTab.apply(
+          this,
+          arguments
+        );
+
+      if (name === 'settings') {
+
+        setTimeout(
+          function () {
+            syncWorkingDays();
+          },
+          150
+        );
+
+      }
+
+      return result;
+    };
+
+  }
+
+})();
+</script>
+
+
+
 </body>
 </html>
