@@ -5,15 +5,148 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>پەیمانگەها کومپیوتەرێ ل ئاکرێ — داشبۆرد</title>
 <link rel="stylesheet" href="dashboard.css">
+<style>
+/* ── MANAGEMENT STYLES ─────────────────────────────── */
+.mgmt-section { margin-bottom: 28px; }
+.mgmt-subtabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.mgmt-subtab {
+  padding:9px 22px; border-radius:8px; border:2px solid #667eea;
+  color:#667eea; background:#fff; font-weight:700; cursor:pointer;
+  font-family:inherit; font-size:0.9em; transition:all 0.2s;
+}
+.mgmt-subtab.active { background:#667eea; color:#fff; }
+.mgmt-panel { display:none; }
+.mgmt-panel.active { display:block; }
+
+/* Teacher table */
+.mgmt-table { width:100%; border-collapse:collapse; margin-top:10px; }
+.mgmt-table th { background:#667eea; color:#fff; padding:10px 12px; font-size:0.82em; text-align:start; }
+.mgmt-table td { padding:9px 12px; border-bottom:1px solid #e9ecef; vertical-align:middle; font-size:0.88em; }
+.mgmt-table tr:hover td { background:#f8f9ff; }
+.tag { display:inline-block; background:#eef0ff; color:#667eea; border-radius:6px; padding:2px 8px; font-size:0.75em; margin:1px; font-weight:600; }
+
+/* Checkbox group */
+.cb-group { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.cb-item { display:flex; align-items:center; gap:4px; background:#f4f6ff; border:1.5px solid #d0d7ff; border-radius:8px; padding:5px 10px; cursor:pointer; transition:all 0.2s; user-select:none; }
+.cb-item input { cursor:pointer; width:15px; height:15px; accent-color:#667eea; }
+.cb-item:has(input:checked) { background:#667eea; color:#fff; border-color:#667eea; }
+.cb-item label { cursor:pointer; font-size:0.85em; font-weight:600; }
+
+/* Form fields */
+.mgmt-form { display:flex; flex-direction:column; gap:14px; }
+.mgmt-field { display:flex; flex-direction:column; gap:5px; }
+.mgmt-field label { font-size:0.82em; color:#666; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; }
+.mgmt-field input, .mgmt-field textarea {
+  padding:10px 14px; border:2px solid #e9ecef; border-radius:8px;
+  font-size:0.95em; font-family:inherit; outline:none;
+  transition:border-color 0.2s;
+}
+.mgmt-field input:focus, .mgmt-field textarea:focus { border-color:#667eea; }
+.mgmt-field textarea { resize:vertical; min-height:110px; }
+.paste-hint { font-size:0.75em; color:#999; margin-top:3px; }
+.paste-preview { background:#f8f9fa; border:1px solid #e9ecef; border-radius:6px; padding:10px; margin-top:8px; max-height:160px; overflow-y:auto; display:none; }
+.paste-preview.show { display:block; }
+.paste-preview-item { padding:3px 6px; font-size:0.85em; border-bottom:1px solid #f0f0f0; }
+.paste-preview-item:last-child { border-bottom:none; }
+
+/* Modals */
+.mgmt-modal-bg {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
+  z-index:2000; align-items:center; justify-content:center; padding:16px;
+}
+.mgmt-modal-bg.open { display:flex; }
+.mgmt-modal {
+  background:#fff; border-radius:16px; padding:28px 24px;
+  width:100%; max-width:580px; max-height:90vh; overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  animation:slideIn 0.25s;
+}
+.mgmt-modal h3 { color:#667eea; margin-bottom:20px; font-size:1.2em; }
+.mgmt-modal-btns { display:flex; gap:10px; margin-top:20px; justify-content:flex-end; flex-wrap:wrap; }
+
+/* Student class grid */
+.class-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px; margin-bottom:20px; }
+.class-btn {
+  padding:14px 10px; border-radius:10px; border:2px solid #e9ecef;
+  background:#fff; cursor:pointer; text-align:center; transition:all 0.2s;
+  font-family:inherit;
+}
+.class-btn:hover { border-color:#667eea; background:#f4f6ff; }
+.class-btn.selected { border-color:#667eea; background:#667eea; color:#fff; }
+.class-btn .cls-name { font-weight:700; font-size:1em; }
+.class-btn .cls-count { font-size:0.72em; opacity:0.7; margin-top:2px; }
+
+/* Student list */
+.student-list-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+.student-list-header h3 { color:#667eea; font-size:1.1em; }
+.student-row { display:flex; align-items:center; justify-content:space-between; padding:9px 12px; border-bottom:1px solid #f0f0f0; transition:background 0.15s; }
+.student-row:hover { background:#f8f9ff; }
+.student-row:last-child { border-bottom:none; }
+.student-name { font-size:0.9em; font-weight:600; }
+.student-actions { display:flex; gap:6px; flex-shrink:0; }
+.btn-sm { padding:5px 12px; border-radius:6px; border:none; cursor:pointer; font-family:inherit; font-size:0.78em; font-weight:600; transition:all 0.2s; }
+.btn-move { background:#e8f0fe; color:#667eea; }
+.btn-move:hover { background:#667eea; color:#fff; }
+.btn-del { background:#fdecea; color:#c8402a; }
+.btn-del:hover { background:#c8402a; color:#fff; }
+.btn-add { background:#667eea; color:#fff; border:none; border-radius:8px; padding:9px 18px; font-family:inherit; font-weight:700; cursor:pointer; font-size:0.88em; transition:all 0.2s; }
+.btn-add:hover { background:#5568d3; }
+.btn-danger { background:#c8402a; color:#fff; border:none; border-radius:8px; padding:9px 18px; font-family:inherit; font-weight:700; cursor:pointer; font-size:0.88em; }
+.btn-secondary { background:#f0f0f0; color:#666; border:none; border-radius:8px; padding:9px 18px; font-family:inherit; font-weight:700; cursor:pointer; font-size:0.88em; }
+
+.cache-bar { background:#f4f6ff; border:2px solid #d0d7ff; border-radius:10px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; margin-top:24px; flex-wrap:wrap; gap:10px; }
+.cache-bar p { color:#667eea; font-size:0.88em; font-weight:600; margin:0; }
+
+/* ── SETTINGS TAB STYLES ────────────────────────────── */
+.settings-section {
+  background:#fff; border:2px solid #e9ecef; border-radius:14px;
+  padding:20px 22px; margin-bottom:20px;
+}
+.settings-section h3 {
+  color:#667eea; font-size:1.15em; margin-bottom:16px;
+  display:flex; align-items:center; gap:8px;
+}
+.settings-readonly {
+  background:#f4f6ff; border:2px solid #d0d7ff; border-radius:8px;
+  padding:10px 14px; font-weight:700; color:#667eea; font-size:0.92em;
+  margin-top:4px;
+}
+.settings-note {
+  font-size:0.78em; color:#999; margin-top:10px; line-height:1.5;
+}
+.logo-widgets { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:6px; }
+.logo-widget {
+  border:2px dashed #d0d7ff; border-radius:12px; padding:16px;
+  text-align:center; background:#f8f9ff;
+}
+.logo-widget-preview {
+  width:110px; height:110px; object-fit:contain; border-radius:10px;
+  background:#fff; border:1px solid #e9ecef; margin:0 auto 12px; display:block;
+}
+.logo-widget label.lw-title { font-weight:700; color:#667eea; display:block; margin-bottom:10px; font-size:0.92em; }
+.logo-widget input[type="file"] {
+  width:100%; font-size:0.8em; margin-bottom:10px; font-family:inherit;
+}
+.policy-disabled-note {
+  font-size:0.78em; color:#999; margin-top:6px; font-style:italic;
+}
+
+/* Responsive mgmt */
+@media(max-width:600px){
+  .mgmt-table { font-size:0.78em; }
+  .mgmt-table th, .mgmt-table td { padding:7px 8px; }
+  .mgmt-modal { padding:18px 14px; }
+  .class-grid { grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); }
+  .logo-widgets { grid-template-columns:1fr; }
+}
+</style>
 </head>
 <body>
 <div style="max-width:1400px;margin:0 auto;">
 
 <!-- HEADER -->
-
-  
 <div class="dash-header">
-            <div class="dash-header-controls">
+  <div class="dash-header-controls">
     <p id="lastUpdate"></p>
     <div class="lang-switcher">
       <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
@@ -22,21 +155,16 @@
     </div>
     <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪 دەرچوون</button>
   </div>
-<br>
-  
-  <div class="dash-header-top">  
-    <img src="aci.jpg" alt="ACI Logo" class="logo-right">
-    
-
-<div class="dash-titles" dir="rtl" style="font-family: 'Segoe UI', Tahoma, Arial, sans-serif; text-align: center;">
-  <h1 id="dInstName" style="margin-bottom: 5px;font-size: 36px;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
-  <h2 id="dSub" style="margin-top: 0; color: #555;font-size: 24px;">تومارا نەهاتنا قوتابیان</h2>
-</div>
-    <img src="new-left-logo.jpg" alt="New Left Logo" class="logo-left">
+  <br>
+  <div class="dash-header-top">
+    <img src="aci.jpg" alt="ACI Logo" class="logo-right" id="dashInstituteLogo">
+    <div class="dash-titles" dir="rtl" style="font-family:'Segoe UI',Tahoma,Arial,sans-serif;text-align:center;">
+      <h1 id="dInstName" style="margin-bottom:5px;font-size:36px;">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
+      <h2 id="dSub" style="margin-top:0;color:#555;font-size:24px;">تومارا نەهاتنا قوتابیان</h2>
+      <p id="dAcademicYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:15px;"></p>
+    </div>
+    <img src="new-left-logo.jpg" alt="New Left Logo" class="logo-left" id="dashMinistryLogo">
   </div>
-  
-
-
   <div class="search-wrap">
     <input type="text" id="searchInput" placeholder="🔍 ناڤێ یەکەم ی قوتابی بنووسە..." oninput="onSearch()">
     <div id="dropdownResults"></div>
@@ -54,16 +182,21 @@
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="showTab('daily')"   id="tab-daily">📅 ڕۆژانە</button>
-  <button class="tab" onclick="showTab('weekly')"  id="tab-weekly">📊 هەفتانە</button>
-  <button class="tab" onclick="showTab('monthly')" id="tab-monthly">📅 مانگانە</button>
-  <button class="tab" onclick="showTab('roster')"  id="tab-roster">📋 لیست</button>
-  <button class="tab" onclick="showTab('analytics')" id="tab-analytics">📈 شیکاری</button>
+  <button class="tab active" onclick="showTab('daily')"    id="tab-daily">📅 ڕۆژانە</button>
+  <button class="tab"        onclick="showTab('weekly')"   id="tab-weekly">📊 هەفتانە</button>
+  <button class="tab"        onclick="showTab('monthly')"  id="tab-monthly">📅 مانگانە</button>
+  <button class="tab"        onclick="showTab('roster')"   id="tab-roster">📋 لیست</button>
+  <button class="tab"        onclick="showTab('analytics')"id="tab-analytics">📈 شیکاری</button>
+  <button class="tab"        onclick="showTab('teachers')" id="tab-teachers">👨‍🏫 مامۆستایان</button>
+  <button class="tab"        onclick="showTab('students')" id="tab-students">👨‍🎓 قوتابیان</button>
+  <button class="tab"        onclick="showTab('subjects')" id="tab-subjects">🏫 پۆل و بابەت</button>
+  <button class="tab"        onclick="showTab('graduates')" id="tab-graduates">🎓 دەرچووان</button>
+  <button class="tab"        onclick="showTab('settings')" id="tab-settings">⚙️ ڕێکخستن</button>
 </div>
 
 <!-- DAILY -->
 <div id="daily" class="content-section active">
-  <h2 class="section-title" id="dDailyTitle"> 📅 ڕاپۆرتی ڕۆژانە</h2>
+  <h2 class="section-title" id="dDailyTitle">📅 ڕاپۆرتی ڕۆژانە</h2>
   <p class="section-sub" id="dDailySub">کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە</p>
   <div class="filter-section">
     <div class="filter-row">
@@ -73,6 +206,7 @@
       </div>
       <button class="btn" onclick="setToday()" id="btnToday">ئەمرۆ</button>
       <button class="btn btn-gray" onclick="setPrevDay()" id="btnYesterday">دووێ</button>
+      <button class="btn btn-green" onclick="exportDailyPDF()" id="btnPrintD">🖨️ چاپکرن</button>
     </div>
   </div>
   <div id="dailyContent"><div style="text-align:center;padding:50px;color:#667eea;font-size:1.1em;">⏳ بارکرن...</div></div>
@@ -88,7 +222,7 @@
         <label id="dWeekLabel">📅 هەفتە:</label>
         <select id="weekSelect" onchange="loadWeekly()"></select>
       </div>
-      <button class="btn btn-green" onclick="window.print()" id="btnPrintW">🖨️ چاپکرن</button>
+      <button class="btn btn-green" onclick="exportWeeklyPDF()" id="btnPrintW">🖨️ چاپکرن</button>
     </div>
   </div>
   <div id="weeklyContent"><div style="text-align:center;padding:50px;color:#999;">هەفتەیەک هەلبژێرە</div></div>
@@ -104,7 +238,7 @@
         <label id="dMonthLabel">📆 مانگ:</label>
         <select id="monthSelect" onchange="loadMonthly()"></select>
       </div>
-      <button class="btn btn-green" onclick="window.print()" id="btnPrintM">🖨️ چاپکرن</button>
+      <button class="btn btn-green" onclick="exportMonthlyPDF()" id="btnPrintM">🖨️ چاپکرن</button>
     </div>
   </div>
   <div id="monthlyContent"><div style="text-align:center;padding:50px;color:#999;">مانگێک هەلبژێرە</div></div>
@@ -124,7 +258,7 @@
         <label id="dMinAbsLabel">🔢 کەمترین نەهاتن:</label>
         <input type="number" id="minAbsences" value="0" min="0" onchange="filterRoster()">
       </div>
-      <button class="btn btn-green" onclick="window.print()" id="btnPrintR">🖨️ چاپکرن</button>
+      <button class="btn btn-green" onclick="exportRosterPDF()" id="btnPrintR">🖨️ چاپکرن</button>
     </div>
   </div>
   <div id="rosterContent"><div style="text-align:center;padding:50px;color:#999;">پۆلێک هەلبژێرە</div></div>
@@ -139,26 +273,210 @@
     <div class="filter-row">
       <div class="filter-group">
         <label id="dLecPerDay">ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:</label>
-        <input type="number" id="lecturesPerDay" value="3" min="1" onchange="loadAnalytics()">
+        <input type="number" id="lecturesPerDay" value="3" min="1" disabled>
       </div>
       <div class="filter-group">
         <label id="dExpDays">ژمارەی ڕۆژانی دابراون بۆ دەرکرن:</label>
-        <input type="number" id="expulsionDays" value="21" min="1" onchange="loadAnalytics()">
+        <input type="number" id="expulsionDays" value="21" min="1" disabled>
       </div>
     </div>
-  </div>
-  <div class="filter-section working-days-card" style="margin-top:14px;">
-    <h3 style="color:#667eea;margin-bottom:6px;font-size:1.1em;" id="workingDaysTitle">📅 ڕۆژێن کارێ</h3>
-    <p id="workingDaysHint" style="margin:0 0 12px;color:#7b8494;font-size:.9em;"></p>
-    <div id="workingDaysBox" style="display:grid;grid-template-columns:repeat(7,minmax(90px,1fr));gap:8px;"></div>
-    <button class="btn btn-green" style="margin-top:12px;" onclick="saveWorkingDays()" id="workingDaysSave">💾 پاشەکەفتکرنا ڕۆژێن کارێ</button>
+    <p class="policy-disabled-note" id="policyDisabledNote">⚙️ ئەڤێن ژ ڕێکخستن ⚙️ Settings دەستکاری دبن</p>
   </div>
   <div id="analyticsContent"><div style="text-align:center;padding:50px;color:#667eea;font-size:1.1em;">⏳ بارکرن...</div></div>
 </div>
 
+<!-- TEACHERS TAB -->
+<div id="teachers" class="content-section">
+  <h2 class="section-title" id="dTeachersTitle">👨‍🏫 بەڕێوەبردنی مامۆستایان</h2>
+  <p class="section-sub" id="dTeachersSub">زیادکرن، دەسکاریکرن و بینینی هەموو مامۆستایان</p>
+  <div style="margin-bottom:16px;">
+    <button class="btn-add" onclick="openAddTeacher()" id="btnAddTeacher">➕ مامۆستایێ نوی</button>
+  </div>
+  <div class="table-wrap">
+    <table class="mgmt-table" id="teacherTable">
+      <thead><tr>
+        <th id="thTName">ناڤ</th>
+        <th id="thTUser">یوزەرناڤ</th>
+        <th id="thTPass">پاسۆرد</th>
+        <th id="thTClasses">پۆلان</th>
+        <th id="thTSubjects">بابەت</th>
+        <th id="thTAction"></th>
+      </tr></thead>
+      <tbody id="teacherTableBody">
+        <tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">⏳ بارکرن...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cache-bar">
+    <p id="cacheNote1">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache1">🔄 نوێکرنەوەی داتا</button>
+  </div>
+</div>
+
+<!-- STUDENTS TAB -->
+<div id="students" class="content-section">
+  <h2 class="section-title" id="dStudentsTitle">👨‍🎓 بەڕێوەبردنی قوتابیان</h2>
+  <p class="section-sub" id="dStudentsSub">بینین، زیادکرن، گواستنەوە و سڕینەوەی قوتابیان</p>
+
+  <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+    <!-- Left: class grid -->
+    <div style="flex:0 0 200px;min-width:160px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+        <strong style="color:#667eea;" id="classListTitle">🏫 پۆلان</strong>
+        <button class="btn-add" onclick="openNewClass()" id="btnNewClass" style="font-size:0.78em;padding:6px 12px;">➕ پۆلێ نوی</button>
+      </div>
+      <div id="classGrid" class="class-grid" style="grid-template-columns:1fr;"></div>
+    </div>
+    <!-- Right: student list -->
+    <div style="flex:1;min-width:260px;">
+      <div id="studentPanel"><div style="text-align:center;padding:40px;color:#999;" id="selectClassHint">← پۆلێک هەلبژێرە</div></div>
+    </div>
+  </div>
+
+  <div class="cache-bar">
+    <p id="cacheNote2">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache2">🔄 نوێکرنەوەی داتا</button>
+  </div>
+</div>
+
+<!-- SUBJECTS TAB -->
+<div id="subjects" class="content-section">
+  <h2 class="section-title" id="dSubjectsTitle">🏫 بەڕێوەبردنی پۆل و بابەتان</h2>
+  <p class="section-sub" id="dSubjectsSub">پۆلی نوی زیادبکە و بابەتێن وی دیاربکە، یان یێن هەبوو دەسکاری بکە</p>
+  <div style="margin-bottom:16px;">
+    <button class="btn-add" onclick="openAddSubject()" id="btnAddSubject">➕ زیادکرنی پۆل/بابەت</button>
+  </div>
+  <div class="table-wrap">
+    <table class="mgmt-table" id="subjectTable">
+      <thead><tr>
+        <th id="thSClass">پۆل / قۆناغ</th>
+        <th id="thSSubjects">بابەتان</th>
+        <th id="thSAction"></th>
+      </tr></thead>
+      <tbody id="subjectTableBody">
+        <tr><td colspan="3" style="text-align:center;padding:30px;color:#999;">⏳ بارکرن...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cache-bar">
+    <p id="cacheNote3">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache3">🔄 نوێکرنەوەی داتا</button>
+  </div>
+</div>
+
+<!-- GRADUATES TAB -->
+<div id="graduates" class="content-section">
+  <h2 class="section-title" id="dGraduatesTitle">🎓 دەرچووان</h2>
+  <p class="section-sub" id="dGraduatesSub">لیستا قوتابیێن دەرچوویی، بەپێی ساڵێ</p>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label id="gradYearLabel">📆 ساڵ:</label>
+        <select id="gradYearFilter" onchange="renderGraduatesList()"></select>
+      </div>
+      <button class="btn btn-green" onclick="exportGraduatesPDF()" id="btnPrintGrad">🖨️ چاپکرن</button>
+    </div>
+  </div>
+  <div id="graduatesList"></div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div id="settings" class="content-section">
+  <h2 class="section-title" id="dSettingsTitle">⚙️ ڕێکخستنێن سیستەمێ</h2>
+  <p class="section-sub" id="dSettingsSub">سیاسەتا نەهاتنێ، ساڵا خوێندنی و ناسنامەیا پەیمانگەهێ</p>
+
+  <!-- 🎯 ABSENCE POLICY -->
+  <div class="settings-section">
+    <h3 id="stPolicyTitle">🎯 سیاسەتا نەهاتنێ</h3>
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="setLecPerDayLbl">ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:</label>
+        <input type="number" id="setLecturesPerDay" min="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="setExpDaysLbl">ژمارەی ڕۆژانی دابراون بۆ دەرکرن:</label>
+        <input type="number" id="setExpulsionDays" min="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="setAtRiskLbl">سنوورێ ئاگاداریێ:</label>
+        <input type="number" id="setAtRiskThreshold" min="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="setHighRiskLbl">سنوورێ مەترسیێ:</label>
+        <input type="number" id="setHighRiskThreshold" min="1">
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn-add" onclick="savePolicySettings()" id="btnSavePolicy">تۆمارکرنا سیاسەتێ</button>
+    </div>
+  </div>
+
+  <!-- 📅 ACADEMIC YEAR -->
+  <div class="settings-section">
+    <h3 id="stAcademicTitle">📅 ساڵا خوێندنی</h3>
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="setSchoolStartLbl">دەستپێکا ساڵا خوێندنی:</label>
+        <input type="date" id="setSchoolYearStart">
+      </div>
+      <div class="mgmt-field">
+        <label>—</label>
+        <div class="settings-readonly" id="setAcademicYearDisplay"></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn-add" onclick="saveAcademicYearSettings()" id="btnSaveAcademicYear">تۆمارکرنا ساڵا خوێندنی</button>
+    </div>
+  </div>
+
+  <!-- 🏫 INSTITUTE BRANDING -->
+  <div class="settings-section">
+    <h3 id="stBrandingTitle">🏫 ناسنامەیا پەیمانگەهێ</h3>
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="setNameKuLbl">ناڤێ پەیمانگەهێ (کوردی)</label>
+        <input type="text" id="setInstNameKu">
+      </div>
+      <div class="mgmt-field">
+        <label id="setNameArLbl">ناڤێ پەیمانگەهێ (عەرەبی)</label>
+        <input type="text" id="setInstNameAr">
+      </div>
+      <div class="mgmt-field">
+        <label id="setNameEnLbl">ناڤێ پەیمانگەهێ (ئینگلیزی)</label>
+        <input type="text" id="setInstNameEn">
+      </div>
+    </div>
+    <div style="margin-top:16px;margin-bottom:22px;">
+      <button class="btn-add" onclick="saveNamesSettings()" id="btnSaveNames">تۆمارکرنا ناڤان</button>
+    </div>
+
+    <div class="logo-widgets">
+      <div class="logo-widget">
+        <label class="lw-title" id="instituteLogoLbl">لۆگۆیێ پەیمانگەهێ</label>
+        <img id="instituteLogoPreview" class="logo-widget-preview" src="aci.jpg" alt="Institute Logo">
+        <input type="file" id="instituteLogoFile" accept="image/*">
+        <button class="btn-add" style="width:100%;" onclick="doUploadLogo('institute')" id="btnUploadInstituteLogo">⬆️ بارکرن</button>
+      </div>
+      <div class="logo-widget">
+        <label class="lw-title" id="ministryLogoLbl">لۆگۆیێ وەزارەتێ</label>
+        <img id="ministryLogoPreview" class="logo-widget-preview" src="new-left-logo.jpg" alt="Ministry Logo">
+        <input type="file" id="ministryLogoFile" accept="image/*">
+        <button class="btn-add" style="width:100%;" onclick="doUploadLogo('ministry')" id="btnUploadMinistryLogo">⬆️ بارکرن</button>
+      </div>
+    </div>
+    <p class="settings-note">🖼️ زێدەتر ژ 2MB نابیت، وێنە بەس (jpg, png, webp...)</p>
+  </div>
+
+  <div class="cache-bar">
+    <p id="cacheNote4">📡 دوای هەر گۆڕانێ داتا دەبێت نوێ بکرێتەوە</p>
+    <button class="btn-add" onclick="doClearCache()" id="btnClearCache4">🔄 نوێکرنەوەی داتا</button>
+  </div>
+</div>
+
 </div><!-- /container -->
 
-<!-- STUDENT MODAL -->
+
+<!-- STUDENT PROFILE MODAL -->
 <div class="modal" id="studentModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-content">
     <button class="modal-close" onclick="closeModal()">×</button>
@@ -180,854 +498,250 @@
   </div>
 </div>
 
+<!-- ── TEACHER ADD/EDIT MODAL ── -->
+<div class="mgmt-modal-bg" id="teacherModal">
+  <div class="mgmt-modal">
+    <h3 id="teacherModalTitle">➕ مامۆستایێ نوی</h3>
+    <div class="mgmt-form">
+      <input type="hidden" id="tmEditUsername">
+      <div class="mgmt-field">
+        <label id="tmLblName">ناڤی مامۆستا</label>
+        <input type="text" id="tmName" placeholder="Ahmed Ali">
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblUser">یوزەرناڤ</label>
+        <input type="text" id="tmUsername" placeholder="ahmed" autocomplete="off">
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblPass">پاسۆرد</label>
+        <input type="text" id="tmPassword" placeholder="••••••" autocomplete="off">
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblClasses">🏫 پۆلان</label>
+        <div class="cb-group" id="tmClasses"></div>
+      </div>
+      <div class="mgmt-field">
+        <label id="tmLblSubjects">📚 بابەت</label>
+        <div class="cb-group" id="tmSubjects"></div>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeTeacherModal()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveTeacher()" id="btnSaveTeacher">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD STUDENT MODAL ── -->
+<div class="mgmt-modal-bg" id="addStudentModal">
+  <div class="mgmt-modal">
+    <h3 id="addStudentTitle">➕ قوتابی زیادبکە</h3>
+    <input type="hidden" id="addStudentClass">
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="addStudentLbl">ناڤی قوتابی</label>
+        <input type="text" id="addStudentName" placeholder="Ahmed Ali Hassan">
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeAddStudent()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveAddStudent()">زیادبکە</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── BULK ADD STUDENTS MODAL ── -->
+<div class="mgmt-modal-bg" id="bulkStudentModal">
+  <div class="mgmt-modal">
+    <h3 id="bulkStudentTitle">➕ زیادکرنی چەند قوتابیێ</h3>
+    <input type="hidden" id="bulkStudentClass">
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="bulkStudentLbl">ناڤەکان بنووسە یان کۆپی بکە (هەر ناڤێ لە ستوری جیا)</label>
+        <textarea id="bulkStudentText" placeholder="Ahmed Ali&#10;Sara Hassan&#10;Ali Mohammed" oninput="previewBulk()"></textarea>
+        <span class="paste-hint" id="bulkHint">دەتوانی ڕێزیکان لە Excel یان Word کۆپی بکەی — بە خودی خو پاک دەبێتەوە</span>
+      </div>
+      <div id="bulkPreview" class="paste-preview"></div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeBulkStudent()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveBulkStudents()" id="btnSaveBulk">هەموویان زیادبکە</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MOVE STUDENT MODAL ── -->
+<div class="mgmt-modal-bg" id="moveStudentModal">
+  <div class="mgmt-modal">
+    <h3 id="moveStudentTitle">↔️ گواستنەوەی قوتابی</h3>
+    <input type="hidden" id="moveStudentName">
+    <input type="hidden" id="moveStudentFrom">
+    <p style="color:#667eea;font-weight:700;margin-bottom:14px;" id="moveStudentNameDisplay"></p>
+    <div class="mgmt-field">
+      <label id="moveToLbl">بۆ کام پۆل؟</label>
+      <div id="moveClassRadios" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeMoveStudent()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveMoveStudent()">گواستنەوە</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── NEW CLASS GROUP MODAL ── -->
+<div class="mgmt-modal-bg" id="newClassModal">
+  <div class="mgmt-modal">
+    <h3 id="newClassTitle">🏫 پۆلێ نوی دروستبکە</h3>
+
+    <div class="mgmt-form">
+
+      <div class="mgmt-field">
+        <label id="newClassStageLbl">Stage</label>
+        <select id="newClassStage" onchange="updateClassGroupPreview()">
+          <option value="1" selected>1st Stage</option>
+          <option value="2">2nd Stage</option>
+          <option value="3">3rd Stage</option>
+          <option value="4">4th Stage</option>
+          <option value="5">5th Stage</option>
+        </select>
+      </div>
+
+      <div class="mgmt-field">
+        <label id="newClassGroupLbl">Group / Program</label>
+        <input
+          type="text"
+          id="newClassGroup"
+          placeholder="A, B, C, D, NAME,..."
+          oninput="updateClassGroupPreview()"
+          autocomplete="off">
+      </div>
+
+      <div class="mgmt-field">
+        <label id="newClassPreviewLbl">Class Group</label>
+        <div
+          id="newClassPreview"
+          style="font-size:2em;font-weight:800;color:#667eea;text-align:center;padding:12px 0;">
+          1
+        </div>
+      </div>
+
+    </div>
+
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeNewClass()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveNewClass()" id="btnSaveNewClass">
+        دروستکرن
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RENAME CLASS MODAL ── -->
+<div class="mgmt-modal-bg" id="renameClassModal">
+  <div class="mgmt-modal">
+    <h3 id="renameClassTitle">✏️ ناڤێ پۆلی بگۆڕە</h3>
+    <input type="hidden" id="renameClassOld">
+    <div class="mgmt-form">
+      <div class="mgmt-field">
+        <label id="renameClassOldLbl">ناڤێ ئێستا</label>
+        <p id="renameClassOldDisplay" style="font-weight:700;color:#667eea;margin:0 0 6px;"></p>
+      </div>
+      <div class="mgmt-field">
+        <label id="renameClassNewLbl">ناڤێ نوی</label>
+        <input type="text" id="renameClassNew" placeholder="مثال: 3B">
+      </div>
+      <div class="mgmt-field">
+        <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+          <input type="checkbox" id="renameClassHistory" style="width:auto;accent-color:#667eea;">
+          <span id="renameClassHistoryLbl">هەروەها تۆمارێن نەهاتنێ یێن پێشتر نوی بکە</span>
+        </label>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeRenameClass()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveRenameClass()" id="btnSaveRenameClass">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PROMOTE / GRADUATE MODAL ── -->
+<div class="mgmt-modal-bg" id="promoteModal">
+  <div class="mgmt-modal" style="max-width:520px;">
+    <h3 id="promoteTitle">🎓 بەرزکرن / دەرچوون</h3>
+    <input type="hidden" id="promoteSourceClass">
+    <div class="mgmt-form">
+      <div class="mgmt-field" id="promoteModeRow">
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <button type="button" class="btn" id="promoteModeMoveBtn" style="flex:1;" onclick="setPromoteMode('move')"></button>
+          <button type="button" class="btn" id="promoteModeGradBtn" style="flex:1;" onclick="setPromoteMode('graduate')"></button>
+        </div>
+      </div>
+      <div class="mgmt-field" id="promoteDestField">
+        <label id="promoteDestLbl">بۆ کام پۆل؟</label>
+        <input type="text" id="promoteDestClass" placeholder="مثال: 2A" list="promoteDestOptions">
+        <datalist id="promoteDestOptions"></datalist>
+      </div>
+      <div class="mgmt-field" id="promoteYearField" style="display:none;">
+        <label id="promoteYearLbl">ساڵا دەرچوونێ</label>
+        <input type="text" id="promoteYear">
+      </div>
+      <div class="mgmt-field">
+        <label id="promoteStudentsLbl">قوتابیان هەلبژێرە (هەمی بەسەرکەوتی هاتینە هەلبژارتن)</label>
+        <div style="display:flex;gap:10px;margin:6px 0;">
+          <a href="#" onclick="togglePromoteAll(true);return false;" id="promoteCheckAll">هەمی هەلبژێرە</a>
+          <a href="#" onclick="togglePromoteAll(false);return false;" id="promoteCheckNone">هیچ هەلمەبژێرە</a>
+        </div>
+        <div id="promoteStudentList" style="max-height:280px;overflow-y:auto;border:1px solid #e9ecef;border-radius:8px;padding:8px;"></div>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closePromoteModal()">هەڵوەستان</button>
+      <button class="btn-add" onclick="confirmPromote()" id="btnConfirmPromote">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── DELETE CONFIRM MODAL ── -->
+<div class="mgmt-modal-bg" id="mgmtConfirmModal">
+  <div class="mgmt-modal" style="max-width:380px;text-align:center;">
+    <div style="font-size:2.5em;margin-bottom:12px;">🗑️</div>
+    <h3 id="mgmtConfirmTitle" style="color:#c8402a;">دڵنیایت؟</h3>
+    <p id="mgmtConfirmText" style="color:#666;margin-bottom:20px;font-size:0.9em;"></p>
+    <div class="mgmt-modal-btns" style="justify-content:center;">
+      <button class="btn-secondary" onclick="closeMgmtConfirm()">هەڵوەستان</button>
+      <button class="btn-danger" id="mgmtConfirmOk">بسڕەوە</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── SUBJECT ADD/EDIT MODAL ── -->
+<div class="mgmt-modal-bg" id="subjectModal">
+  <div class="mgmt-modal">
+    <h3 id="subjectModalTitle">➕ زیادکرنی پۆل/بابەت</h3>
+    <div class="mgmt-form">
+      <input type="hidden" id="smRowIndex">
+      <div class="mgmt-field">
+        <label id="smLblClass">پۆل / قۆناغ (مثال: 1 یان 4pro)</label>
+        <input type="text" id="smClassKey" placeholder="1">
+      </div>
+      <div class="mgmt-field">
+        <label id="smLblSubjects">بابەتان (کۆما جیاکەرەوەیان)</label>
+        <textarea id="smSubjects" placeholder="Internet, Windows, IT, C#" style="min-height:80px;"></textarea>
+      </div>
+    </div>
+    <div class="mgmt-modal-btns">
+      <button class="btn-secondary" onclick="closeSubjectModal()">هەڵوەستان</button>
+      <button class="btn-add" onclick="saveSubjectRow()" id="btnSaveSubject">تۆمارکرن</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<style>
-@media(max-width:700px){.working-days-card #workingDaysBox{grid-template-columns:repeat(2,minmax(0,1fr))!important}.working-days-card .btn{width:100%}}
-</style>
-<script>
-const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
-const LOGIN_URL   = 'login.html';
-const SCHOOL_START = '9/21/2025';
-
-// ── i18n ─────────────────────────────────────────────
-const LANGS = {
-  ku: {
-    dir:'rtl', htmlLang:'ku',
-    dInstName:'پەیمانگەها کومپیوتەرێ ل ئاکرێ', dSub:'تومارا نەهاتنا قوتابیان',
-    btnLogout:'🚪 دەرچوون', searchPH:'🔍 ناڤێ یەکەم ی قوتابی بنووسە...',
-    sTotalAbs:'📚 کۆی نەهاتن', sStudents:'👥 قوتابیان', sHighRisk:'🔴 مەترسیدار',
-    sAtRisk:'🟠 ئاگاداربە', sClasses:'🏫 پۆلان',
-    sHighRiskSub:'≥15 نەهاتن', sAtRiskSub:'8-14 نەهاتن',
-    tabDaily:'📅 ڕۆژانە', tabWeekly:'📊 هەفتانە', tabMonthly:'📅 مانگانە',
-    tabRoster:'📋 لیست', tabAnalytics:'📈 شیکاری',
-    dDailyTitle:'📅 ڕاپۆرتی ڕۆژانە', dDailySub:'کاتژمێر بە کاتژمێر نەهاتنی قوتابیان ببینە',
-    dDateLabel:'📆 بەروار:', btnToday:'ئەمرۆ', btnYesterday:'دووێ',
-    dWeeklyTitle:'📊 ڕاپۆرتی هەفتانە', dWeeklySub:'کۆی نەهاتنی هەفتەیەک',
-    dWeekLabel:'📅 هەفتە:', btnPrint:'🖨️ چاپکرن',
-    dMonthlyTitle:'📅 ڕاپۆرتی مانگانە', dMonthlySub:'کۆی نەهاتنی مانگێک',
-    dMonthLabel:'📆 مانگ:',
-    dRosterTitle:'📋 لیستی پۆل', dRosterSub:'ناڤی قوتابی کلیک بکە پرۆفایلی ببینیت',
-    dClassLabel:'🏫 پۆل:', dMinAbsLabel:'🔢 کەمترین نەهاتن:',
-    dAnalyticsTitle:'📈 شیکاری', dAnalyticsSub:'ئامارێن بەرفراوان',
-    dPolicyTitle:'ڕێکخستنا سیاسەتی دەرکرن',
-    dLecPerDay:'ژمارەی وانەیێن دابراون بۆ ١ ڕۆژ:',
-    dExpDays:'ژمارەی ڕۆژانی دابراون بۆ دەرکرن:',
-    workingDaysTitle:'📅 ڕۆژێن کارێ', workingDaysHint:'تەنێ ڕۆژێن هەلبژێرە کە پەیمانگە لێ کار دکەت.', workingDaysSave:'💾 پاشەکەفتکرنا ڕۆژێن کارێ', workingDaysSaved:'✅ ڕۆژێن کارێ هاتنە پاشەکەفتکرن.',
-    weekend:'🏖️ دەرفەت — مکتەب نییە',
-    noAbsences:'هیچ نەهاتنێک نینە',
-    selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە',
-    selectClass:'پۆلێک هەلبژێرە',
-    weekLabel:'هەفتە', manageLabel:'🗑️ رێکخستنی تومارکرنان',
-    noneAbsent:'هیچ', classLabel:'پۆل', totalLabel:'کۆ',
-    studentLabel:'قوتابی', subjectLabel:'بابەت',
-    badgeHigh:'مەترسیدار', badgeMedium:'ئاگاداربە', badgeLow:'باشە',
-    profileClass:'🏫 پۆل', profileTotal:'📚 کۆی نەهاتن',
-    profileSubjects:'📖 بابەتان', profileEntries:'📋 تومارکرن',
-    profileHistory:'📋 مێژووی نەهاتن',
-    colDate:'بەروار', colLecture:'وانە', colSubject:'بابەت', colTeacher:'مامۆستە',
-    riskDismissed:'دەرکراو', riskHigh:'مەترسیدار', riskLow:'باشە',
-    colDaysMissed:'ڕۆژانی دابراو', colRemaining:'ماوەی مایە', colStatus:'دۆخ',
-    expulsionReport:'⚠️ ڕاپۆرتی مەترسی دەرکرن',
-    expulsionDesc:'قوتابیانێ کە ب مەترسیدا ر',
-    absByClass:'📊 نەهاتن بە پۆل', absByLec:'⏰ نەهاتن بە وانە', absBySubj:'📚 نەهاتن بە بابەت',
-    pctLabel:'%', noResults:'هیچ قوتابیێک نەدۆزرایەوە',
-    adminConfTitle:'تومارکرن بسڕەوە؟', adminConfWarning:'ئەم کارە نابێتە پووچەلکرن.',
-    adminCancelBtn:'هەڵوەستان', adminDeleteBtn:'🗑️ بسڕەوە',
-    toastDeleted:'✅ سڕایەوە. مامۆستا دوبارە تومار بکات.',
-    toastDeleteFail:'❌ سڕینەوە سەرنەکەفت!',
-    lastUpdated:'✅ دوایین نوێکرنەوە:',
-    loading:'⏳ بارکرن...',
-  },
-  ar: {
-    dir:'rtl', htmlLang:'ar',
-    dInstName:'معهد عقرة للكمبيوتر', dSub:'تسجيل غياب الطلاب',
-    btnLogout:'🚪 تسجيل الخروج', searchPH:'🔍 ابحث باسم الطالب الأول...',
-    sTotalAbs:'📚 إجمالي الغياب', sStudents:'👥 الطلاب', sHighRisk:'🔴 خطر عالٍ',
-    sAtRisk:'🟠 تحت المراقبة', sClasses:'🏫 الشعب',
-    sHighRiskSub:'≥15 غياب', sAtRiskSub:'8-14 غياب',
-    tabDaily:'📅 يومي', tabWeekly:'📊 أسبوعي', tabMonthly:'📅 شهري',
-    tabRoster:'📋 كشف', tabAnalytics:'📈 تحليلات',
-    dDailyTitle:'📅 التقرير اليومي', dDailySub:'عرض الغياب حصة بحصة',
-    dDateLabel:'📆 التاريخ:', btnToday:'اليوم', btnYesterday:'أمس',
-    dWeeklyTitle:'📊 التقرير الأسبوعي', dWeeklySub:'ملخص غياب الأسبوع',
-    dWeekLabel:'📅 الأسبوع:', btnPrint:'🖨️ طباعة',
-    dMonthlyTitle:'📅 التقرير الشهري', dMonthlySub:'ملخص غياب الشهر',
-    dMonthLabel:'📆 الشهر:',
-    dRosterTitle:'📋 كشف الصف', dRosterSub:'انقر على اسم الطالب لعرض ملفه',
-    dClassLabel:'🏫 الشعبة:', dMinAbsLabel:'🔢 الحد الأدنى للغياب:',
-    dAnalyticsTitle:'📈 التحليلات', dAnalyticsSub:'إحصاءات الغياب التفصيلية',
-    dPolicyTitle:'إعداد سياسة الفصل',
-    dLecPerDay:'عدد الحصص الغائبة لتحتسب يوماً:',
-    dExpDays:'عدد الأيام لاتخاذ قرار الفصل:',
-    workingDaysTitle:'📅 أيام الدوام', workingDaysHint:'اختر فقط الأيام التي يعمل فيها المعهد.', workingDaysSave:'💾 حفظ أيام الدوام', workingDaysSaved:'✅ تم حفظ أيام الدوام.',
-    weekend:'🏖️ عطلة — لا دوام',
-    noAbsences:'لا يوجد غياب',
-    selectWeek:'اختر أسبوعاً', selectMonth:'اختر شهراً', selectClass:'اختر شعبة',
-    weekLabel:'أسبوع', manageLabel:'🗑️ إدارة التسجيلات',
-    noneAbsent:'لا غياب', classLabel:'الشعبة', totalLabel:'الإجمالي',
-    studentLabel:'الطالب', subjectLabel:'المادة',
-    badgeHigh:'خطر', badgeMedium:'مراقبة', badgeLow:'جيد',
-    profileClass:'🏫 الشعبة', profileTotal:'📚 إجمالي الغياب',
-    profileSubjects:'📖 المواد المتأثرة', profileEntries:'📋 عدد السجلات',
-    profileHistory:'📋 سجل الغياب الكامل',
-    colDate:'التاريخ', colLecture:'الحصة', colSubject:'المادة', colTeacher:'الأستاذ',
-    riskDismissed:'مفصول', riskHigh:'خطر', riskLow:'جيد',
-    colDaysMissed:'أيام الغياب', colRemaining:'المتبقي', colStatus:'الحالة',
-    expulsionReport:'⚠️ تقرير خطر الفصل',
-    expulsionDesc:'تتبع الطلاب المعرضين لخطر الفصل',
-    absByClass:'📊 الغياب حسب الشعبة', absByLec:'⏰ الغياب حسب الحصة', absBySubj:'📚 الغياب حسب المادة',
-    pctLabel:'%', noResults:'لا يوجد طلاب مطابقون',
-    adminConfTitle:'حذف التسجيل؟', adminConfWarning:'لا يمكن التراجع عن هذا.',
-    adminCancelBtn:'إلغاء', adminDeleteBtn:'🗑️ حذف',
-    toastDeleted:'✅ تم الحذف. اطلب من الأستاذ إعادة التسجيل.',
-    toastDeleteFail:'❌ فشل الحذف!',
-    lastUpdated:'✅ آخر تحديث:',
-    loading:'⏳ جارٍ التحميل...',
-  },
-  en: {
-    dir:'ltr', htmlLang:'en',
-    dInstName:'Akre Computer Institute', dSub:'Student Absence Dashboard',
-    btnLogout:'🚪 Logout', searchPH:'🔍 Search by first name...',
-    sTotalAbs:'📚 Total Absences', sStudents:'👥 Students', sHighRisk:'🔴 High Risk',
-    sAtRisk:'🟠 At Risk', sClasses:'🏫 Classes',
-    sHighRiskSub:'≥15 absences', sAtRiskSub:'8-14 absences',
-    tabDaily:'📅 Daily', tabWeekly:'📊 Weekly', tabMonthly:'📅 Monthly',
-    tabRoster:'📋 Roster', tabAnalytics:'📈 Analytics',
-    dDailyTitle:'📅 Daily Absence Report', dDailySub:'View absence breakdown by lecture and class',
-    dDateLabel:'📆 Date:', btnToday:'Today', btnYesterday:'Yesterday',
-    dWeeklyTitle:'📊 Weekly Report', dWeeklySub:'Weekly absence summaries',
-    dWeekLabel:'📅 Week:', btnPrint:'🖨️ Print',
-    dMonthlyTitle:'📅 Monthly Report', dMonthlySub:'Monthly absence trends',
-    dMonthLabel:'📆 Month:',
-    dRosterTitle:'📋 Class Roster', dRosterSub:'Click a student name to view their profile',
-    dClassLabel:'🏫 Class:', dMinAbsLabel:'🔢 Min Absences:',
-    dAnalyticsTitle:'📈 Analytics', dAnalyticsSub:'Data-driven insights across classes',
-    dPolicyTitle:'Policy Risk Configuration',
-    dLecPerDay:'Lectures missed to count as 1 day:',
-    dExpDays:'Days missed threshold for dismissal:',
-    workingDaysTitle:'📅 Working Days', workingDaysHint:'Select only the days when the institute operates.', workingDaysSave:'💾 Save Working Days', workingDaysSaved:'✅ Working days saved.',
-    weekend:'🏖️ Weekend — No School',
-    noAbsences:'No absences recorded',
-    selectWeek:'Select a week', selectMonth:'Select a month', selectClass:'Select a class',
-    weekLabel:'Week', manageLabel:'🗑️ Manage Submissions',
-    noneAbsent:'None', classLabel:'Class', totalLabel:'TOTAL',
-    studentLabel:'Student', subjectLabel:'Subject',
-    badgeHigh:'HIGH RISK', badgeMedium:'AT RISK', badgeLow:'GOOD',
-    profileClass:'🏫 Class', profileTotal:'📚 Total Absences',
-    profileSubjects:'📖 Subjects Affected', profileEntries:'📋 Total Entries',
-    profileHistory:'📋 Complete Absence History',
-    colDate:'Date', colLecture:'Lecture', colSubject:'Subject', colTeacher:'Teacher',
-    riskDismissed:'DISMISSED', riskHigh:'HIGH RISK', riskLow:'LOW RISK',
-    colDaysMissed:'Days Missed', colRemaining:'Days Left', colStatus:'Status',
-    expulsionReport:'⚠️ Expulsion Risk Report',
-    expulsionDesc:'Students flagged based on configured policy',
-    absByClass:'📊 Absences by Class', absByLec:'⏰ Absences by Lecture', absBySubj:'📚 Absences by Subject',
-    pctLabel:'%', noResults:'No students found',
-    adminConfTitle:'Delete this submission?', adminConfWarning:'This cannot be undone. Ask the teacher to resubmit.',
-    adminCancelBtn:'Cancel', adminDeleteBtn:'🗑️ Delete',
-    toastDeleted:'✅ Deleted. Ask teacher to resubmit.',
-    toastDeleteFail:'❌ Delete failed!',
-    lastUpdated:'✅ Last updated:',
-    loading:'⏳ Loading...',
-  }
-};
-
-let currentLang = localStorage.getItem('aci_lang') || 'ku';
-let allData = [], classes = [], weeks = [], months = [];
-let adminToken = null;
-let adminPendingRow = null;
-
-// ── Auth ──────────────────────────────────────────────
-function checkAuth() {
-  const token = sessionStorage.getItem('aci_token');
-  const role  = sessionStorage.getItem('aci_role');
-  if (!token || role !== 'admin') {
-    window.location.href = LOGIN_URL;
-    return false;
-  }
-  adminToken = token;
-  return true;
-}
-
-function doLogout() {
-  sessionStorage.clear();
-  sessionStorage.setItem('explicit_logout', '1');
-  window.location.href = LOGIN_URL;
-}
-
-// ── i18n ─────────────────────────────────────────────
-function setLang(lang) {
-  if (!LANGS[lang]) return;
-  currentLang = lang;
-  localStorage.setItem('aci_lang', lang);
-  const L = LANGS[lang];
-  document.documentElement.dir  = L.dir;
-  document.documentElement.lang = L.htmlLang;
-
-  const ids = ['dInstName','dSub','btnLogout','sTotalAbs','sStudents','sHighRisk','sAtRisk',
-    'sClasses','sHighRiskSub','sAtRiskSub','dDailyTitle','dDailySub','dDateLabel',
-    'btnToday','btnYesterday','dWeeklyTitle','dWeeklySub','dWeekLabel','dMonthlyTitle',
-    'dMonthlySub','dMonthLabel','dRosterTitle','dRosterSub','dClassLabel','dMinAbsLabel',
-    'dAnalyticsTitle','dAnalyticsSub','dPolicyTitle','dLecPerDay','dExpDays','workingDaysTitle','workingDaysHint','workingDaysSave',
-    'adminConfTitle','adminConfWarning','adminCancelBtn','adminDeleteBtn'];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && L[id]) el.textContent = L[id];
-  });
-
-  // Tab labels
-  ['daily','weekly','monthly','roster','analytics'].forEach(t => {
-    const key = 'tab'+t.charAt(0).toUpperCase()+t.slice(1);
-    const el  = document.getElementById('tab-'+t);
-    if (el && L[key]) el.textContent = L[key];
-  });
-
-  // Print buttons
-  ['btnPrintW','btnPrintM','btnPrintR'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = L.btnPrint;
-  });
-
-  document.getElementById('searchInput').placeholder = L.searchPH;
-
-  document.querySelectorAll('.lang-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['ku','ar','en'][i] === lang);
-  });
-
-  // Re-render active tab
-  const active = document.querySelector('.content-section.active');
-  if (active) {
-    const id = active.id;
-    if (id==='daily')     filterDaily();
-    if (id==='weekly')    loadWeekly();
-    if (id==='monthly')   loadMonthly();
-    if (id==='roster')    filterRoster();
-    if (id==='analytics'){ loadAnalytics(); loadWorkingDays(); }
-  }
-}
-
-// ── Helpers ───────────────────────────────────────────
-function getFirstName(fullName) {
-  if (!fullName) return '';
-  return fullName.trim().split(/\s+/)[0];
-}
-function getThreeNames(fullName) {
-  if (!fullName) return '';
-  return fullName.trim().split(/\s+/).slice(0,3).join(' ');
-}
-function normalizeDate(s) {
-  if (!s) return '';
-  const parts = s.split('/');
-  if (parts.length===3) {
-    const d = new Date(parts[2], parts[0]-1, parts[1]);
-    if (!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
-  }
-  const d = new Date(s);
-  if (!isNaN(d.getTime())) return `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
-  return '';
-}
-function formatDate(d) {
-  if (!d||isNaN(d.getTime())) return '';
-  return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
-}
-function getLectureCount(lec) {
-  const s = String(lec).toLowerCase();
-  return (s.includes('merged')||s.includes('and')||/\d\s*-\s*\d/.test(s)) ? 2 : 1;
-}
-function getSeverity(n) { return n>=15?'high':n>=8?'medium':'low'; }
-function getBadge(n) {
-  const L = LANGS[currentLang];
-  const s = getSeverity(n);
-  const t = s==='high'?L.badgeHigh:s==='medium'?L.badgeMedium:L.badgeLow;
-  return `<span class="badge badge-${s}">${t}</span>`;
-}
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className='toast'+(type?' '+type:'');
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3500);
-}
-
-// ── Search — first name only ───────────────────────────
-function onSearch() {
-  const query    = document.getElementById('searchInput').value.trim().toLowerCase();
-  const dropdown = document.getElementById('dropdownResults');
-  const L        = LANGS[currentLang];
-
-  if (query.length < 2) { dropdown.classList.remove('show'); return; }
-
-  const details = {};
-  allData.forEach(row => {
-    row.absences.forEach(name => {
-      const firstName = getFirstName(name).toLowerCase();
-      if (firstName.startsWith(query)) {
-        if (!details[name]) details[name] = { cls: row.classGroup, total:0, subjects:new Set() };
-        details[name].total += row.lectureCount;
-        details[name].subjects.add(row.subject);
-      }
-    });
-  });
-
-  dropdown.classList.add('show');
-  if (!Object.keys(details).length) {
-    dropdown.innerHTML = `<div class="dropdown-empty">🔍 ${L.noResults} "<strong>${query}</strong>"</div>`;
-    return;
-  }
-
-  let html = '';
-  Object.entries(details).sort((a,b)=>b[1].total-a[1].total).forEach(([name,d]) => {
-    const sev  = getSeverity(d.total);
-    const badge= sev==='high'?L.badgeHigh:sev==='medium'?L.badgeMedium:L.badgeLow;
-    const safe = encodeURIComponent(name);
-    html += `<div class="dropdown-item" onclick="openProfileFromDropdown('${safe}')">
-      <div class="dropdown-name">${name} <span class="badge badge-${sev}">${badge}</span></div>
-      <div class="dropdown-info">${L.classLabel} ${d.cls||'?'} • ${d.total} ${L.sTotalAbs||'abs'} • ${d.subjects.size} ${L.subjectLabel||'subj'}</div>
-    </div>`;
-  });
-  dropdown.innerHTML = html;
-}
-
-function openProfileFromDropdown(encoded) {
-  const name = decodeURIComponent(encoded);
-  document.getElementById('dropdownResults').classList.remove('show');
-  document.getElementById('searchInput').value = '';
-  showStudentProfile(name);
-}
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('#searchInput') && !e.target.closest('#dropdownResults'))
-    document.getElementById('dropdownResults').classList.remove('show');
-});
-
-// ── Data fetch ────────────────────────────────────────
-function parseData(json) {
-  if (!json?.values || json.values.length < 2) return [];
-  const rows = json.values.slice(1);
-  const data = [];
-  rows.forEach((row, idx) => {
-    const date       = row[1] ? String(row[1]).trim() : '';
-    const teacher    = row[2] ? String(row[2]).trim() : 'Unknown';
-    const subject    = row[3] ? String(row[3]).trim() : 'Unknown';
-    const lecture    = row[4] ? String(row[4]).trim() : 'Lecture 1';
-    const classGroup = row[5] ? String(row[5]).trim() : '';
-    const absentRaw  = row[6] ? String(row[6]).trim() : '';
-    if (!date||!classGroup) return;
-    const absences = absentRaw
-      ? absentRaw.split(',').map(s=>s.trim()).filter(Boolean).map(getThreeNames)
-      : [];
-    data.push({
-      rowNumber: idx+2, date, teacher, subject, lecture,
-      lectureCount: getLectureCount(lecture),
-      classGroup, absences: [...new Set(absences)]
-    });
-  });
-  return data;
-}
-
-async function fetchData() {
-  const L = LANGS[currentLang];
-  document.getElementById('lastUpdate').innerHTML = `<span style="color:#667eea;">${L.loading}</span>`;
-  try {
-    const url  = SCRIPT_URL + '?api=data&token=' + encodeURIComponent(adminToken);
-    const json = await (await fetch(url)).json();
-    if (json.error) throw new Error(json.error);
-
-    allData = parseData(json).map(r=>({...r, date:normalizeDate(r.date)})).filter(r=>r.date);
-    classes = [...new Set(allData.map(r=>r.classGroup).filter(Boolean))].sort();
-    weeks   = getWeeks();
-    months  = getMonths();
-
-    updateStats();
-    loadDaily();
-    if (document.getElementById('roster').classList.contains('active'))    loadRosterDropdown();
-    if (document.getElementById('weekly').classList.contains('active'))    loadWeeklyDropdown();
-    if (document.getElementById('monthly').classList.contains('active'))   loadMonthlyDropdown();
-    if (document.getElementById('analytics').classList.contains('active')) loadAnalytics();
-
-    document.getElementById('lastUpdate').innerHTML =
-      `<span style="color:#4CAF50;">${L.lastUpdated} ${new Date().toLocaleTimeString()}</span>`;
-  } catch(err) {
-    document.getElementById('lastUpdate').innerHTML = `<span style="color:#ff4444;">❌ ${err.message}</span>`;
-  }
-}
-
-function updateStats() {
-  let totalAbs=0; const students={};
-  allData.forEach(r=>{
-    totalAbs += r.lectureCount * r.absences.length;
-    r.absences.forEach(n=>{ const k=n.toLowerCase(); students[k]=(students[k]||0)+r.lectureCount; });
-  });
-  let high=0,medium=0;
-  Object.values(students).forEach(c=>{ if(c>=15)high++; else if(c>=8)medium++; });
-  document.getElementById('totalAbsences').textContent = totalAbs;
-  document.getElementById('totalStudents').textContent = Object.keys(students).length;
-  document.getElementById('highRisk').textContent      = high;
-  document.getElementById('atRisk').textContent        = medium;
-  document.getElementById('totalClasses').textContent  = classes.length;
-}
-
-// ── Week/Month builders ───────────────────────────────
-function getWeeks() {
-  const start = new Date(SCHOOL_START);
-  if (isNaN(start.getTime())) return [];
-  const arr=[]; let cur=new Date(start); let num=1;
-  cur.setDate(cur.getDate()-cur.getDay());
-  const now=new Date();
-  while(cur<=now){
-    const ws=new Date(cur), we=new Date(cur);
-    we.setDate(we.getDate()+6);
-    if(ws<=now) arr.push({number:num++,start:ws,end:we});
-    cur.setDate(cur.getDate()+7);
-  }
-  return arr.reverse();
-}
-function getMonths() {
-  const start=new Date(SCHOOL_START); if(isNaN(start.getTime())) return [];
-  const arr=[]; let cur=new Date(start.getFullYear(),start.getMonth(),1); const now=new Date();
-  while(cur<=now){
-    const ms=new Date(cur), me=new Date(cur.getFullYear(),cur.getMonth()+1,0);
-    arr.push({name:ms.toLocaleString('default',{month:'long',year:'numeric'}),start:ms,end:me});
-    cur.setMonth(cur.getMonth()+1);
-  }
-  return arr.reverse();
-}
-
-// ── DAILY ─────────────────────────────────────────────
-function setToday(){
-  const n=new Date();
-  document.getElementById('dailyDate').value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
-  filterDaily();
-}
-function setPrevDay(){
-  const d=new Date(); d.setDate(d.getDate()-1);
-  document.getElementById('dailyDate').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  filterDaily();
-}
-function loadDaily(){ if(!document.getElementById('dailyDate').value) setToday(); else filterDaily(); }
-
-function filterDaily() {
-  const L   = LANGS[currentLang];
-  const val = document.getElementById('dailyDate').value;
-  if(!val) return;
-  const sel = new Date(val);
-  if(sel.getDay()===5||sel.getDay()===6){
-    document.getElementById('dailyContent').innerHTML=`<div style="text-align:center;padding:80px 20px;"><div style="font-size:5em;margin-bottom:20px;">🏖️</div><h2 style="color:#667eea;font-size:1.8em;">${L.weekend}</h2></div>`;
-    return;
-  }
-  const fDate    = normalizeDate(val);
-  const filtered = allData.filter(r=>r.date===fDate);
-  const byClass  = {};
-  classes.forEach(c=>{byClass[c]={};});
-  filtered.forEach(row=>{
-    if(!row.classGroup) return;
-    if(!byClass[row.classGroup]) byClass[row.classGroup]={};
-    const nums=String(row.lecture).match(/\d+/g)||['1'];
-    nums.forEach(n=>{
-      const num=parseInt(n);
-      if(num>=1&&num<=6){
-        if(!byClass[row.classGroup][num]) byClass[row.classGroup][num]={subject:row.subject,teacher:row.teacher,students:[]};
-        row.absences.forEach(s=>{ if(!byClass[row.classGroup][num].students.includes(s)) byClass[row.classGroup][num].students.push(s); });
-      }
-    });
-  });
-
-  let html='';
-  Object.keys(byClass).sort().forEach(cls=>{
-    const lecs=byClass[cls];
-    html+=`<div class="chart-box"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><h3 style="color:#667eea;font-size:1.3em;margin:0;">🏫 ${L.classLabel} ${cls}</h3><p style="color:#666;margin:0;font-size:0.9em;">📅 ${fDate}</p></div>`;
-    html+=`<div class="table-wrap"><table><thead><tr>`;
-    for(let i=1;i<=6;i++) html+=`<th style="text-align:center;">Lec ${i}</th>`;
-    html+=`</tr></thead><tbody><tr style="background:#f8f9fa;">`;
-    for(let i=1;i<=6;i++){ const l=lecs[i]; html+=`<td style="text-align:center;font-weight:bold;padding:12px;">${l?l.subject:''}</td>`; }
-    html+=`</tr><tr>`;
-    for(let i=1;i<=6;i++){
-      const l=lecs[i];
-      if(l&&l.students.length>0){
-        html+=`<td style="vertical-align:top;padding:10px;"><div style="color:#c33;font-weight:500;text-align:${document.documentElement.dir==='rtl'?'right':'left'};direction:rtl;">${l.students.map(s=>`• ${s}`).join('<br>')}</div></td>`;
-      } else if(l){
-        html+=`<td style="text-align:center;color:#4CAF50;padding:10px;font-weight:600;">${L.noneAbsent}</td>`;
-      } else {
-        html+=`<td style="text-align:center;color:#999;padding:10px;"></td>`;
-      }
-    }
-    html+=`</tr><tr style="background:#f8f9fa;">`;
-    for(let i=1;i<=6;i++){ const l=lecs[i]; html+=`<td style="text-align:center;font-style:italic;color:#666;padding:10px;font-size:0.88em;">${l?l.teacher:''}</td>`; }
-    html+=`</tr></tbody></table></div>`;
-
-    // Admin delete panel
-    const clsRows=filtered.filter(r=>r.classGroup===cls);
-    if(clsRows.length>0){
-      html+=`<details style="margin-top:10px;"><summary style="cursor:pointer;color:#667eea;font-size:0.85em;font-weight:600;padding:6px 0;">${L.manageLabel} ${cls} (${clsRows.length})</summary>`;
-      html+=`<div class="table-wrap" style="margin-top:8px;"><table style="font-size:0.82em;"><thead><tr style="background:#f0f0f0;"><th>Lec</th><th>Subject</th><th>Teacher</th><th>Absent</th><th></th></tr></thead><tbody>`;
-      clsRows.forEach(r=>{
-        const cnt=r.absences?r.absences.length:0;
-        const info=(r.lecture+'|'+r.subject+'|'+r.teacher+'|'+cls).replace(/'/g,"\\'");
-        html+=`<tr><td>${r.lecture||'—'}</td><td>${r.subject||'—'}</td><td>${r.teacher||'—'}</td>
-          <td style="text-align:center;"><span style="background:${cnt>0?'#c8402a':'#2d6a4f'};color:#fff;border-radius:100px;padding:2px 8px;font-size:0.78em;font-weight:700;">${cnt}</span></td>
-          <td><button onclick="askAdminDelete(${r.rowNumber},'${info}')" style="background:none;border:1.5px solid #ffd0ca;color:#c8402a;border-radius:7px;padding:4px 10px;font-size:0.78em;cursor:pointer;">🗑️</button></td></tr>`;
-      });
-      html+=`</tbody></table></div></details>`;
-    }
-    html+=`</div>`;
-  });
-
-  if(!html) html=`<div style="text-align:center;padding:60px;color:#999;font-size:1.1em;">📭 ${L.noAbsences}</div>`;
-  document.getElementById('dailyContent').innerHTML=html;
-}
-
-// ── WEEKLY ────────────────────────────────────────────
-function loadWeeklyDropdown(){
-  const sel=document.getElementById('weekSelect');
-  const cur=sel.value;
-  sel.innerHTML='';
-  const L=LANGS[currentLang];
-  weeks.forEach((w,i)=>{
-    const o=document.createElement('option'); o.value=i;
-    o.textContent=`${L.weekLabel} ${w.number}: ${formatDate(w.start)} - ${formatDate(w.end)}`;
-    sel.appendChild(o);
-  });
-  sel.value=cur||0;
-  loadWeekly();
-}
-function loadWeekly(){
-  const L=LANGS[currentLang];
-  const idx=parseInt(document.getElementById('weekSelect').value);
-  if(isNaN(idx)||!weeks[idx]){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectWeek}</div>`;return;}
-  const week=weeks[idx];
-  const data=allData.filter(r=>{const d=new Date(r.date);return d>=week.start&&d<=week.end;});
-  if(!data.length){document.getElementById('weeklyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;}
-  document.getElementById('weeklyContent').innerHTML=buildClassTable(data,`${L.weekLabel} ${week.number}: ${formatDate(week.start)} - ${formatDate(week.end)}`,L);
-}
-
-// ── MONTHLY ───────────────────────────────────────────
-function loadMonthlyDropdown(){
-  const sel=document.getElementById('monthSelect');
-  const cur=sel.value;
-  sel.innerHTML='';
-  months.forEach((m,i)=>{
-    const o=document.createElement('option'); o.value=i;
-    o.textContent=`${m.name} (${formatDate(m.start)} - ${formatDate(m.end)})`;
-    sel.appendChild(o);
-  });
-  sel.value=cur||0;
-  loadMonthly();
-}
-function loadMonthly(){
-  const L=LANGS[currentLang];
-  const idx=parseInt(document.getElementById('monthSelect').value);
-  if(isNaN(idx)||!months[idx]){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectMonth}</div>`;return;}
-  const month=months[idx];
-  const data=allData.filter(r=>{const d=new Date(r.date);return d>=month.start&&d<=month.end;});
-  if(!data.length){document.getElementById('monthlyContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">📭 ${L.noAbsences}</div>`;return;}
-  document.getElementById('monthlyContent').innerHTML=buildClassTable(data,`${month.name}`,L);
-}
-
-function buildClassTable(data, title, L){
-  const byClass={};
-  data.forEach(row=>{
-    if(!row.classGroup) return;
-    if(!byClass[row.classGroup]) byClass[row.classGroup]={};
-    row.absences.forEach(name=>{
-      if(!byClass[row.classGroup][name]) byClass[row.classGroup][name]={total:0,subjects:{}};
-      byClass[row.classGroup][name].total+=row.lectureCount;
-      byClass[row.classGroup][name].subjects[row.subject]=(byClass[row.classGroup][name].subjects[row.subject]||0)+row.lectureCount;
-    });
-  });
-  let html=`<h3 style="color:#667eea;margin-bottom:20px;font-size:1.3em;">${title}</h3>`;
-  Object.keys(byClass).sort().forEach(cls=>{
-    const students=byClass[cls];
-    const sorted=Object.entries(students).sort((a,b)=>b[1].total-a[1].total);
-    const subjects=new Set(); Object.values(students).forEach(s=>Object.keys(s.subjects).forEach(sub=>subjects.add(sub)));
-    const subArr=[...subjects].sort();
-    html+=`<div class="chart-box"><h4 style="color:#667eea;margin-bottom:14px;">🏫 ${L.classLabel} ${cls}</h4><div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>`;
-    subArr.forEach(s=>html+=`<th style="text-align:center;" title="${s}">${s.length>12?s.slice(0,10)+'…':s}</th>`);
-    html+=`<th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-    sorted.forEach(([name,d])=>{
-      const sev=getSeverity(d.total);
-      const safe=encodeURIComponent(name);
-      html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`;
-      subArr.forEach(sub=>{
-        const cnt=d.subjects[sub]||0;
-        const col=cnt>=6?'#c33':cnt>=3?'#ff8800':cnt>0?'#667eea':'#bbb';
-        html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;
-      });
-      html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`;
-    });
-    html+=`</tbody></table></div></div>`;
-  });
-  return html;
-}
-
-// ── ROSTER ────────────────────────────────────────────
-function loadRosterDropdown(){
-  const sel=document.getElementById('rosterClass');
-  const cur=sel.value;
-  const L=LANGS[currentLang];
-  sel.innerHTML=`<option value="">${L.selectClass}</option>`;
-  classes.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
-  if(classes.includes(cur)) sel.value=cur;
-  else if(classes.length) sel.value=classes[0];
-  filterRoster();
-}
-function filterRoster(){
-  const L=LANGS[currentLang];
-  const cls=document.getElementById('rosterClass').value;
-  const min=parseInt(document.getElementById('minAbsences').value)||0;
-  if(!cls){document.getElementById('rosterContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;">${L.selectClass}</div>`;return;}
-  const summary={};const subjects=new Set();
-  allData.filter(r=>r.classGroup===cls).forEach(row=>{
-    row.absences.forEach(name=>{
-      if(!summary[name]) summary[name]={total:0,subjects:{}};
-      summary[name].total+=row.lectureCount;
-      summary[name].subjects[row.subject]=(summary[name].subjects[row.subject]||0)+row.lectureCount;
-      subjects.add(row.subject);
-    });
-  });
-  const sorted=Object.entries(summary).filter(([,d])=>d.total>=min).sort((a,b)=>b[1].total-a[1].total);
-  if(!sorted.length){document.getElementById('rosterContent').innerHTML=`<div style="text-align:center;padding:50px;color:#999;"><p style="font-size:3em;">✅</p><p>${L.noAbsences}</p></div>`;return;}
-  const subArr=[...subjects].sort();
-  let html=`<h3 style="color:#667eea;margin-bottom:14px;">🏫 ${L.classLabel} ${cls}</h3><div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>`;
-  subArr.forEach(s=>html+=`<th style="text-align:center;" title="${s}">${s.length>12?s.slice(0,10)+'…':s}</th>`);
-  html+=`<th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-  sorted.forEach(([name,d])=>{
-    const sev=getSeverity(d.total); const safe=encodeURIComponent(name);
-    html+=`<tr class="row-${sev}"><td class="clickable" onclick="openProfileFromDropdown('${safe}')">${name}</td>`;
-    subArr.forEach(sub=>{const cnt=d.subjects[sub]||0;const col=cnt>=3?'#c33':cnt>0?'#667eea':'#bbb';html+=`<td style="text-align:center;color:${col};font-weight:bold;">${cnt||'-'}</td>`;});
-    html+=`<td style="text-align:center;"><strong>${d.total}</strong> ${getBadge(d.total)}</td></tr>`;
-  });
-  html+=`</tbody></table></div>`;
-  document.getElementById('rosterContent').innerHTML=html;
-}
-
-// ── ANALYTICS ─────────────────────────────────────────
-const WEEK_DAYS = [
-  {key:'Sunday',ku:'یەکشەممە',ar:'الأحد',en:'Sunday'},
-  {key:'Monday',ku:'دووشەممە',ar:'الاثنين',en:'Monday'},
-  {key:'Tuesday',ku:'سێشەممە',ar:'الثلاثاء',en:'Tuesday'},
-  {key:'Wednesday',ku:'چوارشەممە',ar:'الأربعاء',en:'Wednesday'},
-  {key:'Thursday',ku:'پێنجشەممە',ar:'الخميس',en:'Thursday'},
-  {key:'Friday',ku:'هەینی',ar:'الجمعة',en:'Friday'},
-  {key:'Saturday',ku:'شەممە',ar:'السبت',en:'السبت'}
-];
-let workingDaysLoaded=false;
-async function loadWorkingDays(){
-  const box=document.getElementById('workingDaysBox');
-  if(!box) return;
-  try{
-    const r=await apiGet({action:'getSettings'});
-    const value=String((r&&r.working_days)||'Sunday,Monday,Tuesday,Wednesday,Thursday');
-    const selected=value.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
-    box.innerHTML='';
-    WEEK_DAYS.forEach(d=>{
-      const label=document.createElement('label');
-      label.style.cssText='display:flex;align-items:center;gap:8px;padding:11px 10px;border:1px solid #e3e7ef;border-radius:12px;background:#fff;cursor:pointer;font-weight:700;';
-      const cb=document.createElement('input'); cb.type='checkbox'; cb.value=d.key; cb.checked=selected.includes(d.key.toLowerCase()); cb.style.width='18px'; cb.style.height='18px';
-      const span=document.createElement('span'); span.textContent=d[currentLang]||d.en;
-      label.appendChild(cb); label.appendChild(span); box.appendChild(label);
-    });
-    workingDaysLoaded=true;
-  }catch(e){ console.error(e); }
-}
-async function saveWorkingDays(){
-  const L=LANGS[currentLang];
-  const selected=[...document.querySelectorAll('#workingDaysBox input:checked')].map(x=>x.value);
-  if(!selected.length){ alert(currentLang==='ar'?'يجب اختيار يوم دوام واحد على الأقل.':currentLang==='en'?'Select at least one working day.':'لانیکەم ڕۆژێک هەلبژێرە.'); return; }
-  try{
-    const text=await apiGet({action:'saveSettings',working_days:selected.join(',')});
-    if(String(text)!=='OK') throw new Error(text);
-    showToast(L.workingDaysSaved,'success');
-    workingDaysLoaded=false;
-    await loadWorkingDays();
-  }catch(e){ showToast('❌ '+e.message,'error'); }
-}
-
-function loadAnalytics(){
-  const L=LANGS[currentLang];
-  const lpd=parseInt(document.getElementById('lecturesPerDay').value)||3;
-  const expD=parseInt(document.getElementById('expulsionDays').value)||21;
-
-  // Build daily lecture counts per student
-  const dailyMap={};
-  allData.forEach(entry=>{
-    entry.absences.forEach(name=>{
-      if(!dailyMap[name]) dailyMap[name]={};
-      dailyMap[name][entry.date]=(dailyMap[name][entry.date]||0)+entry.lectureCount;
-    });
-  });
-
-  // Calculate risk
-  const risk={};
-  Object.entries(dailyMap).forEach(([name,days])=>{
-    let daysMissed=0;
-    Object.values(days).forEach(cnt=>{ if(cnt>=lpd) daysMissed++; });
-    risk[name]={daysMissed, dismissed:daysMissed>=expD};
-  });
-
-  // Group by class
-  const byClass={};
-  Object.entries(risk).forEach(([name,d])=>{
-    let cls='?';
-    for(const row of allData){ if(row.absences.includes(name)){cls=row.classGroup||'?';break;} }
-    if(!byClass[cls]) byClass[cls]=[];
-    byClass[cls].push({name,...d});
-  });
-
-  let html=`<div class="chart-box" style="margin-bottom:24px;">
-    <h3 style="color:#ff4444;margin-bottom:12px;font-size:1.4em;">${L.expulsionReport}</h3>
-    <p style="color:#666;margin-bottom:16px;">${L.expulsionDesc} — <strong>${lpd}</strong> lec/day → 1 day • threshold: <strong>${expD}</strong> days</p>`;
-
-  Object.keys(byClass).sort().forEach(cls=>{
-    const students=byClass[cls].sort((a,b)=>b.daysMissed-a.daysMissed);
-    html+=`<div style="margin-bottom:24px;"><h4 style="color:#667eea;margin-bottom:12px;">🏫 ${L.classLabel} ${cls}</h4>
-      <div class="table-wrap"><table><thead><tr><th>${L.studentLabel}</th>
-      <th style="text-align:center;">${L.colDaysMissed}</th>
-      <th style="text-align:center;">${L.colRemaining}</th>
-      <th style="text-align:center;">${L.colStatus}</th></tr></thead><tbody>`;
-    students.forEach(s=>{
-      const pct=s.daysMissed/expD;
-      let rowCls='row-low', status=L.riskLow, col='#4CAF50';
-      if(s.dismissed){rowCls='row-high';status=L.riskDismissed;col='#ff4444';}
-      else if(pct>=0.75){rowCls='row-medium';status=L.riskHigh;col='#ff8800';}
-      const rem=Math.max(0,expD-s.daysMissed);
-      const safe=encodeURIComponent(s.name);
-      html+=`<tr class="${rowCls}"><td><span class="clickable" onclick="openProfileFromDropdown('${safe}')">${s.name}</span></td>
-        <td style="text-align:center;font-weight:bold;">${s.daysMissed}</td>
-        <td style="text-align:center;">${rem}</td>
-        <td style="text-align:center;font-weight:bold;color:${col};">${status}</td></tr>`;
-    });
-    html+=`</tbody></table></div></div>`;
-  });
-  html+=`</div>`;
-
-  // Legacy: by class, lecture, subject
-  const byClassAbs={};classes.forEach(c=>byClassAbs[c]=0);
-  allData.forEach(r=>{if(r.classGroup&&byClassAbs.hasOwnProperty(r.classGroup)) byClassAbs[r.classGroup]+=r.absences.length*r.lectureCount;});
-  const byLec={1:0,2:0,3:0,4:0,5:0,6:0};
-  allData.forEach(r=>{const m=String(r.lecture).match(/\d+/);const l=m?parseInt(m[0]):0;if(l>=1&&l<=6)byLec[l]+=r.absences.length*r.lectureCount;});
-  const bySubj={};
-  allData.forEach(r=>{if(r.subject) bySubj[r.subject]=(bySubj[r.subject]||0)+r.absences.length*r.lectureCount;});
-  const totalSubj=Object.values(bySubj).reduce((a,b)=>a+b,0);
-
-  html+=`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
-    <div class="chart-box"><h3 style="color:#667eea;margin-bottom:12px;">${L.absByClass}</h3><div class="table-wrap"><table><thead><tr><th>${L.classLabel}</th><th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-  Object.entries(byClassAbs).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([cls,cnt])=>{
-    html+=`<tr><td><strong>${cls}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`;
-  });
-  html+=`</tbody></table></div></div>
-    <div class="chart-box"><h3 style="color:#667eea;margin-bottom:12px;">${L.absByLec}</h3><div class="table-wrap"><table><thead><tr><th>Lecture</th><th style="text-align:center;">${L.totalLabel}</th></tr></thead><tbody>`;
-  Object.entries(byLec).forEach(([l,cnt])=>{
-    html+=`<tr><td><strong>Lecture ${l}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td></tr>`;
-  });
-  html+=`</tbody></table></div></div>
-    <div class="chart-box" style="grid-column:1/-1;"><h3 style="color:#667eea;margin-bottom:12px;">${L.absBySubj}</h3><div class="table-wrap"><table><thead><tr><th>${L.subjectLabel}</th><th style="text-align:center;">${L.totalLabel}</th><th style="text-align:center;">${L.pctLabel}</th></tr></thead><tbody>`;
-  Object.entries(bySubj).filter(([,c])=>c>0).sort((a,b)=>b[1]-a[1]).forEach(([subj,cnt])=>{
-    const pct=((cnt/totalSubj)*100).toFixed(1);
-    html+=`<tr><td><strong>${subj}</strong></td><td style="text-align:center;"><strong style="color:#667eea;">${cnt}</strong></td><td style="text-align:center;color:#ff8800;font-weight:600;">${pct}%</td></tr>`;
-  });
-  html+=`</tbody></table></div></div></div>`;
-
-  document.getElementById('analyticsContent').innerHTML=html;
-}
-
-// ── STUDENT PROFILE ───────────────────────────────────
-function showStudentProfile(name){
-  const L=LANGS[currentLang];
-  const d={cls:'',total:0,log:[]};
-  allData.forEach(row=>{
-    row.absences.forEach(n=>{
-      if(n.toLowerCase()===name.toLowerCase()){
-        d.cls=row.classGroup||d.cls; d.total+=row.lectureCount;
-        d.log.push({date:row.date,teacher:row.teacher,subject:row.subject,lecture:row.lecture});
-      }
-    });
-  });
-  d.log.sort((a,b)=>new Date(b.date)-new Date(a.date));
-  const subjects=[...new Set(d.log.map(a=>a.subject))];
-  const sev=getSeverity(d.total);
-  const col=sev==='high'?'#ff4444':sev==='medium'?'#ff8800':'#4CAF50';
-
-  let html=`<div class="profile-header"><h2>👤 ${name}</h2><div style="margin-top:8px;">${getBadge(d.total)}</div></div>
-    <div class="profile-stats">
-      <div class="profile-stat"><div class="label">${L.profileClass}</div><div class="value" style="font-size:1.6em;">${d.cls||'?'}</div></div>
-      <div class="profile-stat"><div class="label">${L.profileTotal}</div><div class="value" style="color:${col};">${d.total}</div></div>
-      <div class="profile-stat"><div class="label">${L.profileSubjects}</div><div class="value" style="font-size:1.6em;">${subjects.length}</div></div>
-      <div class="profile-stat"><div class="label">${L.profileEntries}</div><div class="value" style="font-size:1.6em;">${d.log.length}</div></div>
-    </div>
-    <div style="margin:20px 0;padding:14px;background:#f8f9fa;border-radius:8px;">
-      <strong style="color:#667eea;">${L.subjectLabel}:</strong><br>
-      <span style="color:#666;">${subjects.join(', ')||'—'}</span>
-    </div>
-    <h3 style="color:#667eea;margin:20px 0 12px;">${L.profileHistory}</h3>
-    <div class="table-wrap"><table><thead><tr>
-      <th>${L.colDate}</th><th>${L.colLecture}</th><th>${L.colSubject}</th><th>${L.colTeacher}</th>
-    </tr></thead><tbody>`;
-  d.log.forEach(a=>{html+=`<tr><td>${a.date}</td><td>${a.lecture}</td><td>${a.subject}</td><td>${a.teacher}</td></tr>`;});
-  html+=`</tbody></table></div>`;
-  document.getElementById('modalContent').innerHTML=html;
-  document.getElementById('studentModal').classList.add('open');
-}
-function closeModal(){ document.getElementById('studentModal').classList.remove('open'); }
-
-// ── ADMIN DELETE ──────────────────────────────────────
-function askAdminDelete(rowNumber, info){
-  adminPendingRow=rowNumber;
-  document.getElementById('adminConfInfo').textContent=info;
-  document.getElementById('adminConfirm').classList.add('show');
-}
-function closeAdminConfirm(){
-  document.getElementById('adminConfirm').classList.remove('show');
-  adminPendingRow=null;
-}
-async function executeAdminDelete(){
-  if(!adminPendingRow) return;
-  const rowNum=adminPendingRow;
-  closeAdminConfirm();
-  const L=LANGS[currentLang];
-  try {
-    await fetch(SCRIPT_URL,{
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'deleteRow',rowNumber:rowNum,teacher:'admin',token:adminToken})
-    });
-    allData=allData.filter(r=>r.rowNumber!==rowNum);
-    filterDaily();
-    showToast(L.toastDeleted,'success');
-  } catch(err){ showToast(L.toastDeleteFail,'error'); }
-}
-
-// ── TAB NAVIGATION ────────────────────────────────────
-function showTab(name){
-  document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(name).classList.add('active');
-  document.getElementById('tab-'+name).classList.add('active');
-  if(name==='roster')    loadRosterDropdown();
-  if(name==='weekly')    loadWeeklyDropdown();
-  if(name==='monthly')   loadMonthlyDropdown();
-  if(name==='analytics'){ loadAnalytics(); loadWorkingDays(); }
-}
-
-// ── Scheduling ────────────────────────────────────────
-function scheduleRefresh(){
-  const h=new Date().getHours();
-  if(h>=8&&h<14){
-    fetchData();
-    setTimeout(scheduleRefresh, 300000); // every 5 min during school hours
-  } else {
-    const next=new Date(); next.setDate(next.getDate()+(h>=14?1:0)); next.setHours(8,0,1,0);
-    setTimeout(scheduleRefresh, next.getTime()-Date.now());
-  }
-}
-
-// ── Init ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  if(!checkAuth()) return;
-  setLang(currentLang);
-  fetchData();
-  loadWorkingDays();
-  scheduleRefresh();
-});
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="reports.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
