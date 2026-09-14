@@ -6,64 +6,34 @@
 <title>پەیمانگەها کومپیوتەرێ ل ئاکرێ — تومارا نەهاتنێ</title>
 <link rel="stylesheet" href="portal.css">
 <style>
-/* ACI Teacher Portal — mobile-first attendance UI */
-body{background:#f5f7fb}
-.form-wrap{max-width:900px;margin:auto}
-.lesson-mobile-note{font-size:12px;color:#7b8494;margin-top:6px}
-.students-grid{display:flex!important;flex-direction:column;gap:8px!important;padding:4px 0!important}
-.student-check{position:relative;display:flex!important;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:12px 14px!important;border:1px solid #e7ebf2!important;border-radius:14px!important;background:#fff!important;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:.15s ease}
-.student-check input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}
-.student-check .sname{font-size:16px!important;font-weight:700!important;flex:1;line-height:1.35}
-.student-check::after{content:'✓';width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#edf7f0;color:#23834b;font-weight:900;font-size:16px;flex:none}
-.student-check.checked{background:#fff5f5!important;border-color:#f0b9b9!important;box-shadow:0 2px 8px rgba(190,50,50,.06)}
-.student-check.checked::after{content:'×';background:#fee8e8;color:#c73b3b}
-.student-check.checked .sname{color:#b93434}
-.students-area-header{gap:10px}
-.students-count{font-weight:800}
-.absent-preview{display:none!important}
-.absent-preview.show{display:block!important}
-.action-row{position:sticky;bottom:0;z-index:20;background:rgba(245,247,251,.94);backdrop-filter:blur(8px);padding:12px 0 calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e5e9f0}
-.btn-submit{min-height:54px!important;border-radius:14px!important;font-size:16px!important;font-weight:800!important;flex:1}
-.btn-secondary{min-height:54px!important;border-radius:14px!important}
-.recent-table-wrap{overflow:visible!important}
-.recent-table{width:100%}
-.rt-actions{display:flex;gap:7px;flex-wrap:wrap}
+/* ACI Teacher Portal — clean mobile-first attendance UI */
+:root{--aci:#667eea;--aci2:#764ba2;--ink:#182033;--muted:#788398;--line:#e6eaf1;--surface:#fff;--page:#f4f6fa;--danger:#c83b42;--ok:#24864c}
+*{box-sizing:border-box} body{background:var(--page);color:var(--ink)}
+main{max-width:980px;margin:0 auto;padding:18px 16px 110px}
+.form-wrap{max-width:920px;margin:auto}.welcome-banner{border-radius:20px!important;margin-bottom:14px!important;background:linear-gradient(135deg,#667eea,#764ba2)!important;box-shadow:0 10px 28px rgba(76,68,150,.16)}
+.card{border:1px solid var(--line)!important;border-radius:18px!important;box-shadow:0 5px 18px rgba(25,35,55,.05)!important;overflow:visible!important;margin-bottom:14px!important;background:var(--surface)}
+.card-header{background:#fbfcfe!important;border-bottom:1px solid var(--line)!important;padding:14px 18px!important}.card-body{padding:18px!important}
+.lesson-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important}.lecture-field{grid-column:1/-1}
+.form-group label{font-weight:800!important;color:#4b566a!important;margin-bottom:7px!important}.req{color:#d33!important}
+.form-control{width:100%!important;min-width:0!important;height:54px!important;padding:0 42px 0 14px!important;border:1px solid #d9deea!important;border-radius:13px!important;background:#fff!important;color:#182033!important;font-size:16px!important;font-weight:650!important;line-height:54px!important;box-shadow:0 1px 2px rgba(20,30,50,.03)!important;outline:none!important}
+select.form-control{appearance:auto!important;-webkit-appearance:auto!important;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;cursor:pointer}
+.form-control:focus{border-color:var(--aci)!important;box-shadow:0 0 0 3px rgba(102,126,234,.12)!important}
+.today-chip{margin-top:9px;font-size:12px;color:var(--muted);font-weight:700;text-align:center}.today-chip strong{color:var(--aci)}
+.students-area{background:#fafbfe;border:1px solid #edf0f5;border-radius:15px;padding:12px}.students-area-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.students-area-header h4{margin:0!important}.students-count{font-weight:900!important;color:#fff;background:var(--danger);padding:6px 10px;border-radius:999px;font-size:12px;white-space:nowrap}.student-hint{font-size:11px;color:var(--muted);margin-top:3px}
+.students-grid{display:flex!important;flex-direction:column!important;gap:7px!important;padding:2px 0!important}.student-check{position:relative;display:flex!important;align-items:center;gap:10px;min-height:58px;padding:10px 12px!important;border:1px solid #e4e8ef!important;border-radius:13px!important;background:#fff!important;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .12s,border .12s;direction:inherit}.student-check input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}.student-no{font-size:11px;color:#a0a8b6;min-width:27px;text-align:center;font-weight:900}.student-check .sname{font-size:16px!important;font-weight:750!important;flex:1;line-height:1.3;margin-inline-start:2px}.student-check::after{content:'✓';margin-inline-start:auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#edf8f1;color:var(--ok);font-weight:900;font-size:16px;flex:none}.student-check.checked{background:#fff4f4!important;border-color:#efb9bc!important}.student-check.checked::after{content:'×';background:#fee6e7;color:var(--danger)}.student-check.checked .sname{color:var(--danger)}
+.absent-preview{display:none!important}.absent-preview.show{display:none!important}
+.action-row{position:sticky;bottom:0;z-index:40;display:flex;gap:10px;background:rgba(244,246,250,.96);backdrop-filter:blur(10px);padding:12px 0 calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e1e6ee}.btn-submit{min-height:56px!important;border-radius:14px!important;font-size:16px!important;font-weight:900!important;flex:1}.btn-secondary{min-height:56px!important;border-radius:14px!important;min-width:110px}
+.recent-table-wrap{overflow:visible!important}.recent-table{width:100%}.rt-actions{display:flex;gap:7px;flex-wrap:wrap}
 @media(max-width:700px){
- .site-header{position:sticky;top:0;z-index:30;padding:10px 12px!important}
- .header-text h1{font-size:14px!important}.header-text p{display:none}
- .lang-switcher{gap:3px!important}.lang-btn{padding:6px 7px!important;font-size:11px!important}
- .header-user .user-pill{display:none}.btn-logout{padding:8px 10px!important;font-size:12px!important}
- main{padding:12px!important;margin:0!important}
- .welcome-banner{margin-bottom:12px!important;padding:14px!important}
- .welcome-banner h3{font-size:18px!important}
- .card{border-radius:16px!important;margin-bottom:12px!important}
- .card-header{padding:13px 14px!important}.card-body{padding:14px!important}
- .form-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
- .form-row:first-child .form-group:first-child{grid-column:1/-1}
- .form-control{min-height:50px!important;font-size:15px!important}
- #studentsAreaTitle{font-size:15px!important}
- .student-check{min-height:60px!important;padding:12px!important}
- .student-check .sname{font-size:16px!important}
- .action-row{margin:0 -12px;padding-left:12px;padding-right:12px}
- .btn-secondary{width:30%;font-size:12px!important}.btn-submit{width:70%}
- .recent-table thead{display:none}
- .recent-table,.recent-table tbody,.recent-table tr,.recent-table td{display:block;width:100%}
- .recent-table tr{padding:12px;border:1px solid #e7ebf2;border-radius:14px;margin-bottom:9px;background:#fff}
- .recent-table td{padding:4px 0!important;border:0!important}
- .recent-table td:nth-child(1)::before{content:'Lecture: ';font-weight:700;color:#7b8494}
- .recent-table td:nth-child(2)::before{content:'Subject: ';font-weight:700;color:#7b8494}
- .recent-table td:nth-child(3)::before{content:'Class: ';font-weight:700;color:#7b8494}
- .recent-table td:nth-child(4)::before{content:'Absent: ';font-weight:700;color:#7b8494}
- .recent-table td:nth-child(5){margin-top:7px}
- .rt-actions{width:100%}.btn-rt-edit,.btn-rt-delete{flex:1;min-height:44px!important}
+ .site-header{position:sticky;top:0;z-index:50;padding:9px 10px!important}.logo-badge{width:38px!important;height:38px!important}.header-text h1{font-size:13px!important}.header-text p{display:none}.lang-switcher{gap:2px!important}.lang-btn{padding:6px 7px!important;font-size:10px!important}.header-user .user-pill{display:none}.btn-logout{padding:8px 9px!important;font-size:11px!important}
+ main{padding:12px 10px 112px!important}.welcome-banner{padding:13px!important}.welcome-banner h3{font-size:17px!important}.card{margin-bottom:10px!important;border-radius:15px!important}.card-header{padding:12px 14px!important}.card-body{padding:12px!important}
+ .lesson-row{grid-template-columns:1fr!important;gap:10px!important}.lecture-field{grid-column:auto}.form-control{height:52px!important;line-height:52px!important;font-size:15px!important;padding-inline:12px!important}
+ .students-area{padding:9px;border-radius:13px}.student-check{min-height:58px!important;padding:10px!important}.student-check .sname{font-size:15px!important}.student-check::after{width:29px;height:29px}
+ .action-row{margin:0 -10px;padding-left:10px;padding-right:10px}.btn-secondary{min-width:92px;width:29%;font-size:12px!important}.btn-submit{width:71%}
+ .recent-table thead{display:none}.recent-table,.recent-table tbody,.recent-table tr,.recent-table td{display:block;width:100%}.recent-table tr{padding:11px;border:1px solid var(--line);border-radius:13px;margin-bottom:8px;background:#fff}.recent-table td{padding:4px 0!important;border:0!important}.recent-table td:nth-child(1)::before{content:'Lecture: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(2)::before{content:'Subject: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(3)::before{content:'Class: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(4)::before{content:'Absent: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(5){margin-top:7px}.rt-actions{width:100%}.btn-rt-edit,.btn-rt-delete{flex:1;min-height:42px!important}
 }
-@media(min-width:701px){
- .student-check:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,45,70,.08)}
-}
-
-.lesson-row{grid-template-columns:1fr 1fr 1fr!important}.today-chip{margin-top:10px;font-size:12px;color:#687386}.student-hint{font-size:11px;color:#8a93a3;margin-top:3px}.student-no{font-size:12px;color:#9aa2b0;min-width:28px;text-align:center;font-weight:700}.student-check .sname{margin-inline-start:4px}
-@media(max-width:700px){.lesson-row{grid-template-columns:1fr 1fr!important}.lecture-field{grid-column:1/-1}.today-chip{text-align:center}.student-check{direction:inherit}}
-</style>
+@media(min-width:701px){.student-check:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,45,70,.08)}}
+</style>>
 </head>
 <body>
 
@@ -150,6 +120,7 @@ body{background:#f5f7fb}
           </div>
         </div>
         <div class="today-chip">📅 <span id="todayLabel">Today</span>: <strong id="todayValue"></strong></div>
+          <div id="workingDayStatus" class="today-chip"></div>
       </div>
     </div>
 
@@ -236,7 +207,7 @@ const LANGS = {
     loadingDel:'سڕینەوەی تومارکرن...',
     loadingEdit:'ئامادەکرنا دەستکاریکرنێ...',
     toastFill:'⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
-    toastWeekend:'🚫 هەینی و شەممە روژێن دەرفەتê ne! تومارکرن نابێت.',
+    toastWeekend:'🚫 ئەمرۆ ڕۆژی کار نییە. تومارکرن نابێت.',
     toastDate:'⚠️ بەروارا تومارکرنێ دڤێت ئەمرۆ بیت.',
     toastDuplicate:'⚠️ ئەم دەرسێ پێشتر تومار کراوە!',
     toastUnauthorized:'❌ دەستگەهشتن نەهاتیە پەسەندکرن. تکایە دوبارە بچۆ ژوور.',
@@ -268,7 +239,7 @@ const LANGS = {
     loadingSubmit:'جارٍ حفظ الغياب...', loadingData:'جارٍ تحميل البيانات...',
     loadingDel:'جارٍ حذف السجل...', loadingEdit:'جارٍ تحضير التعديل...',
     toastFill:'⚠️ يرجى ملء جميع الحقول المطلوبة!',
-    toastWeekend:'🚫 الجمعة والسبت أيام عطلة! لا يمكن التسجيل.',
+    toastWeekend:'🚫 اليوم يوم عطلة حسب إعدادات المعهد. لا يمكن التسجيل.',
     toastDate:'⚠️ يجب أن يكون تاريخ التسجيل هو تاريخ اليوم.',
     toastDuplicate:'⚠️ تم تسجيل هذه المحاضرة مسبقاً!',
     toastUnauthorized:'❌ انتهت صلاحية الدخول. يرجى تسجيل الدخول مرة أخرى.',
@@ -297,7 +268,7 @@ const LANGS = {
     loadingSubmit:'Saving absence...', loadingData:'Loading data...',
     loadingDel:'Deleting submission...', loadingEdit:'Preparing edit...',
     toastFill:'⚠️ Please fill all required fields!',
-    toastWeekend:'🚫 Friday & Saturday are holidays! No submissions.',
+    toastWeekend:'🚫 Today is a configured non-working day. No submissions.',
     toastDate:'⚠️ Attendance date must be today.',
     toastDuplicate:'⚠️ This lesson was already submitted!',
     toastUnauthorized:'❌ Your session is no longer valid. Please log in again.',
@@ -320,6 +291,7 @@ let selectedAbsent = new Set();
 let todayRows = [];
 let pendingDeleteRow = null;
 let pendingEditRow = null;
+let WORKING_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
 
 function getAcademicYear() {
   const now = new Date();
@@ -455,9 +427,20 @@ function todayISO() {
   return `${y}-${m}-${day}`;
 }
 
-function isWeekend() {
-  const day = new Date().getDay();
-  return day === 5 || day === 6;
+function isWorkingDay(){
+  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today=names[new Date().getDay()];
+  return WORKING_DAYS.some(d=>normalize(d)===normalize(today));
+}
+function isWeekend(){ return !isWorkingDay(); }
+
+function updateWorkingDayStatus(){
+  const el=document.getElementById('workingDayStatus');
+  if(!el) return;
+  const L=LANGS[currentLang];
+  const ok=isWorkingDay();
+  el.textContent=ok ? '✓ '+(currentLang==='ar'?'يوم دوام':currentLang==='en'?'Working day':'ڕۆژی کارە') : '🚫 '+(currentLang==='ar'?'عطلة':currentLang==='en'?'Non-working day':'ڕۆژی پشوویە');
+  el.style.color=ok?'#24864c':'#c83b42';
 }
 
 function formatDateForDisplay(iso) {
@@ -505,6 +488,8 @@ async function loadTeacherData() {
 
     STUDENTS = data.students || {};
     CLASS_SUBJECT_MAP = data.classSubjectMap || {};
+    WORKING_DAYS = Array.isArray(data.workingDays) && data.workingDays.length ? data.workingDays : WORKING_DAYS;
+    updateWorkingDayStatus();
 
     sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
     sessionStorage.setItem('aci_class_subject_map', JSON.stringify(CLASS_SUBJECT_MAP));
