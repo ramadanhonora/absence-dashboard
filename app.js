@@ -2074,9 +2074,6 @@ async function saveSubjectRow(){
     mgmtData=null;
     await fetchManageData();
     renderSubjectTable();
-    const selClasses=getChecked('tmClasses');
-    const selSubjects=getChecked('tmSubjects');
-    updateSubjectCheckboxes(selClasses,selSubjects);
     showToast(L.toastSaved,'success');
   } catch(err){ showToast(L.toastSaveFail+' '+err.message,'error'); }
   finally { btn.textContent=L.btnSaveSubject||'تۆمارکرن'; btn.disabled=false; }
