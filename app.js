@@ -366,7 +366,7 @@ function setLang(lang) {
     'btnAddTeacher','thTName','thTUser','thTPass','thTClasses','thTSubjects',
     'cacheNote1','cacheNote2','btnClearCache1','btnClearCache2',
     'classListTitle','btnNewClass','selectClassHint',
-    'teacherModalTitle','tmLblName','tmLblUser','tmLblPass','tmLblClasses','tmLblSubjects','btnSaveTeacher',
+    'teacherModalTitle','tmLblName','tmLblUser','tmLblPass','tmLblClasses','btnSaveTeacher',
     'addStudentTitle','addStudentLbl','bulkStudentTitle','bulkStudentLbl','bulkHint',
     'moveStudentTitle','moveToLbl','newClassTitle','newClassLbl','newClassStudentsLbl','newClassHint',
     'mgmtConfirmTitle',
@@ -988,32 +988,17 @@ function renderTeacherTable(){
   const L=LANGS[currentLang];
   const tbody=document.getElementById('teacherTableBody');
   const teachers=mgmtData.teachers||[];
-
   if(!teachers.length){
     tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">—</td></tr>`;
     return;
   }
-
   tbody.innerHTML=teachers.map(t=>{
     const map=teacherAssignments(t);
-
-    const classTags=Object.keys(map)
-      .map(c=>`<span class="tag">${assignmentEscapeHtml(c.toUpperCase())}</span>`)
-      .join(' ')||'—';
-
+    const classTags=Object.keys(map).map(c=>`<span class="tag">${assignmentEscapeHtml(c.toUpperCase())}</span>`).join(' ')||'—';
     const subjectHtml=Object.keys(map).map(c=>{
       const subs=map[c]||[];
-
-      return `<div style="margin:2px 0;">
-        <strong>${assignmentEscapeHtml(c.toUpperCase())}</strong>
-        ${subs.length
-          ? ' <span class="tag" style="background:#fff4e6;color:#ff8800;">'+
-            assignmentEscapeHtml(subs.join(' • '))+
-            '</span>'
-          : ''}
-      </div>`;
+      return `<div style="margin:2px 0;"><strong>${assignmentEscapeHtml(c.toUpperCase())}</strong>${subs.length?' <span class="tag" style="background:#fff4e6;color:#ff8800;">'+assignmentEscapeHtml(subs.join(' • '))+'</span>':''}</div>`;
     }).join('')||'—';
-
     return `<tr>
       <td><strong>${assignmentEscapeHtml(t.arabicName||t.displayName)}</strong></td>
       <td style="direction:ltr;text-align:start;">${assignmentEscapeHtml(t.username)}</td>
@@ -1021,671 +1006,229 @@ function renderTeacherTable(){
       <td>${classTags}</td>
       <td>${subjectHtml}</td>
       <td>
-        <button class="btn-sm btn-move"
-          onclick='openEditTeacher(${JSON.stringify(t).replace(/</g,'\\u003c')})'>
-          ${L.editBtn||'✏️'}
-        </button>
-        <button class="btn-sm btn-del"
-          onclick="askDeleteTeacher('${encodeURIComponent(t.username||'')}','${encodeURIComponent(t.arabicName||t.displayName||'')}')">
-          🗑️
-        </button>
+        <button class="btn-sm btn-move" onclick='openEditTeacher(${JSON.stringify(t).replace(/</g,'\\u003c')})'>${L.editBtn||'✏️'}</button>
+        <button class="btn-sm btn-del" onclick="askDeleteTeacher('${encodeURIComponent(t.username||'')}','${encodeURIComponent(t.arabicName||t.displayName||'')}')">🗑️</button>
       </td>
     </tr>`;
   }).join('');
 }
 
-
 function openAddTeacher(){
-  if(!mgmtData){
-    fetchManageData().then(()=>openAddTeacher());
-    return;
-  }
-
+  if(!mgmtData){fetchManageData().then(()=>openAddTeacher());return;}
   const L=LANGS[currentLang];
-
-  document.getElementById('teacherModalTitle').textContent=
-    L.teacherModalTitle||'➕ مامۆستایێ نوی';
-
+  document.getElementById('teacherModalTitle').textContent=L.teacherModalTitle||'➕ مامۆستایێ نوی';
   document.getElementById('tmEditUsername').value='';
   document.getElementById('tmName').value='';
   document.getElementById('tmUsername').value='';
   document.getElementById('tmUsername').disabled=false;
   document.getElementById('tmPassword').value='';
-
-  document.getElementById('tmLblPass').textContent=
-    (L.tmLblPass||'')
-      .replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','')
-      .replace('(اتركها فارغة لعدم التغيير)','')
-      .replace('(leave blank to keep unchanged)','');
-
-  renderTeacherAssignmentRows({
-    classes:[],
-    subjects:[],
-    classSubjectAssignments:{}
-  });
-
+  document.getElementById('tmLblPass').textContent=(L.tmLblPass||'').replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','').replace('(اتركها فارغة لعدم التغيير)','').replace('(leave blank to keep unchanged)','');
+  renderTeacherAssignmentRows({classes:[],subjects:[],classSubjectAssignments:{}});
   document.getElementById('teacherModal').classList.add('open');
 }
 
-
 function openEditTeacher(t){
-  if(!mgmtData){
-    fetchManageData().then(()=>openEditTeacher(t));
-    return;
-  }
-
+  if(!mgmtData){fetchManageData().then(()=>openEditTeacher(t));return;}
   const L=LANGS[currentLang];
-
-  document.getElementById('teacherModalTitle').textContent=
-    L.editTeacherTitle||'✏️ دەسکاریکرنی مامۆستا';
-
+  document.getElementById('teacherModalTitle').textContent=L.editTeacherTitle||'✏️ دەسکاریکرنی مامۆستا';
   document.getElementById('tmEditUsername').value=t.username||'';
   document.getElementById('tmName').value=t.arabicName||t.displayName||'';
   document.getElementById('tmUsername').value=t.username||'';
   document.getElementById('tmUsername').disabled=true;
   document.getElementById('tmPassword').value='';
-  document.getElementById('tmLblPass').textContent=
-    L.tmLblPass||'پاسۆرد';
-
+  document.getElementById('tmLblPass').textContent=L.tmLblPass||'پاسۆرد';
   renderTeacherAssignmentRows(t);
-
   document.getElementById('teacherModal').classList.add('open');
 }
 
-
 function assignmentEscapeHtml(value){
   return String(value==null?'':value)
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;')
-    .replace(/'/g,'&#39;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-
-function assignmentNorm(value){
-  return String(value==null?'':value).trim().toLowerCase();
-}
-
-
+function assignmentNorm(value){ return String(value==null?'':value).trim().toLowerCase(); }
 function uniqueValues(list){
   const out=[];
-
   (list||[]).forEach(v=>{
     if(v==null || !String(v).trim()) return;
-
-    if(!out.some(x=>assignmentNorm(x)===assignmentNorm(v))){
-      out.push(String(v).trim());
-    }
+    if(!out.some(x=>assignmentNorm(x)===assignmentNorm(v))) out.push(String(v).trim());
   });
-
   return out;
 }
-
-
 function getStageSubjects(stage){
   const map=mgmtData?.classSubjectMap||{};
-
-  const key=Object.keys(map).find(
-    k=>normalize(k)===normalize(stage)
-  );
-
-  return key && Array.isArray(map[key])
-    ? uniqueValues(map[key])
-    : [];
+  const key=Object.keys(map).find(k=>assignmentNorm(k)===assignmentNorm(stage));
+  return key && Array.isArray(map[key]) ? uniqueValues(map[key]) : [];
 }
-
-
 function teacherAssignments(teacher){
   const stored=teacher?.classSubjectAssignments;
   const result={};
-
-  /*
-   * New format:
-   * {
-   *   "4pro": ["PHP","HTML5","SQL"],
-   *   "5web": ["HTML5","JQuery"]
-   * }
-   */
-  if(
-    stored &&
-    typeof stored==='object' &&
-    !Array.isArray(stored) &&
-    Object.keys(stored).length
-  ){
+  if(stored && typeof stored==='object' && !Array.isArray(stored) && Object.keys(stored).length){
     Object.keys(stored).forEach(key=>{
       const stage=getStageKey(key);
-
-      result[stage]=uniqueValues([
-        ...(result[stage]||[]),
-        ...(Array.isArray(stored[key])?stored[key]:[])
-      ]);
+      result[stage]=uniqueValues([...(result[stage]||[]),...(Array.isArray(stored[key])?stored[key]:[])]);
     });
-
     return result;
   }
 
-  /*
-   * Backward compatibility for old teachers
-   * that only have E/F data.
-   */
-  const classes=Array.isArray(teacher?.classes)
-    ? teacher.classes
-    : [];
-
-  const subjects=Array.isArray(teacher?.subjects)
-    ? teacher.subjects
-    : [];
-
-  const subjectKeys=subjects.map(assignmentNorm);
-
+  const classes=Array.isArray(teacher?.classes)?teacher.classes:[];
+  const subjects=Array.isArray(teacher?.subjects)?teacher.subjects:[];
+  const subjectKeys=subjects.map(normalize);
   groupsToStages(classes).forEach(stage=>{
-    result[stage]=getStageSubjects(stage)
-      .filter(s=>subjectKeys.includes(assignmentNorm(s)));
+    result[stage]=getStageSubjects(stage).filter(s=>subjectKeys.includes(assignmentNorm(s)));
   });
-
   return result;
 }
-
-
 function injectTeacherAssignmentStyles(){
   if(document.getElementById('aciTeacherAssignmentStyle')) return;
-
   const style=document.createElement('style');
-
   style.id='aciTeacherAssignmentStyle';
-
   style.textContent=`
-    .teacher-assignment-list{
-      display:flex;
-      flex-direction:column;
-      gap:5px;
-      margin-top:4px
-    }
-
-    .teacher-assignment-row{
-      border-bottom:1px solid #edf0f4;
-      background:#fff
-    }
-
-    .teacher-assignment-row:last-child{
-      border-bottom:0
-    }
-
-    .teacher-assignment-head{
-      display:flex;
-      align-items:center;
-      gap:9px;
-      min-height:42px;
-      padding:7px 4px;
-      cursor:pointer
-    }
-
-    .teacher-assignment-head:hover{
-      background:#fafbfc
-    }
-
-    .teacher-class-check{
-      width:18px;
-      height:18px;
-      flex:0 0 auto;
-      accent-color:#667eea;
-      cursor:pointer
-    }
-
-    .teacher-class-name{
-      font-size:.88em;
-      font-weight:800;
-      flex:0 0 72px
-    }
-
-    .teacher-subjects{
-      display:none;
-      align-items:center;
-      gap:8px;
-      flex-wrap:wrap;
-      padding:0 4px 9px 31px
-    }
-
-    .teacher-assignment-row.selected .teacher-subjects{
-      display:flex
-    }
-
-    .teacher-subject-item{
-      display:inline-flex;
-      align-items:center;
-      gap:5px;
-      font-size:.78em;
-      font-weight:650;
-      cursor:pointer;
-      white-space:nowrap
-    }
-
-    .teacher-subject-check{
-      width:16px;
-      height:16px;
-      margin:0;
-      accent-color:#667eea;
-      cursor:pointer
-    }
-
-    .teacher-assignment-empty{
-      padding:8px 4px;
-      color:#999;
-      font-size:.8em
-    }
-
-    .teacher-assignment-note{
-      font-size:.73em;
-      color:#8a929d;
-      line-height:1.4;
-      margin-top:7px
-    }
-
+    .teacher-assignment-list{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+    .teacher-assignment-row{border-bottom:1px solid #edf0f4;background:#fff}
+    .teacher-assignment-row:last-child{border-bottom:0}
+    .teacher-assignment-head{display:flex;align-items:center;gap:9px;min-height:42px;padding:7px 4px;cursor:pointer}
+    .teacher-assignment-head:hover{background:#fafbfc}
+    .teacher-class-check{width:18px;height:18px;flex:0 0 auto;accent-color:#667eea;cursor:pointer}
+    .teacher-class-name{font-size:.88em;font-weight:800;flex:0 0 72px}
+    .teacher-subjects{display:none;align-items:center;gap:8px;flex-wrap:wrap;padding:0 4px 9px 31px}
+    .teacher-assignment-row.selected .teacher-subjects{display:flex}
+    .teacher-subject-item{display:inline-flex;align-items:center;gap:5px;font-size:.78em;font-weight:650;cursor:pointer;white-space:nowrap}
+    .teacher-subject-check{width:16px;height:16px;margin:0;accent-color:#667eea;cursor:pointer}
+    .teacher-assignment-empty{padding:8px 4px;color:#999;font-size:.8em}
+    .teacher-assignment-note{font-size:.73em;color:#8a929d;line-height:1.4;margin-top:7px}
     @media(max-width:600px){
-      .teacher-class-name{
-        font-size:.84em;
-        flex-basis:58px
-      }
-
-      .teacher-subjects{
-        gap:7px 14px;
-        padding-left:30px
-      }
-
-      .teacher-subject-item{
-        font-size:.76em
-      }
+      .teacher-class-name{font-size:.84em;flex-basis:58px}
+      .teacher-subjects{gap:7px 14px;padding-left:30px}
+      .teacher-subject-item{font-size:.76em}
     }
   `;
-
   document.head.appendChild(style);
 }
-
-
 function renderTeacherAssignmentRows(teacher){
   injectTeacherAssignmentStyles();
-
   const container=document.getElementById('tmClasses');
-
   if(!container) return;
-
-  /*
-   * Hide old subject field if it still exists.
-   * This also makes the code safe if the HTML cleanup
-   * has not yet been done.
-   */
-  const subjectField=
-    document.getElementById('tmSubjects')?.closest('.mgmt-field');
-
-  if(subjectField){
-    subjectField.style.display='none';
-  }
-
+  const subjectField=document.getElementById('tmSubjects')?.closest('.mgmt-field');
+  if(subjectField) subjectField.style.display='none';
   const classField=container.closest('.mgmt-field');
-
   const label=classField?.querySelector('#tmLblClasses');
-
-  if(label){
-    label.textContent=
-      LANGS[currentLang].tmLblClasses||
-      '🏫 Classes & Subjects';
-  }
-
+  if(label) label.textContent=LANGS[currentLang].tmLblClasses||'🏫 Classes & Subjects';
   container.className='teacher-assignment-list';
 
   const assignments=teacherAssignments(teacher||{});
-
-  const selectedStages=
-    new Set(Object.keys(assignments).map(getStageKey));
-
+  const selectedStages=new Set(Object.keys(assignments).map(getStageKey));
   const stages=getStageList();
-
   if(!stages.length){
-    container.innerHTML=
-      '<div class="teacher-assignment-empty">—</div>';
+    container.innerHTML='<div class="teacher-assignment-empty">—</div>';
     return;
   }
 
   container.innerHTML=stages.map(stage=>{
     const subjects=getStageSubjects(stage);
     const selected=assignments[stage]||[];
-    const selectedKeys=selected.map(assignmentNorm);
-
-    const checked=
-      selectedStages.has(getStageKey(stage));
-
+    const selectedKeys=selected.map(normalize);
+    const checked=selectedStages.has(getStageKey(stage));
     const subjectHtml=subjects.length
-      ? subjects.map(subject=>`
-          <label class="teacher-subject-item">
-            <input
-              class="teacher-subject-check"
-              type="checkbox"
-              value="${assignmentEscapeHtml(subject)}"
-              ${selectedKeys.includes(assignmentNorm(subject))?'checked':''}
-            >
-            ${assignmentEscapeHtml(subject)}
-          </label>
-        `).join('')
+      ? subjects.map(subject=>`<label class="teacher-subject-item"><input class="teacher-subject-check" type="checkbox" value="${assignmentEscapeHtml(subject)}" ${selectedKeys.includes(assignmentNorm(subject))?'checked':''}>${assignmentEscapeHtml(subject)}</label>`).join('')
       : '<span class="teacher-assignment-empty">—</span>';
-
-    return `
-      <div
-        class="teacher-assignment-row ${checked?'selected':''}"
-        data-stage="${assignmentEscapeHtml(stage)}"
-      >
-        <div class="teacher-assignment-head">
-          <input
-            class="teacher-class-check"
-            type="checkbox"
-            ${checked?'checked':''}
-          >
-
-          <span class="teacher-class-name">
-            ${assignmentEscapeHtml(String(stage).toUpperCase())}
-          </span>
-        </div>
-
-        <div class="teacher-subjects">
-          ${subjectHtml}
-        </div>
+    return `<div class="teacher-assignment-row ${checked?'selected':''}" data-stage="${assignmentEscapeHtml(stage)}">
+      <div class="teacher-assignment-head">
+        <input class="teacher-class-check" type="checkbox" ${checked?'checked':''}>
+        <span class="teacher-class-name">${assignmentEscapeHtml(String(stage).toUpperCase())}</span>
       </div>
-    `;
+      <div class="teacher-subjects">${subjectHtml}</div>
+    </div>`;
   }).join('');
 
-  container
-    .querySelectorAll('.teacher-assignment-row')
-    .forEach(row=>{
-
-      const classCheck=
-        row.querySelector('.teacher-class-check');
-
-      const head=
-        row.querySelector('.teacher-assignment-head');
-
-      head.addEventListener('click',e=>{
-        if(
-          e.target===classCheck ||
-          e.target.classList.contains('teacher-subject-check')
-        ) return;
-
-        classCheck.checked=!classCheck.checked;
-
-        row.classList.toggle(
-          'selected',
-          classCheck.checked
-        );
-
-        if(!classCheck.checked){
-          row
-            .querySelectorAll('.teacher-subject-check')
-            .forEach(s=>s.checked=false);
-        }
-      });
-
-      classCheck.addEventListener('change',()=>{
-        row.classList.toggle(
-          'selected',
-          classCheck.checked
-        );
-
-        if(!classCheck.checked){
-          row
-            .querySelectorAll('.teacher-subject-check')
-            .forEach(s=>s.checked=false);
-        }
-      });
-
-      row
-        .querySelectorAll('.teacher-subject-check')
-        .forEach(subject=>{
-
-          subject.addEventListener('change',()=>{
-            if(subject.checked){
-              classCheck.checked=true;
-            }
-
-            row.classList.toggle(
-              'selected',
-              classCheck.checked
-            );
-          });
-
-        });
-
+  container.querySelectorAll('.teacher-assignment-row').forEach(row=>{
+    const classCheck=row.querySelector('.teacher-class-check');
+    const head=row.querySelector('.teacher-assignment-head');
+    head.addEventListener('click',e=>{
+      if(e.target===classCheck || e.target.classList.contains('teacher-subject-check')) return;
+      classCheck.checked=!classCheck.checked;
+      row.classList.toggle('selected',classCheck.checked);
+      if(!classCheck.checked) row.querySelectorAll('.teacher-subject-check').forEach(s=>s.checked=false);
     });
+    classCheck.addEventListener('change',()=>{
+      row.classList.toggle('selected',classCheck.checked);
+      if(!classCheck.checked) row.querySelectorAll('.teacher-subject-check').forEach(s=>s.checked=false);
+    });
+    row.querySelectorAll('.teacher-subject-check').forEach(subject=>{
+      subject.addEventListener('change',()=>{
+        if(subject.checked) classCheck.checked=true;
+        row.classList.toggle('selected',classCheck.checked);
+      });
+    });
+  });
 
-  let note=
-    document.getElementById('teacherAssignmentNote');
-
+  let note=document.getElementById('teacherAssignmentNote');
   if(!note){
     note=document.createElement('div');
     note.id='teacherAssignmentNote';
-
-    container.insertAdjacentElement(
-      'afterend',
-      note
-    );
+    container.insertAdjacentElement('afterend',note);
   }
-
   note.className='teacher-assignment-note';
-
-  note.textContent=
-    currentLang==='en'
-      ? 'Select a class, then select only the subjects this teacher will teach in that class.'
-      : currentLang==='ar'
-        ? 'اختر الشعبة ثم اختر فقط المواد التي سيدرسها الأستاذ في تلك الشعبة.'
-        : 'پۆل هەلبژێرە، پاشان تەنێ ئەو بابەتانە هەلبژێرە کو مامۆستا ل وی پۆلێ دبێژیت.';
+  note.textContent=currentLang==='en'
+    ? 'Select a class, then select only the subjects this teacher will teach in that class.'
+    : currentLang==='ar'
+      ? 'اختر الشعبة ثم اختر فقط المواد التي سيدرسها الأستاذ في تلك الشعبة.'
+      : 'پۆل هەلبژێرە، پاشان تەنێ ئەو بابەتانە هەلبژێرە کو مامۆستا ل وی پۆلێ دبێژیت.';
 }
-
-
 function selectedTeacherAssignments(){
   const result={};
-
-  document
-    .querySelectorAll(
-      '#tmClasses .teacher-assignment-row'
-    )
-    .forEach(row=>{
-
-      const check=
-        row.querySelector('.teacher-class-check');
-
-      if(!check?.checked) return;
-
-      const stage=
-        row.getAttribute('data-stage');
-
-      result[stage]=uniqueValues(
-        [
-          ...row.querySelectorAll(
-            '.teacher-subject-check:checked'
-          )
-        ].map(x=>x.value)
-      );
-
-    });
-
+  document.querySelectorAll('#tmClasses .teacher-assignment-row').forEach(row=>{
+    const check=row.querySelector('.teacher-class-check');
+    if(!check?.checked) return;
+    const stage=row.getAttribute('data-stage');
+    result[stage]=uniqueValues([...row.querySelectorAll('.teacher-subject-check:checked')].map(x=>x.value));
+  });
   return result;
 }
-
-
 function closeTeacherModal(){
-  document
-    .getElementById('teacherModal')
-    .classList.remove('open');
-
-  document
-    .getElementById('tmUsername')
-    .disabled=false;
+  document.getElementById('teacherModal').classList.remove('open');
+  document.getElementById('tmUsername').disabled=false;
 }
-
-
 async function saveTeacher(){
   const L=LANGS[currentLang];
-
-  const editUsername=
-    document.getElementById('tmEditUsername')
-      .value
-      .trim();
-
+  const editUsername=document.getElementById('tmEditUsername').value.trim();
   const isEdit=editUsername!=='';
+  const name=document.getElementById('tmName').value.trim();
+  const username=document.getElementById('tmUsername').value.trim().toLowerCase();
+  const password=document.getElementById('tmPassword').value.trim();
+  const assignments=selectedTeacherAssignments();
+  const stages=Object.keys(assignments);
+  const missingSubjects=stages.filter(stage=>(assignments[stage]||[]).length===0);
+  const selSubjects=uniqueValues(stages.reduce((all,stage)=>all.concat(assignments[stage]||[]),[]));
+  const selClasses=uniqueValues(stages.flatMap(stage=>getGroupsForStage(stage).length?getGroupsForStage(stage):[stage]));
 
-  const name=
-    document.getElementById('tmName')
-      .value
-      .trim();
+  if(!name||!username){showToast('❌ ناڤ و یوزەرناڤ پێویستە','error');return;}
+  if(!isEdit&&!password){showToast('❌ پاسۆرد پێویستە','error');return;}
+  if(!stages.length){showToast('❌ کەمەک پۆلێک هەلبژێرە','error');return;}
+  if(missingSubjects.length){showToast('❌ بۆ هەر پۆلێک لانیکەم یەک بابەت هەلبژێرە','error');return;}
 
-  const username=
-    document.getElementById('tmUsername')
-      .value
-      .trim()
-      .toLowerCase();
-
-  const password=
-    document.getElementById('tmPassword')
-      .value
-      .trim();
-
-  const assignments=
-    selectedTeacherAssignments();
-
-  const stages=
-    Object.keys(assignments);
-
-  const missingSubjects=
-    stages.filter(
-      stage=>(assignments[stage]||[]).length===0
-    );
-
-  /*
-   * E remains the overall teacher subject list
-   * for compatibility.
-   */
-  const selSubjects=
-    uniqueValues(
-      stages.reduce(
-        (all,stage)=>
-          all.concat(assignments[stage]||[]),
-        []
-      )
-    );
-
-  /*
-   * F remains the teacher class list.
-   * Each stage expands to its real class groups.
-   */
-  const selClasses=
-    uniqueValues(
-      stages.flatMap(stage=>
-        getGroupsForStage(stage).length
-          ? getGroupsForStage(stage)
-          : [stage]
-      )
-    );
-
-  if(!name||!username){
-    showToast(
-      '❌ ناڤ و یوزەرناڤ پێویستە',
-      'error'
-    );
-    return;
-  }
-
-  if(!isEdit&&!password){
-    showToast(
-      '❌ پاسۆرد پێویستە',
-      'error'
-    );
-    return;
-  }
-
-  if(!stages.length){
-    showToast(
-      '❌ کەمەک پۆلێک هەلبژێرە',
-      'error'
-    );
-    return;
-  }
-
-  if(missingSubjects.length){
-    showToast(
-      '❌ بۆ هەر پۆلێک لانیکەم یەک بابەت هەلبژێرە',
-      'error'
-    );
-    return;
-  }
-
-  const btn=
-    document.getElementById('btnSaveTeacher');
-
-  btn.textContent='⏳';
-  btn.disabled=true;
-
-  try{
-
+  const btn=document.getElementById('btnSaveTeacher');
+  btn.textContent='⏳'; btn.disabled=true;
+  try {
     const params={
-      action:isEdit
-        ? 'editTeacher'
-        : 'addTeacher',
-
-      arabicName:name,
-      username,
-      displayName:name,
-
-      /*
-       * Compatibility fields:
-       * E = all unique subjects
-       * F = all real class groups
-       */
+      action:isEdit?'editTeacher':'addTeacher',
+      arabicName:name, username, displayName:name,
       subjects:selSubjects.join(','),
       classes:selClasses.join(','),
-
-      /*
-       * New field:
-       * G = class/stage -> subjects
-       */
-      classSubjectAssignments:
-        JSON.stringify(assignments)
+      classSubjectAssignments:JSON.stringify(assignments)
     };
-
-    if(password){
-      params.password=password;
-    }
-
-    const text=
-      await adminGet(params);
-
-    if(text.startsWith('ERROR')){
-      throw new Error(text);
-    }
-
+    if(password) params.password=password;
+    const text=await adminGet(params);
+    if(text.startsWith('ERROR')) throw new Error(text);
     closeTeacherModal();
-
     mgmtData=null;
-
     await fetchManageData();
-
     renderTeacherTable();
-
-    showToast(
-      L.toastSaved,
-      'success'
-    );
-
-  }catch(err){
-
-    showToast(
-      L.toastSaveFail+' '+err.message,
-      'error'
-    );
-
-  }finally{
-
-    btn.textContent=
-      L.btnSaveTeacher||'تۆمارکرن';
-
-    btn.disabled=false;
+    showToast(L.toastSaved,'success');
+  } catch(err){
+    showToast(L.toastSaveFail+' '+err.message,'error');
+  } finally {
+    btn.textContent=L.btnSaveTeacher||'تۆمارکرن'; btn.disabled=false;
   }
 }
 function askDeleteTeacher(safeUsername, safeName){
