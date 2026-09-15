@@ -63,7 +63,6 @@ const LANGS = {
     promoteDestLbl:'بۆ کام پۆل؟', promoteYearLbl:'ساڵا دەرچوونێ',
     promoteStudentsLbl:'قوتابیان هەلبژێرە (هەمی بەسەرکەوتی هاتینە هەلبژارتن)',
     promoteCheckAll:'هەمی هەلبژێرە', promoteCheckNone:'هیچ هەلمەبژێرە', btnConfirmPromote:'تۆمارکرن',
-    subjectFilterNote:'📌 بابەتان بە پێی پۆلە هەلبژێردراوەکان فلتەر دەبن',
     weekend:'🏖️ دەرفەت — مکتەب نییە', noAbsences:'هیچ نەهاتنێک نینە',
     selectWeek:'هەفتەیەک هەلبژێرە', selectMonth:'مانگێک هەلبژێرە', selectClass:'پۆلێک هەلبژێرە',
     weekLabel:'هەفتە', manageLabel:'🗑️ رێکخستنی تومارکرنان',
@@ -164,7 +163,6 @@ const LANGS = {
     promoteDestLbl:'إلى أي شعبة؟', promoteYearLbl:'سنة التخرج',
     promoteStudentsLbl:'اختر الطلاب (الجميع محدد افتراضيًا كناجحين)',
     promoteCheckAll:'تحديد الكل', promoteCheckNone:'إلغاء التحديد', btnConfirmPromote:'حفظ',
-    subjectFilterNote:'📌 تُصفَّى المواد حسب الشعب المختارة',
     weekend:'🏖️ عطلة — لا دوام', noAbsences:'لا يوجد غياب',
     selectWeek:'اختر أسبوعاً', selectMonth:'اختر شهراً', selectClass:'اختر شعبة',
     weekLabel:'أسبوع', manageLabel:'🗑️ إدارة التسجيلات',
@@ -266,7 +264,6 @@ const LANGS = {
     promoteDestLbl:'To which class?', promoteYearLbl:'Graduation Year',
     promoteStudentsLbl:'Select students (everyone is checked as passing by default)',
     promoteCheckAll:'Select All', promoteCheckNone:'Select None', btnConfirmPromote:'Save',
-    subjectFilterNote:'📌 Subjects are filtered based on selected classes',
     weekend:'🏖️ Weekend — No School', noAbsences:'No absences recorded',
     selectWeek:'Select a week', selectMonth:'Select a month', selectClass:'Select a class',
     weekLabel:'Week', manageLabel:'🗑️ Manage Submissions',
@@ -1990,24 +1987,38 @@ async function loadGraduatesTab(){
   renderGraduatesList();
 }
 
-function renderGraduatesList(){
-  const L=LANGS[currentLang];
-  const yearFilter=document.getElementById('gradYearFilter').value;
-  const list=(mgmtData.graduates||[]).filter(g=>!yearFilter||g.year===yearFilter);
-  const el=document.getElementById('graduatesList');
-  if(!list.length){
-    el.innerHTML=`<div style="text-align:center;padding:40px;color:#999;">—</div>`;
+function renderGraduatesList() {
+  const L = LANGS[currentLang];
+  const yearFilter = document.getElementById('gradYearFilter').value;
+  const list = (mgmtData?.graduates || []).filter(g => !yearFilter || g.year === yearFilter);
+  const el = document.getElementById('graduatesList');
+
+  if (!list || !list.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:#999;">—</div>`;
     return;
   }
-  const byClass={};
-  list.forEach(g=>{ (byClass[g.className]=byClass[g.className]||[]).push(g.studentName); });
-  el.innerHTML=Object.keys(byClass).sort().map(cls=>`
+
+  const byClass = {};
+  list.forEach(g => {
+    (byClass[g.className] = byClass[g.className] || []).push(g.studentName);
+  });
+
+  el.innerHTML = Object.keys(byClass).sort().map(cls => `
     <div style="margin-bottom:18px;">
-      <h3 style="color:#667eea;margin-bottom:8px;">🏫 ${cls} <span style="color:#999;font-size:0.8em;">(${byClass[cls].length} ${L.students||'قوتابی'})</span></h3>
-      <div style="background:#fff;border-radius:10px;border:1px solid #e9ecef;overflow:hidden;">
-        ${byClass[cls].map((n,i)=>`<div class="student-row"><span class="student-name">${i+1}. ${n}</span></div>`).join('')}
+      <h3 style="color:#667eea;margin-bottom:10px;">🏫 ${cls}</h3>
+      <div class="table-wrap">
+        <table>
+          <tbody>
+            ${byClass[cls].map((student, i) => `
+              <tr>
+                <td style="padding:6px 12px;">${i + 1}. ${student}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
       </div>
-    </div>`).join('');
+    </div>
+  `).join('');
 }
 
 // ══════════════════════════════════════════════════════
