@@ -16,7 +16,7 @@
 }
 .mgmt-subtab.active { background:#667eea; color:#fff; }
 .mgmt-panel { display:none; }
-.mgmt-panel.active { display:block; }f
+.mgmt-panel.active { display:block; }
 
 /* Teacher table */
 .mgmt-table { width:100%; border-collapse:collapse; margin-top:10px; }
@@ -1059,31 +1059,10 @@
     applyWorkingDays();
   }
 
-  document.addEventListener(
-    'DOMContentLoaded',
-    function () {
-
-      syncWorkingDays();
-
-      let count = 0;
-
-      const timer = setInterval(
-        function () {
-
-          syncWorkingDays();
-
-          count++;
-
-          if (count > 30) {
-            clearInterval(timer);
-          }
-
-        },
-        500
-      );
-
-    }
-  );
+document.addEventListener('DOMContentLoaded', function () {
+  syncWorkingDays();
+  setTimeout(syncWorkingDays, 100);
+});
 
   const originalShowTab =
     window.showTab;
