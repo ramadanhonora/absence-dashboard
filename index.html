@@ -2,10 +2,45 @@
 <html lang="ku" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>تومارا نەهاتنێ — پۆرتی یا مامۆستای</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پەیمانگەها کومپیوتەرێ ل ئاکرێ — تومارا نەهاتنێ</title>
 <link rel="stylesheet" href="portal.css">
-<base target="_blank">
+<style>
+/* ACI Teacher Portal — clean mobile-first attendance UI */
+:root{--aci:#667eea;--aci2:#764ba2;--ink:#182033;--muted:#788398;--line:#e6eaf1;--surface:#fff;--page:#f4f6fa;--danger:#c83b42;--ok:#24864c}
+*{box-sizing:border-box} body{background:var(--page);color:var(--ink)}
+main{max-width:980px;margin:0 auto;padding:18px 16px 110px}
+.form-wrap{max-width:920px;margin:auto}.welcome-banner{border-radius:20px!important;margin-bottom:14px!important;background:linear-gradient(135deg,#667eea,#764ba2)!important;box-shadow:0 10px 28px rgba(76,68,150,.16)}
+.card{border:1px solid var(--line)!important;border-radius:18px!important;box-shadow:0 5px 18px rgba(25,35,55,.05)!important;overflow:visible!important;margin-bottom:14px!important;background:var(--surface)}
+.card-header{background:#fbfcfe!important;border-bottom:1px solid var(--line)!important;padding:14px 18px!important}.card-body{padding:18px!important}
+.lesson-row{display:grid!important;grid-template-columns:1fr 1fr!important;gap:14px!important}.lecture-field{grid-column:1/-1}
+.form-group label{font-weight:800!important;color:#4b566a!important;margin-bottom:7px!important}.req{color:#d33!important}
+.form-control{width:100%!important;min-width:0!important;height:54px!important;padding:0 42px 0 14px!important;border:1px solid #d9deea!important;border-radius:13px!important;background:#fff!important;color:#182033!important;font-size:16px!important;font-weight:650!important;line-height:54px!important;box-shadow:0 1px 2px rgba(20,30,50,.03)!important;outline:none!important}
+select.form-control{appearance:auto!important;-webkit-appearance:auto!important;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;cursor:pointer}
+.form-control:focus{border-color:var(--aci)!important;box-shadow:0 0 0 3px rgba(102,126,234,.12)!important}
+.today-chip{margin-top:9px;font-size:12px;color:var(--muted);font-weight:700;text-align:center}.today-chip strong{color:var(--aci)}
+.students-area{background:#fafbfe;border:1px solid #edf0f5;border-radius:15px;padding:12px}.students-area-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.students-area-header h4{margin:0!important}.students-count{font-weight:900!important;color:#fff;background:var(--danger);padding:6px 10px;border-radius:999px;font-size:12px;white-space:nowrap}.student-hint{font-size:11px;color:var(--muted);margin-top:3px}
+.students-grid{display:flex!important;flex-direction:column!important;gap:7px!important;padding:2px 0!important}.student-check{position:relative;display:flex!important;align-items:center;gap:10px;min-height:58px;padding:10px 12px!important;border:1px solid #e4e8ef!important;border-radius:13px!important;background:#fff!important;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,background .12s,border .12s;direction:inherit}.student-check input{position:absolute!important;opacity:0!important;pointer-events:none!important;width:1px!important;height:1px!important}.student-no{font-size:11px;color:#a0a8b6;min-width:27px;text-align:center;font-weight:900}.student-check .sname{font-size:16px!important;font-weight:750!important;flex:1;line-height:1.3;margin-inline-start:2px}.student-check::after{content:'✓';margin-inline-start:auto;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#edf8f1;color:var(--ok);font-weight:900;font-size:16px;flex:none}.student-check.checked{background:#fff4f4!important;border-color:#efb9bc!important}.student-check.checked::after{content:'×';background:#fee6e7;color:var(--danger)}.student-check.checked .sname{color:var(--danger)}
+.absent-preview{display:none;margin-bottom:8px}
+.absent-preview.show{display:block;animation:fadeUp .2s ease}
+.absent-preview h5{font-size:11px;color:var(--muted);font-weight:800;margin-bottom:6px}
+.absent-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.absent-pills::-webkit-scrollbar{height:4px}
+.absent-pill{display:flex!important;align-items:center;gap:6px;flex:none;background:#fff4f4;border:1px solid #efb9bc;color:var(--danger);font-size:12px;font-weight:700;padding:6px 8px;border-radius:999px;white-space:nowrap}
+.absent-pill .remove-pill{cursor:pointer;opacity:.7;font-weight:900}
+.absent-pill .remove-pill:hover{opacity:1}
+.action-row{position:sticky;bottom:0;z-index:40;display:flex;gap:10px;background:rgba(244,246,250,.96);backdrop-filter:blur(10px);padding:12px 0 calc(12px + env(safe-area-inset-bottom));border-top:1px solid #e1e6ee}.btn-submit{min-height:56px!important;border-radius:14px!important;font-size:16px!important;font-weight:900!important;flex:1}.btn-secondary{min-height:56px!important;border-radius:14px!important;min-width:110px}
+.recent-table-wrap{overflow:visible!important}.recent-table{width:100%}.rt-actions{display:flex;gap:7px;flex-wrap:wrap}
+@media(max-width:700px){
+ .site-header{position:sticky;top:0;z-index:50;padding:9px 10px!important}.logo-badge{width:38px!important;height:38px!important}.header-text h1{font-size:13px!important}.header-text p{display:none}.lang-switcher{gap:2px!important}.lang-btn{padding:6px 7px!important;font-size:10px!important}.header-user .user-pill{display:none}.btn-logout{padding:8px 9px!important;font-size:11px!important}
+ main{padding:12px 10px 112px!important}.welcome-banner{padding:13px!important}.welcome-banner h3{font-size:17px!important}.card{margin-bottom:10px!important;border-radius:15px!important}.card-header{padding:12px 14px!important}.card-body{padding:12px!important}
+ .lesson-row{grid-template-columns:1fr!important;gap:10px!important}.lecture-field{grid-column:auto}.form-control{height:52px!important;line-height:52px!important;font-size:15px!important;padding-inline:12px!important}
+ .students-area{padding:9px;border-radius:13px}.student-check{min-height:58px!important;padding:10px!important}.student-check .sname{font-size:15px!important}.student-check::after{width:29px;height:29px}
+ .action-row{margin:0 -10px;padding-left:10px;padding-right:10px}.btn-secondary{min-width:92px;width:29%;font-size:12px!important}.btn-submit{width:71%}
+ .recent-table thead{display:none}.recent-table,.recent-table tbody,.recent-table tr,.recent-table td{display:block;width:100%}.recent-table tr{padding:11px;border:1px solid var(--line);border-radius:13px;margin-bottom:8px;background:#fff}.recent-table td{padding:4px 0!important;border:0!important}.recent-table td:nth-child(1)::before{content:'Lecture: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(2)::before{content:'Subject: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(3)::before{content:'Class: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(4)::before{content:'Absent: ';font-weight:800;color:var(--muted)}.recent-table td:nth-child(5){margin-top:7px}.rt-actions{width:100%}.btn-rt-edit,.btn-rt-delete{flex:1;min-height:42px!important}
+}
+@media(min-width:701px){.student-check:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,45,70,.08)}}
+</style>>
 </head>
 <body>
 
@@ -14,639 +49,1294 @@
   <div class="header-text">
     <h1 id="hInstName">پەیمانگەها کومپیوتەرێ ل ئاکرێ</h1>
     <p id="hSub">سیستەما تومارکرنا نەهاتنێ</p>
-    <p id="hYear"></p>
+    <p id="hYear" style="margin-top:2px;color:#667eea;font-weight:700;font-size:14px;"></p>
   </div>
+
   <div class="lang-switcher">
     <button class="lang-btn active" onclick="setLang('ku')">کوردی</button>
     <button class="lang-btn" onclick="setLang('ar')">عربي</button>
     <button class="lang-btn" onclick="setLang('en')">EN</button>
   </div>
+
   <div class="header-user">
     <div class="user-pill"><span class="dot"></span><span id="headerUserName"></span></div>
-    <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪</button>
+    <button class="btn-logout" onclick="doLogout()" id="btnLogout">🚪 دەرچوون</button>
   </div>
 </header>
 
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-box"><div class="spinner"></div><p id="loadingText"></p></div>
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p id="loadingText">بارکرن...</p>
+  </div>
 </div>
+
 <div class="toast" id="toast"></div>
-
-<!-- Day status banner (non-working day) -->
-<div class="day-banner" id="dayBanner" style="display:none"></div>
-
-<!-- ═══ STICKY SESSION BAR: class / subject / lecture = ONE tap each ═══ -->
-<div class="session-bar" id="sessionBar">
-  <div class="sb-row">
-    <span class="sb-label" id="lblClass">🏫 پۆل</span>
-    <div class="chips" id="classChips"></div>
-  </div>
-  <div class="sb-row">
-    <span class="sb-label" id="lblSubject">📚 بابەت</span>
-    <div class="chips" id="subjectChips"></div>
-  </div>
-  <div class="sb-row">
-    <span class="sb-label" id="lblLecture">⏱ وانە</span>
-    <div class="chips" id="lectureChips"></div>
-    <span class="sb-date" id="sbDate"></span>
-  </div>
-</div>
 
 <main>
   <div class="form-wrap" id="screenSubmit" style="display:none">
 
-    <!-- Current selection summary -->
-    <div class="now-card" id="nowCard">
-      <div class="now-main" id="nowMain">—</div>
-      <div class="now-sub" id="nowSub"></div>
+    <div class="welcome-banner">
+      <div class="avatar" id="welcomeAvatar">م</div>
+      <div style="flex:1">
+        <h3 id="welcomeName"></h3>
+        <p id="welcomeSub">تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە</p>
+      </div>
     </div>
 
-    <!-- Last submission mini-banner -->
-    <div class="last-banner" id="lastBanner" style="display:none">
-      <span id="lastBannerText"></span>
-      <button class="lb-close" onclick="document.getElementById('lastBanner').style.display='none'">✕</button>
-    </div>
-
-    <!-- Students -->
-    <div class="card">
-      <div class="card-header students-header">
-        <div>
-          <h3 id="studentsTitle">📋 قوتابیان</h3>
-          <div class="student-hint" id="studentsHint"></div>
-        </div>
-        <div class="header-tools">
-          <button class="tool-btn" id="btnSelectAll" onclick="selectAllStudents()">☑ هەمی</button>
-          <button class="tool-btn" id="btnClearAll" onclick="clearAllStudents()">☐ هیچ</button>
+    <div class="confirm-overlay" id="confirmOverlay">
+      <div class="confirm-box">
+        <div class="confirm-icon">🗑️</div>
+        <h3 id="confirmTitle">تومارکرن بسڕەوە؟</h3>
+        <p id="confirmMsg">ئەم کارە نابێتە پووچەلکرن.</p>
+        <div class="confirm-btns">
+          <button class="btn-conf-cancel" id="confirmCancelBtn" onclick="closeConfirm()">هەڵوەستان</button>
+          <button class="btn-conf-delete" id="confirmDeleteBtn" onclick="executeDelete()">🗑️ بسڕەوە</button>
         </div>
       </div>
-      <div class="card-body students-body">
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="step-badge">١</div>
+        <h3 id="step1">زانیارییێن دەرسێ</h3>
+      </div>
+      <div class="card-body lesson-body">
+        <input type="hidden" id="fDate">
+        <div class="form-row lesson-row">
+          <div class="form-group">
+            <label><span id="labelClass">گروپا پۆلێ</span> <span class="req">*</span></label>
+            <select class="form-control" id="fClass" onchange="onClassChange()">
+              <option value="">— هلبژێرە —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><span id="labelSubject">بابەت</span> <span class="req">*</span></label>
+            <select class="form-control" id="fSubject" onchange="onSubjectChange()">
+              <option value="">— هلبژێرە —</option>
+            </select>
+          </div>
+          <div class="form-group lecture-field">
+            <label><span id="labelLecture">ژمارەیا دەرسێ</span> <span class="req">*</span></label>
+            <select class="form-control" id="fLecture" onchange="saveFormState()">
+              <option value="">— هلبژێرە —</option>
+            </select>
+          </div>
+        </div>
+        <div class="today-chip">📅 <span id="todayLabel">Today</span>: <strong id="todayValue"></strong></div>
+          <div id="workingDayStatus" class="today-chip"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="step-badge">٢</div>
+        <h3 id="step2">قوتابیێن نەهاتی</h3>
+      </div>
+      <div class="card-body">
         <div class="students-area">
           <div class="students-area-header">
-            <div><h4 id="studentsAreaTitle"></h4></div>
-            <span class="students-count" id="absentCount">0</span>
+            <div><h4 id="studentsAreaTitle">📋 هلبژارنا پۆلێ</h4><div class="student-hint" id="studentsHint"></div></div>
+            <span class="students-count" id="absentCount">0 نەهاتی</span>
           </div>
+          <input type="text" class="form-control student-search" id="studentSearch"
+                 style="display:none;margin-bottom:9px;height:44px;line-height:44px;font-size:14px"
+                 oninput="filterStudentRows(this.value)" />
           <div id="studentsContainer">
-            <div class="no-students"><span class="icon">🎓</span><span id="noStudentsText"></span></div>
+            <div class="no-students">
+              <span class="icon">🎓</span>
+              <span id="noStudentsText">پۆلێ هلبژێرە دا کو لیستا قوتابیان دەرکەڤە</span>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
 
-    <!-- Recent submissions (collapsible) -->
-    <details class="recent-wrap" id="recentWrap" style="display:none">
-      <summary class="recent-summary">
-        <span>📋 <span id="recentTitle"></span></span>
+    <div class="absent-preview" id="absentPreview">
+      <h5 id="absentPreviewTitle">✗ قوتابیێن نەهاتی:</h5>
+      <div class="absent-pills" id="absentPills"></div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-secondary" onclick="resetForm()" id="btnReset">🔄 سفرکرن</button>
+      <button class="btn-submit" onclick="doSubmit()" id="btnSubmit">
+        <span id="btnSubmitText">📤 شاندن و پاشەکەفتکرن</span>
+      </button>
+    </div>
+
+    <div class="card recent-card" id="recentCard" style="display:none">
+      <div class="card-header recent-card-header">
+        <span class="recent-card-icon">📋</span>
+        <h3 id="recentTitle">تومارکرنێن ئەمرۆ</h3>
         <span class="recent-count-badge" id="recentCountBadge">0</span>
-      </summary>
-      <div id="recentCardBody"></div>
-    </details>
+      </div>
+      <div class="card-body recent-card-body" id="recentCardBody"></div>
+    </div>
 
   </div>
-</main>
 
-<!-- ═══ STICKY ACTION BAR: the two buttons a teacher actually needs ═══ -->
-<div class="action-bar" id="actionBar" style="display:none">
-  <button class="btn-all-present" id="btnAllPresent" onclick="submitForm(true)">
-    <span class="big" id="allPresentText">✅ هەمی هاتینە</span>
-    <span class="small" id="allPresentSub"></span>
-  </button>
-  <button class="btn-submit-absent" id="btnSubmit" onclick="submitForm(false)">
-    <span class="big" id="submitText">📤 شاندن</span>
-    <span class="small" id="submitSub"></span>
-  </button>
-</div>
-
-<!-- Delete confirm -->
-<div class="confirm-overlay" id="confirmOverlay">
-  <div class="confirm-box">
-    <div class="confirm-icon">🗑️</div>
-    <h3 id="confirmTitle"></h3>
-    <p id="confirmMsg"></p>
-    <div class="confirm-btns">
-      <button class="btn-conf-cancel" id="confirmCancelBtn" onclick="closeConfirm()"></button>
-      <button class="btn-conf-delete" id="confirmDeleteBtn" onclick="executeDelete()"></button>
+  <div class="success-wrap" id="screenSuccess" style="display:none">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <h2 id="successTitle">سەرکەفتن! تومار کرا</h2>
+      <p id="successSub">نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.</p>
+      <div class="success-details" id="successDetails"></div>
+      <button class="btn-new" onclick="newSubmission()" id="btnNew">✓ باشە</button>
     </div>
   </div>
-</div>
+</main>
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
 const LOGIN_URL = 'login.html';
-const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-const LECTURE_OPTIONS = ['Lecture 1','Lecture 2','Lecture 3','Lecture 4','Lecture 5','Lecture 6',
-  'Lectures 1-2 (Merged)','Lectures 3-4 (Merged)','Lectures 5-6 (Merged)'];
 
 const LANGS = {
-  ku:{dir:'rtl',htmlLang:'ku',
-    hInstName:'پەیمانگەها کومپیوتەرێ ل ئاکرێ',hSub:'سیستەما تومارکرنا نەهاتنێ',
-    teacherPrefix:'مامۆستا ',btnLogout:'🚪 دەرچوون',
-    lblClass:'🏫 پۆل',lblSubject:'📚 بابەت',lblLecture:'⏱ وانە',
-    studentsTitle:'📋 قوتابیێن نەهاتی',
-    studentsHint:'بۆ هلبژارتنا نەهاتی، ل سەر ناڤێ قوتابی بکەڤە',
-    noStudents:'پۆلێک هلبژێرە — لیستا قوتابیان دەرکەڤە',
-    selectClassFirst:'پۆلێک هلبژێرە',
-    absentLabel:'نەهاتي',
-    btnAllPresent:'✅ هەمی هاتینە',
-    allPresentSub:'شاندن بێ نەهاتی',
-    btnSubmit:'📤 شاندنا نەهاتی',
-    studentsWord:'قوتابی',
-    academicYearLabel:'ساڵا خوێندنی',
-    loadingData:'بارکرنا زانیاریان...',loadingSubmit:'شاندن...',loadingDel:'سڕینەوە...',
-    toastFill:'⚠️ پۆل، بابەت و وانە هلبژێرە!',
-    toastWeekend:'🚫 ئەمرۆ ڕۆژی کار نییە — تومارکرن نابێت.',
+  ku: {
+    dir:'rtl', htmlLang:'ku',
+    hInstName:'پەیمانگەها کومپیوتەرێ ل ئاکرێ',
+    hSub:'سیستەما تومارکرنا نەهاتنێ',
+    teacherPrefix:'مامۆستا ',
+    welcomeSub:'تکایە زانیاریێن دەرسێ داخل بکە و قوتابیێن نەهاتی هلبژێرە',
+    step1:'زانیارییێن دەرسێ', step2:'قوتابیێن نەهاتی',
+    labelDate:'بەروار', labelLecture:'ژمارەیا دەرسێ', labelSubject:'بابەت', labelClass:'گروپا پۆلێ',
+    placeholder:'— هلبژێرە —',
+    noStudents:'پۆلێ هلبژێرە دا کو لیستا قوتابیان دەرکەڤە',
+    studentsTitle:'هلبژارنا پۆلێ', absentLabel:'نەهاتی',
+    absentPreview:'✗ قوتابیێن نەهاتی:',
+    btnReset:'🔄 سفرکرن', btnSubmit:'📤 شاندن و پاشەکەفتکرن', btnUpdate:'💾 نویکرن و پاشەکەفتکرن',
+    successTitle:'سەرکەفتن! تومار کرا',
+    successSub:'نەهاتنا قوتابیان ب سەرکەفتی هاتە تومارکرن.',
+    btnNew:'✓ باشە', btnLogout:'🚪 دەرچوون',
+    fDate:'بەروار', fTeacher:'مامۆستە', fSubject:'بابەت', fLecture:'دەرس',
+    fClass:'پۆل', fAbsent:'ژمارەیا نەهاتی', students:'قوتابی',
+    loadingSubmit:'تومارکرنا نەهاتنێ...',
+    loadingData:'بارکرنا زانیاریان...',
+    loadingDel:'سڕینەوەی تومارکرن...',
+    loadingEdit:'ئامادەکرنا دەستکاریکرنێ...',
+    toastFill:'⚠️ تکایە هەمی خانەیێن پێدڤی داگرە!',
+    toastWeekend:'🚫 ئەمرۆ ڕۆژی کار نییە. تومارکرن نابێت.',
     toastDate:'⚠️ بەروارا تومارکرنێ دڤێت ئەمرۆ بیت.',
-    toastDuplicate:'⚠️ ئەم وانەیە پێشتر تومارکراوە!',
-    toastUnauthorized:'❌ دەستگەهشتن نەهاتیە پەسەندکرن. دوبارە بچۆ ژوور.',
+    toastDuplicate:'⚠️ ئەم دەرسێ پێشتر تومار کراوە!',
+    toastUnauthorized:'❌ دەستگەهشتن نەهاتیە پەسەندکرن. تکایە دوبارە بچۆ ژوور.',
     toastError:'❌ پەیوەندی ب سێرڤەری نەهاتە کرن!',
-    toastSaved:'✅ هاتە تومارکرن!',
-    toastUpdated:'✅ هاتە نویکرن!',
-    toastDeleted:'✅ هاتە سڕینەوە.',
-    toastDelFail:'❌ سڕینەوە سەرنەکەفت!',
-    dayOff:'🏖️ ئەمرۆ ڕۆژی پشوویە — مکتەب نییە',
-    dayOn:'✅ ئەمرۆ ڕۆژی کارە',
     recentTitle:'تومارکرنێن ئەمرۆ',
-    thLecture:'وانە',thSubject:'بابەت',thAbsent:'نەهاتي',
-    btnEdit:'✏️ دەستکاری',btnDelete:'🗑️',
-    confirmTitle:'تومارکرن بسڕەوە؟',confirmMsg:'ئەم کارە نابێتە پووچەلکرن.',confirmCancel:'هەڵوەستان',confirmDelete:'🗑️ بسڕەوە',
+    thLecture:'دەرس', thSubject:'بابەت', thClass:'پۆل', thAbsentStudents:'قوتابیێن نەهاتی',
+    thActions:'کارەکان',
+    btnEdit:'✏️ دەستکاری', confirmDelete:'🗑️ بسڕەوە',
+    confirmTitle:'تومارکرن بسڕەوە؟', confirmMsg:'ئەم کارە نابێتە پووچەلکرن.',
+    confirmCancel:'هەڵوەستان',
+    toastDelOk:'✅ تومارکرن هاتە سڕینەوە.', toastDelFail:'❌ سڕینەوە سەرنەکەفت!',
+    toastEditReady:'✏️ زانیاری هاتە داخلکرن — دەستکاری بکە و دوبارە بنێرە.',
     noneAbsent:'هیچ نەهاتنێک نەبوو',
-    editMode:'💾 نویکرن و پاشەکەفتکرن',
-    nowWaiting:'پۆل، بابەت و وانە هلبژێرە دا دەست پێ بکەی',
-    lastSubmitted:'✓ دوایین هاتە شاندن',
-    allAbsentLabel:'نەهاتي هەلبژارت',
-    nextLecture:'وانەیا نوی هاتە هلبژارتن',
-    editLoaded:'✏️ زانیاری هاتە داخلکرن — دەستکاری بکە و دوبارە بنێرە.'
+    academicYearLabel:'ساڵا خوێندنی', todayLabel:'ئەمرۆ', studentsHint:'بۆ هلبژارتنا نەهاتی، ل سەر ناڤێ قوتابی بکەڤە',
+    studentSearchPH:'🔍 گەڕان ب ناڤێ قوتابی...', noSearchResults:'قوتابیەک ب ڤی ناڤی نەهاتە دیتن'
   },
-  ar:{dir:'rtl',htmlLang:'ar',
-    hInstName:'معهد عقرة للكمبيوتر',hSub:'نظام تسجيل الغياب',
-    teacherPrefix:'الأستاذ ',btnLogout:'🚪 خروج',
-    lblClass:'🏫 الشعبة',lblSubject:'📚 المادة',lblLecture:'⏱ محاضرة',
-    studentsTitle:'📋 الطلاب الغائبون',
-    studentsHint:'اضغط على اسم الطالب لتحديد غيابه',
-    noStudents:'اختر الشعبة لعرض قائمة الطلاب',
-    selectClassFirst:'اختر الشعبة',
-    absentLabel:'غائب',
-    btnAllPresent:'✅ الجميع حاضر',
-    allPresentSub:'إرسال بدون غياب',
-    btnSubmit:'📤 إرسال الغياب',
-    studentsWord:'طالب',
-    academicYearLabel:'السنة الدراسية',
-    loadingData:'جارٍ تحميل البيانات...',loadingSubmit:'جارٍ الإرسال...',loadingDel:'جارٍ الحذف...',
-    toastFill:'⚠️ اختر الشعبة والمادة والمحاضرة!',
-    toastWeekend:'🚫 اليوم إجازة حسب إعدادات المعهد — لا يمكن التسجيل.',
+  ar: {
+    dir:'rtl', htmlLang:'ar',
+    hInstName:'معهد عقرة للكمبيوتر', hSub:'نظام تسجيل الغياب',
+    teacherPrefix:'الأستاذ ', welcomeSub:'يرجى إدخال معلومات الدرس واختيار الطلاب الغائبين',
+    step1:'معلومات الدرس', step2:'الطلاب الغائبون',
+    labelDate:'التاريخ', labelLecture:'رقم المحاضرة', labelSubject:'المادة', labelClass:'المجموعة',
+    placeholder:'— اختر —', noStudents:'اختر المجموعة لعرض قائمة الطلاب',
+    studentsTitle:'اختيار المجموعة', absentLabel:'غائب', absentPreview:'✗ الطلاب الغائبون:',
+    btnReset:'🔄 إعادة تعيين', btnSubmit:'📤 إرسال وحفظ', btnUpdate:'💾 تحديث وحفظ',
+    successTitle:'تم الحفظ بنجاح!', successSub:'تم تسجيل غياب الطلاب بنجاح.',
+    btnNew:'✓ حسناً', btnLogout:'🚪 تسجيل الخروج',
+    fDate:'التاريخ', fTeacher:'المعلم', fSubject:'المادة', fLecture:'المحاضرة',
+    fClass:'المجموعة', fAbsent:'عدد الغائبين', students:'طالب',
+    loadingSubmit:'جارٍ حفظ الغياب...', loadingData:'جارٍ تحميل البيانات...',
+    loadingDel:'جارٍ حذف السجل...', loadingEdit:'جارٍ تحضير التعديل...',
+    toastFill:'⚠️ يرجى ملء جميع الحقول المطلوبة!',
+    toastWeekend:'🚫 اليوم يوم عطلة حسب إعدادات المعهد. لا يمكن التسجيل.',
     toastDate:'⚠️ يجب أن يكون تاريخ التسجيل هو تاريخ اليوم.',
     toastDuplicate:'⚠️ تم تسجيل هذه المحاضرة مسبقاً!',
-    toastUnauthorized:'❌ انتهت صلاحية الدخول. سجّل الدخول مجدداً.',
+    toastUnauthorized:'❌ انتهت صلاحية الدخول. يرجى تسجيل الدخول مرة أخرى.',
     toastError:'❌ فشل الاتصال بالخادم!',
-    toastSaved:'✅ تم الحفظ!',
-    toastUpdated:'✅ تم التحديث!',
-    toastDeleted:'✅ تم الحذف.',
-    toastDelFail:'❌ فشل الحذف!',
-    dayOff:'🏖️ اليوم إجازة — لا يوجد دوام',
-    dayOn:'✅ اليوم يوم دوام',
     recentTitle:'سجلات اليوم',
-    thLecture:'محاضرة',thSubject:'مادة',thAbsent:'غائب',
-    btnEdit:'✏️ تعديل',btnDelete:'🗑️',
-    confirmTitle:'حذف السجل؟',confirmMsg:'لا يمكن التراجع عن هذا.',confirmCancel:'إلغاء',confirmDelete:'🗑️ حذف',
-    noneAbsent:'لا غياب',
-    editMode:'💾 تحديث وحفظ',
-    nowWaiting:'اختر الشعبة والمادة والمحاضرة للبدء',
-    lastSubmitted:'✓ آخر إرسال',
-    allAbsentLabel:'محدد كغائب',
-    nextLecture:'تم اختيار المحاضرة التالية',
-    editLoaded:'✏️ تم تحميل البيانات — عدّل وأعد الإرسال.'
+    thLecture:'المحاضرة', thSubject:'المادة', thClass:'المجموعة', thAbsentStudents:'الطلاب الغائبون',
+    thActions:'الإجراءات', btnEdit:'✏️ تعديل', confirmDelete:'🗑️ حذف',
+    confirmTitle:'حذف السجل؟', confirmMsg:'لا يمكن التراجع عن هذا.',
+    confirmCancel:'إلغاء', toastDelOk:'✅ تم حذف السجل.', toastDelFail:'❌ فشل الحذف!',
+    toastEditReady:'✏️ تم تحميل البيانات — عدّل وأعد الإرسال.',
+    noneAbsent:'لا غياب', academicYearLabel:'السنة الدراسية', todayLabel:'اليوم', studentsHint:'اضغط على اسم الطالب لتغيير حالته',
+    studentSearchPH:'🔍 ابحث عن اسم الطالب...', noSearchResults:'لا يوجد طالب بهذا الاسم'
   },
-  en:{dir:'ltr',htmlLang:'en',
-    hInstName:'Akre Computer Institute',hSub:'Absence Registration System',
-    teacherPrefix:'Teacher ',btnLogout:'🚪 Logout',
-    lblClass:'🏫 Class',lblSubject:'📚 Subject',lblLecture:'⏱ Lecture',
-    studentsTitle:'📋 Absent Students',
-    studentsHint:'Tap a student to mark them absent',
-    noStudents:'Select a class to load the student list',
-    selectClassFirst:'Select a class',
-    absentLabel:'absent',
-    btnAllPresent:'✅ All Present',
-    allPresentSub:'Submit with no absences',
-    btnSubmit:'📤 Submit Absences',
-    studentsWord:'students',
-    academicYearLabel:'Academic Year',
-    loadingData:'Loading data...',loadingSubmit:'Submitting...',loadingDel:'Deleting...',
-    toastFill:'⚠️ Pick class, subject and lecture!',
-    toastWeekend:'🚫 Today is a configured non-working day — no submissions.',
+  en: {
+    dir:'ltr', htmlLang:'en',
+    hInstName:'Akre Computer Institute', hSub:'Absence Registration System',
+    teacherPrefix:'Teacher ', welcomeSub:'Fill in lesson details and select absent students',
+    step1:'Lesson Details', step2:'Absent Students',
+    labelDate:'Date', labelLecture:'Lecture No.', labelSubject:'Subject', labelClass:'Class Group',
+    placeholder:'— Select —', noStudents:'Select a class to show the student list',
+    studentsTitle:'Select Class', absentLabel:'absent', absentPreview:'✗ Absent students:',
+    btnReset:'🔄 Reset', btnSubmit:'📤 Submit', btnUpdate:'💾 Update & Save',
+    successTitle:'Submitted Successfully!', successSub:'Student absences have been recorded.',
+    btnNew:'✓ OK', btnLogout:'🚪 Logout',
+    fDate:'Date', fTeacher:'Teacher', fSubject:'Subject', fLecture:'Lecture',
+    fClass:'Class', fAbsent:'Absent Count', students:'students',
+    loadingSubmit:'Saving absence...', loadingData:'Loading data...',
+    loadingDel:'Deleting submission...', loadingEdit:'Preparing edit...',
+    toastFill:'⚠️ Please fill all required fields!',
+    toastWeekend:'🚫 Today is a configured non-working day. No submissions.',
     toastDate:'⚠️ Attendance date must be today.',
-    toastDuplicate:'⚠️ This lecture was already submitted!',
-    toastUnauthorized:'❌ Session expired. Please log in again.',
-    toastError:'❌ Connection failed!',
-    toastSaved:'✅ Submitted!',
-    toastUpdated:'✅ Updated!',
-    toastDeleted:'✅ Deleted.',
-    toastDelFail:'❌ Delete failed!',
-    dayOff:'🏖️ Today is a non-working day — no school',
-    dayOn:'✅ Today is a working day',
+    toastDuplicate:'⚠️ This lesson was already submitted!',
+    toastUnauthorized:'❌ Your session is no longer valid. Please log in again.',
+    toastError:'❌ Connection failed! Please try again.',
     recentTitle:"Today's Submissions",
-    thLecture:'Lecture',thSubject:'Subject',thAbsent:'Absent',
-    btnEdit:'✏️ Edit',btnDelete:'🗑️ Delete',
-    confirmTitle:'Delete submission?',confirmMsg:'This cannot be undone.',confirmCancel:'Cancel',confirmDelete:'🗑️ Delete',
-    noneAbsent:'No absences',
-    editMode:'💾 Update & Save',
-    nowWaiting:'Pick class, subject and lecture to start',
-    lastSubmitted:'✓ Last submitted',
-    allAbsentLabel:'marked absent',
-    nextLecture:'Next lecture selected',
-    editLoaded:'✏️ Data loaded — edit and resubmit.'
+    thLecture:'Lecture', thSubject:'Subject', thClass:'Class', thAbsentStudents:'Absent Students',
+    thActions:'Actions', btnEdit:'✏️ Edit', confirmDelete:'🗑️ Delete',
+    confirmTitle:'Delete submission?', confirmMsg:'This cannot be undone.',
+    confirmCancel:'Cancel', toastDelOk:'✅ Submission deleted.', toastDelFail:'❌ Delete failed!',
+    toastEditReady:'✏️ Data loaded — fix and resubmit.',
+    noneAbsent:'No absences', academicYearLabel:'Academic Year', todayLabel:'Today', studentsHint:'Tap a student row to mark absent or present',
+    studentSearchPH:'🔍 Search student name...', noSearchResults:'No student matches that name'
   }
 };
+
+// Canonical values sent to the server (must stay stable so duplicate
+// checks and historical spreadsheet rows keep matching) vs. the label
+// shown to the teacher, which is localized per language.
+const LECTURE_VALUES = ['Lecture 1','Lecture 2','Lecture 3','Lecture 4','Lecture 5','Lecture 6',
+  'Lectures 1-2 (Merged)','Lectures 3-4 (Merged)','Lectures 5-6 (Merged)'];
+const LECTURE_LABELS = {
+  ku: ['دەرسا ١','دەرسا ٢','دەرسا ٣','دەرسا ٤','دەرسا ٥','دەرسا ٦',
+    'دەرسا ١-٢ (تێکەلکری)','دەرسا ٣-٤ (تێکەلکری)','دەرسا ٥-٦ (تێکەلکری)'],
+  ar: ['المحاضرة 1','المحاضرة 2','المحاضرة 3','المحاضرة 4','المحاضرة 5','المحاضرة 6',
+    'المحاضرة 1-2 (مدمجة)','المحاضرة 3-4 (مدمجة)','المحاضرة 5-6 (مدمجة)'],
+  en: ['Lecture 1','Lecture 2','Lecture 3','Lecture 4','Lecture 5','Lecture 6',
+    'Lectures 1-2 (Merged)','Lectures 3-4 (Merged)','Lectures 5-6 (Merged)']
+};
+
+function populateLectureOptions() {
+  const sel = document.getElementById('fLecture');
+  const current = sel.value;
+  const labels = LECTURE_LABELS[currentLang] || LECTURE_LABELS.en;
+  sel.innerHTML = '';
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = LANGS[currentLang].placeholder;
+  sel.appendChild(ph);
+  LECTURE_VALUES.forEach((value, i) => {
+    const o = document.createElement('option');
+    o.value = value;
+    o.textContent = labels[i] || value;
+    sel.appendChild(o);
+  });
+  if (LECTURE_VALUES.includes(current)) sel.value = current;
+}
 
 let currentLang = localStorage.getItem('aci_lang') || 'ku';
 let currentTeacher = null;
 let STUDENTS = {};
 let CLASS_SUBJECT_MAP = {};
-let WORKING_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
 let selectedAbsent = new Set();
 let todayRows = [];
 let pendingDeleteRow = null;
 let pendingEditRow = null;
+let WORKING_DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
 
-// Session selections — locked in place, auto-advance lecture after submit
-let sel = { cls:'', subject:'', lecture:'' };
-const stateKey = () => 'aci_tstate_' + (currentTeacher ? currentTeacher.username : '');
+function getAcademicYear() {
+  const now = new Date();
+  const y = now.getFullYear();
+  return now.getMonth() >= 8 ? `${y}-${y+1}` : `${y-1}-${y}`;
+}
 
-// ── basics ─────────────────────────────────────────────
-function getAcademicYear(){const n=new Date(),y=n.getFullYear();return n.getMonth()>=8?y+'-'+(y+1):(y-1)+'-'+y;}
-function token(){return sessionStorage.getItem('aci_token')||'';}
-function checkAuth(){
-  if(!token()||sessionStorage.getItem('aci_role')!=='teacher'){window.location.href=LOGIN_URL;return false;}
-  try{currentTeacher=JSON.parse(sessionStorage.getItem('aci_teacher')||'null');}catch(e){currentTeacher=null;}
-  if(!currentTeacher){window.location.href=LOGIN_URL;return false;}
+function token() {
+  return sessionStorage.getItem('aci_token') || '';
+}
+
+function checkAuth() {
+  const t = token();
+  const role = sessionStorage.getItem('aci_role');
+  if (!t || role !== 'teacher') {
+    window.location.href = LOGIN_URL;
+    return false;
+  }
+
+  try {
+    const raw = sessionStorage.getItem('aci_teacher');
+    currentTeacher = raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    currentTeacher = null;
+  }
+
+  if (!currentTeacher) {
+    window.location.href = LOGIN_URL;
+    return false;
+  }
   return true;
 }
-function doLogout(){sessionStorage.clear();sessionStorage.setItem('explicit_logout','1');window.location.href=LOGIN_URL;}
-async function apiGet(params){
-  const q=new URLSearchParams(params||{});q.set('token',token());
-  const resp=await fetch(`${SCRIPT_URL}?${q.toString()}`,{method:'GET',cache:'no-store'});
-  const text=(await resp.text()).trim();
-  if(!text) throw new Error('empty');
-  let data;try{data=JSON.parse(text);}catch(_){return text;}
-  if(data&&(data.error==='Unauthorized'||data.error==='unauthorized')) throw new Error('Unauthorized');
+
+function doLogout() {
+  sessionStorage.clear();
+  sessionStorage.setItem('explicit_logout', '1');
+  window.location.href = LOGIN_URL;
+}
+
+async function apiGet(params) {
+  const q = new URLSearchParams(params || {});
+  q.set('token', token());
+
+  const response = await fetch(`${SCRIPT_URL}?${q.toString()}`, {
+    method: 'GET',
+    cache: 'no-store'
+  });
+
+  const text = (await response.text()).trim();
+
+  if (!text) throw new Error('Empty server response');
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (_) {
+    return text;
+  }
+
+  if (data && (data.error === 'Unauthorized' || data.error === 'unauthorized')) {
+    throw new Error('Unauthorized');
+  }
+
   return data;
 }
-function normalize(v){return String(v==null?'':v).trim().toLowerCase();}
-function todayISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function formatDateForDisplay(iso){const p=String(iso).split('-');return p.length===3?`${parseInt(p[1])}/${parseInt(p[2])}/${p[0]}`:iso;}
-function isWorkingDay(){return WORKING_DAYS.some(d=>normalize(d)===normalize(DAY_NAMES[new Date().getDay()]));}
-function getSubjectsForClass(cls){
-  if(CLASS_SUBJECT_MAP[cls]) return CLASS_SUBJECT_MAP[cls];
-  const m=String(cls).toLowerCase().match(/^(\d+)([a-z]+)$/);
-  if(m&&m[2].length===1&&CLASS_SUBJECT_MAP[m[1]]) return CLASS_SUBJECT_MAP[m[1]];
-  return [];
-}
 
-// ── toast / loading ────────────────────────────────────
-let toastTimer;
-function showToast(msg,type){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),3000);
-}
-function showLoading(msg){document.getElementById('loadingText').textContent=msg||'...';document.getElementById('loadingOverlay').classList.add('show');}
-function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
+function setLang(lang) {
+  if (!LANGS[lang]) return;
 
-// ── language ───────────────────────────────────────────
-function setLang(lang){
-  if(!LANGS[lang])return;
-  currentLang=lang;localStorage.setItem('aci_lang',lang);
-  const L=LANGS[lang];
-  document.documentElement.dir=L.dir;
-  document.documentElement.lang=L.htmlLang;
-  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
-  set('hInstName',L.hInstName);set('hSub',L.hSub);
-  set('hYear',`${L.academicYearLabel}: ${getAcademicYear()}`);
-  set('lblClass',L.lblClass);set('lblSubject',L.lblSubject);set('lblLecture',L.lblLecture);
-  set('studentsTitle',L.studentsTitle);set('studentsHint',L.studentsHint);
-  set('noStudentsText',sel.cls?L.noStudents:L.selectClassFirst);
-  set('btnLogout',L.btnLogout);
-  set('allPresentText',L.btnAllPresent);set('allPresentSub',L.allPresentSub);
-  set('recentTitle',L.recentTitle);
-  set('confirmTitle',L.confirmTitle);set('confirmMsg',L.confirmMsg);
-  set('confirmCancelBtn',L.confirmCancel);set('confirmDeleteBtn',L.confirmDelete);
-  set('sbDate','📅 '+formatDateForDisplay(todayISO()));
-  const name=currentTeacher?(currentTeacher.arabicName||currentTeacher.displayName||currentTeacher.username):'';
-  set('headerUserName',name);
-  document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',['ku','ar','en'][i]===lang));
-  renderDayBanner();renderNowCard();updateButtons();renderStudents();renderRecentRows();
-}
+  currentLang = lang;
+  localStorage.setItem('aci_lang', lang);
 
-// ── day banner ─────────────────────────────────────────
-function renderDayBanner(){
-  const b=document.getElementById('dayBanner');
-  const L=LANGS[currentLang];
-  if(isWorkingDay()){b.style.display='none';return;}
-  b.style.display='block';
-  b.innerHTML=`<span>${L.dayOff}</span><span class="db-date">📅 ${formatDateForDisplay(todayISO())}</span>`;
-}
+  const L = LANGS[lang];
+  document.documentElement.dir = L.dir;
+  document.documentElement.lang = L.htmlLang;
 
-// ── chips ──────────────────────────────────────────────
-function makeChips(containerId,items,selected,onPick,labelFn){
-  const el=document.getElementById(containerId);
-  el.innerHTML='';
-  items.forEach(item=>{
-    const b=document.createElement('button');
-    b.className='chip'+(normalize(item)===normalize(selected)?' active':'');
-    b.textContent=labelFn?labelFn(item):item;
-    b.onclick=()=>onPick(item);
-    el.appendChild(b);
+  setText('hInstName', L.hInstName);
+  setText('hSub', L.hSub);
+  setText('hYear', `${L.academicYearLabel}: ${getAcademicYear()}`);
+  setText('step1', L.step1);
+  setText('step2', L.step2);
+  setText('labelDate', L.labelDate);
+  setText('labelLecture', L.labelLecture);
+  setText('labelSubject', L.labelSubject);
+  setText('labelClass', L.labelClass);
+  setText('studentsHint', L.studentsHint || '');
+  document.getElementById('studentSearch').placeholder = L.studentSearchPH || '';
+  setText('todayLabel', L.todayLabel || 'Today');
+  setText('todayValue', formatDateForDisplay(todayISO()));
+  setText('welcomeSub', L.welcomeSub);
+  setText('btnReset', L.btnReset);
+  setText('btnSubmitText', pendingEditRow ? (L.btnUpdate || L.btnSubmit) : L.btnSubmit);
+  setText('successTitle', L.successTitle);
+  setText('successSub', L.successSub);
+  setText('btnNew', L.btnNew);
+  setText('btnLogout', L.btnLogout);
+  setText('recentTitle', L.recentTitle);
+  setText('noStudentsText', L.noStudents);
+  setText('absentPreviewTitle', L.absentPreview);
+  setText('confirmTitle', L.confirmTitle);
+  setText('confirmMsg', L.confirmMsg);
+  setText('confirmCancelBtn', L.confirmCancel);
+  setText('confirmDeleteBtn', L.confirmDelete);
+
+  document.querySelectorAll('select.form-control option[value=""]').forEach(o => {
+    o.textContent = L.placeholder;
   });
-}
-function renderClassChips(){
-  const classes=(currentTeacher&&currentTeacher.classes)||[];
-  makeChips('classChips',classes,sel.cls,c=>{sel.cls=c;onSessionChange('cls');},null);
-}
-function renderSubjectChips(){
-  const assigned=((currentTeacher&&currentTeacher.subjects)||[]);
-  let allowed=assigned;
-  if(sel.cls){
-    const classSubs=getSubjectsForClass(sel.cls).map(normalize);
-    allowed=assigned.filter(s=>classSubs.includes(normalize(s)));
+  populateLectureOptions();
+
+  if (currentTeacher) {
+    const name = currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.username || '';
+    setText('welcomeName', L.teacherPrefix + name);
+    setText('headerUserName', name);
   }
-  makeChips('subjectChips',allowed,sel.subject,s=>{sel.subject=s;onSessionChange('subject');},null);
-}
-function renderLectureChips(){
-  makeChips('lectureChips',LECTURE_OPTIONS,sel.lecture,l=>{sel.lecture=l;onSessionChange('lecture');},l=>l.replace('Lecture','').replace('(Merged)','⇄').replace('Lectures','').trim());
-}
-function onSessionChange(what){
-  if(what==='cls'){
-    const subs=((currentTeacher&&currentTeacher.subjects)||[]).map(normalize);
-    const allowed=sel.cls?getSubjectsForClass(sel.cls):[];
-    if(!allowed.some(s=>normalize(s)===normalize(sel.subject)&&subs.includes(normalize(s)))){
-      const first=allowed.find(s=>subs.includes(normalize(s)));
-      sel.subject=first||'';
-    }
-    selectedAbsent.clear();pendingEditRow=null;
-    renderSubjectChips();renderStudents();updateButtons();
-  }
-  if(what==='lecture'&&pendingEditRow){pendingEditRow=null;updateButtons();}
-  saveSessionState();renderNowCard();renderClassChips();renderLectureChips();
-}
-function saveSessionState(){
-  if(!currentTeacher)return;
-  sessionStorage.setItem(stateKey(),JSON.stringify({cls:sel.cls,subject:sel.subject,lecture:sel.lecture}));
-}
-function restoreSessionState(){
-  try{
-    const s=JSON.parse(sessionStorage.getItem(stateKey())||'null');
-    if(s){sel.cls=s.cls||'';sel.subject=s.subject||'';sel.lecture=s.lecture||'';}
-  }catch(_){}
+
+  document.querySelectorAll('.lang-btn').forEach((b, i) => {
+    b.classList.toggle('active', ['ku','ar','en'][i] === lang);
+  });
+
+  updateAbsentCount();
+  renderAbsentPreview();
+  if (todayRows.length) renderRecentRows();
 }
 
-// ── now card ───────────────────────────────────────────
-function renderNowCard(){
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value == null ? '' : value;
+}
+
+function todayISO() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function isWorkingDay(){
+  const names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today=names[new Date().getDay()];
+  return WORKING_DAYS.some(d=>normalize(d)===normalize(today));
+}
+function isWeekend(){ return !isWorkingDay(); }
+
+function updateWorkingDayStatus(){
+  const el=document.getElementById('workingDayStatus');
+  if(!el) return;
   const L=LANGS[currentLang];
-  const main=document.getElementById('nowMain'),sub=document.getElementById('nowSub');
-  if(!sel.cls||!sel.subject||!sel.lecture){
-    main.textContent='⬆️ '+L.nowWaiting;sub.textContent='';
+  const ok=isWorkingDay();
+  el.textContent=ok ? '✓ '+(currentLang==='ar'?'يوم دوام':currentLang==='en'?'Working day':'ڕۆژی کارە') : '🚫 '+(currentLang==='ar'?'عطلة':currentLang==='en'?'Non-working day':'ڕۆژی پشوویە');
+  el.style.color=ok?'#24864c':'#c83b42';
+}
+
+function formatDateForDisplay(iso) {
+  if (!iso) return '';
+  const p = String(iso).split('-');
+  if (p.length !== 3) return iso;
+  return `${parseInt(p[1],10)}/${parseInt(p[2],10)}/${p[0]}`;
+}
+
+async function init() {
+  if (!checkAuth()) return;
+
+  setLang(currentLang);
+
+  const date = document.getElementById('fDate');
+  date.value = todayISO();
+  date.min = todayISO();
+  date.max = todayISO();
+
+  document.getElementById('screenSubmit').style.display = '';
+  loadRowsFromStorage();
+
+  // Both calls only read data and don't depend on each other, so fire
+  // them together instead of one after another — roughly halves the
+  // wait on a slow connection / cold Apps Script start.
+  await Promise.all([loadTeacherData(), loadTodayRows()]);
+
+  populateTeacherFields();
+  restoreFormState();
+}
+
+async function loadTeacherData() {
+  const L = LANGS[currentLang];
+  showLoading(L.loadingData);
+
+  try {
+    const data = await apiGet({action:'getTeacherData'});
+
+    if (!data || data.error) {
+      throw new Error(data && data.error ? data.error : 'Teacher data unavailable');
+    }
+
+    if (data.teacher) {
+      currentTeacher = data.teacher;
+      sessionStorage.setItem('aci_teacher', JSON.stringify(currentTeacher));
+    }
+
+    STUDENTS = data.students || {};
+    CLASS_SUBJECT_MAP = data.classSubjectMap || {};
+    WORKING_DAYS = Array.isArray(data.workingDays) && data.workingDays.length ? data.workingDays : WORKING_DAYS;
+    updateWorkingDayStatus();
+
+    sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
+    sessionStorage.setItem('aci_class_subject_map', JSON.stringify(CLASS_SUBJECT_MAP));
+
+    updateTeacherHeader();
+  } catch (err) {
+    console.error('loadTeacherData:', err);
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(L.toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+      return;
+    }
+
+    // Do not use the old public roster endpoint.
+    try {
+      const cached = JSON.parse(sessionStorage.getItem('aci_students') || '{}');
+      const cachedMap = JSON.parse(sessionStorage.getItem('aci_class_subject_map') || '{}');
+      STUDENTS = cached || {};
+      CLASS_SUBJECT_MAP = cachedMap || {};
+    } catch (_) {}
+
+    if (!Object.keys(STUDENTS).length) {
+      showToast(L.toastError, 'error');
+    }
+  } finally {
+    hideLoading();
+  }
+}
+
+function updateTeacherHeader() {
+  const name = currentTeacher
+    ? (currentTeacher.arabicName || currentTeacher.displayName || currentTeacher.username || '')
+    : '';
+
+  setText('welcomeName', LANGS[currentLang].teacherPrefix + name);
+  setText('welcomeAvatar', name.charAt(0) || 'م');
+  setText('headerUserName', name);
+}
+
+function populateTeacherFields() {
+  const subjectSel = document.getElementById('fSubject');
+  const classSel = document.getElementById('fClass');
+
+  subjectSel.innerHTML = '';
+  classSel.innerHTML = '';
+
+  const placeholder = LANGS[currentLang].placeholder;
+
+  const so = document.createElement('option');
+  so.value = '';
+  so.textContent = placeholder;
+  subjectSel.appendChild(so);
+
+  const co = document.createElement('option');
+  co.value = '';
+  co.textContent = placeholder;
+  classSel.appendChild(co);
+
+  const classes = Array.isArray(currentTeacher?.classes) ? currentTeacher.classes : [];
+  classes.forEach(cls => {
+    const o = document.createElement('option');
+    o.value = cls;
+    o.textContent = cls;
+    classSel.appendChild(o);
+  });
+
+  const subjects = Array.isArray(currentTeacher?.subjects) ? currentTeacher.subjects : [];
+  subjects.forEach(sub => {
+    const o = document.createElement('option');
+    o.value = sub;
+    o.textContent = sub;
+    subjectSel.appendChild(o);
+  });
+
+  filterSubjectsForClass();
+}
+
+function onClassChange() {
+  selectedAbsent.clear();
+  filterSubjectsForClass();
+
+  const cls = document.getElementById('fClass').value;
+  renderStudents(cls);
+  updateAbsentCount();
+  renderAbsentPreview();
+  saveFormState();
+}
+
+function onSubjectChange() {
+  saveFormState();
+}
+
+function filterSubjectsForClass() {
+  const cls = document.getElementById('fClass').value;
+  const subjectSel = document.getElementById('fSubject');
+  const current = subjectSel.value;
+
+  const assigned = Array.isArray(currentTeacher?.subjects) ? currentTeacher.subjects : [];
+  let allowed = assigned.slice();
+
+  if (cls && Array.isArray(CLASS_SUBJECT_MAP[cls])) {
+    const classSubjects = CLASS_SUBJECT_MAP[cls].map(normalize);
+    allowed = assigned.filter(s => classSubjects.includes(normalize(s)));
+  }
+
+  subjectSel.innerHTML = '';
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = LANGS[currentLang].placeholder;
+  subjectSel.appendChild(ph);
+
+  allowed.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s;
+    o.textContent = s;
+    subjectSel.appendChild(o);
+  });
+
+  if (allowed.includes(current)) subjectSel.value = current;
+}
+
+function normalize(v) {
+  return String(v == null ? '' : v).trim().toLowerCase();
+}
+
+function renderStudents(cls, preSelected) {
+  const L = LANGS[currentLang];
+  const con = document.getElementById('studentsContainer');
+  const searchBox = document.getElementById('studentSearch');
+
+  if (!cls || !Array.isArray(STUDENTS[cls])) {
+    con.innerHTML = '';
+    const box = document.createElement('div');
+    box.className = 'no-students';
+    const icon = document.createElement('span'); icon.className = 'icon'; icon.textContent = '🎓';
+    const msg = document.createElement('span'); msg.id = 'noStudentsText'; msg.textContent = L.noStudents;
+    box.appendChild(icon); box.appendChild(msg); con.appendChild(box);
+    setText('studentsAreaTitle', '📋 ' + L.studentsTitle);
+    searchBox.style.display = 'none';
+    searchBox.value = '';
     return;
   }
-  main.textContent=`${sel.cls}  •  ${sel.subject}  •  ${sel.lecture}`;
-  const total=sel.cls&&STUDENTS[sel.cls]?STUDENTS[sel.cls].length:0;
-  sub.textContent=`📅 ${formatDateForDisplay(todayISO())}  •  ${total} ${L.studentsWord}  •  ${pendingEditRow?'✏️':'•'}`;
-}
 
-// ── students ───────────────────────────────────────────
-function renderStudents(preSelected){
-  const L=LANGS[currentLang];
-  const con=document.getElementById('studentsContainer');
-  const selected=preSelected||selectedAbsent;
-  if(!sel.cls||!Array.isArray(STUDENTS[sel.cls])){
-    con.innerHTML=`<div class="no-students"><span class="icon">🎓</span><span>${L.noStudents}</span></div>`;
-    document.getElementById('studentsAreaTitle').textContent=L.selectClassFirst;
-    updateAbsentCount();return;
-  }
-  const list=STUDENTS[sel.cls];
-  document.getElementById('studentsAreaTitle').textContent=`${sel.cls} — ${list.length} ${L.studentsWord}`;
-  const grid=document.createElement('div');grid.className='students-grid';
-  list.forEach((name,i)=>{
-    const row=document.createElement('button');
-    row.type='button';
-    row.className='student-check'+(selected.has(name)?' checked':'');
-    row.innerHTML=`<span class="student-no">${String(i+1).padStart(2,'0')}</span><span class="sname"></span>`;
-    row.querySelector('.sname').textContent=name;
-    row.onclick=()=>{
-      if(selectedAbsent.has(name))selectedAbsent.delete(name);else selectedAbsent.add(name);
-      row.classList.toggle('checked',selectedAbsent.has(name));
-      updateAbsentCount();updateButtons();
+  const list = STUDENTS[cls];
+  const selected = preSelected || selectedAbsent;
+  setText('studentsAreaTitle', `📋 ${cls} — ${list.length} ${L.students}`);
+
+  searchBox.value = '';
+  searchBox.style.display = list.length > 6 ? '' : 'none';
+
+  const grid = document.createElement('div');
+  grid.className = 'students-grid';
+
+  list.forEach((name, index) => {
+    const row = document.createElement('label');
+    row.className = 'student-check' + (selected.has(name) ? ' checked' : '');
+    row.dataset.name = name.toLowerCase();
+    row.setAttribute('role','button');
+    row.setAttribute('tabindex','0');
+    row.setAttribute('aria-pressed', selected.has(name) ? 'true' : 'false');
+
+    const number = document.createElement('span');
+    number.className = 'student-no';
+    number.textContent = String(index + 1).padStart(2,'0');
+
+    const span = document.createElement('span');
+    span.className = 'sname';
+    span.textContent = name;
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = name;
+    cb.checked = selected.has(name);
+
+    row.appendChild(number); row.appendChild(span); row.appendChild(cb);
+
+    const toggle = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (selectedAbsent.has(name)) selectedAbsent.delete(name);
+      else selectedAbsent.add(name);
+      row.classList.toggle('checked', selectedAbsent.has(name));
+      cb.checked = selectedAbsent.has(name);
+      row.setAttribute('aria-pressed', selectedAbsent.has(name) ? 'true' : 'false');
+      updateAbsentCount(); renderAbsentPreview();
     };
+
+    row.addEventListener('click', toggle);
+    row.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') toggle(e);
+    });
     grid.appendChild(row);
   });
-  con.innerHTML='';con.appendChild(grid);
-  updateAbsentCount();
-}
-function selectAllStudents(){if(!sel.cls)return;STUDENTS[sel.cls].forEach(n=>selectedAbsent.add(n));renderStudents();updateButtons();}
-function clearAllStudents(){selectedAbsent.clear();renderStudents();updateButtons();}
-function updateAbsentCount(){
-  const L=LANGS[currentLang];
-  document.getElementById('absentCount').textContent=`${selectedAbsent.size} ${L.absentLabel}`;
+
+  con.innerHTML = '';
+  con.appendChild(grid);
 }
 
-// ── action bar ─────────────────────────────────────────
-function updateButtons(){
-  const L=LANGS[currentLang];
-  const ready=sel.cls&&sel.subject&&sel.lecture;
-  const off=!isWorkingDay();
-  const submit=document.getElementById('btnSubmit');
-  const allP=document.getElementById('btnAllPresent');
-  document.getElementById('submitText').textContent=pendingEditRow?L.editMode:L.btnSubmit;
-  document.getElementById('submitSub').textContent=ready?`${selectedAbsent.size} ${L.absentLabel}`:L.selectClassFirst;
-  submit.disabled=!ready||off;
-  allP.disabled=!ready||off;
-  submit.classList.toggle('armed',selectedAbsent.size>0);
+function updateAbsentCount() {
+  const L = LANGS[currentLang];
+  setText('absentCount', `${selectedAbsent.size} ${L.absentLabel}`);
 }
 
-// ── submit ─────────────────────────────────────────────
-function localDupKey(){return `aci_dup_${currentTeacher.username}_${todayISO()}_${sel.cls}_${sel.subject}_${sel.lecture}`;}
-function isLocalDup(){return !!sessionStorage.getItem(localDupKey());}
-function markLocalDup(){sessionStorage.setItem(localDupKey(),'1');}
-function clearLocalDup(cls,subject,lecture){sessionStorage.removeItem(`aci_dup_${currentTeacher.username}_${todayISO()}_${cls}_${subject}_${lecture}`);}
+function renderAbsentPreview() {
+  const preview = document.getElementById('absentPreview');
+  const pills = document.getElementById('absentPills');
 
-async function submitForm(allPresent){
-  const L=LANGS[currentLang];
-  if(!sel.cls||!sel.subject||!sel.lecture){showToast(L.toastFill,'error');return;}
-  if(!isWorkingDay()){showToast(L.toastWeekend,'error');return;}
-  if(!pendingEditRow&&isLocalDup()){showToast(L.toastDuplicate,'error');autoAdvanceLecture();return;}
+  if (!selectedAbsent.size) {
+    preview.classList.remove('show');
+    pills.innerHTML = '';
+    return;
+  }
 
-  showLoading(L.loadingSubmit);
-  try{
-    const response=await apiGet({
-      action:pendingEditRow?'updateAbsence':'saveAbsence',
-      rowNumber:pendingEditRow?String(pendingEditRow.rowNumber):'',
-      date:formatDateForDisplay(todayISO()),
-      subject:sel.subject,lectureNo:sel.lecture,classGroup:sel.cls,
-      absentStudents:allPresent?'':[...selectedAbsent].join(', ')
+  preview.classList.add('show');
+  pills.innerHTML = '';
+
+  [...selectedAbsent].forEach(name => {
+    const pill = document.createElement('span');
+    pill.className = 'absent-pill';
+
+    const text = document.createElement('span');
+    text.textContent = name;
+
+    const remove = document.createElement('span');
+    remove.className = 'remove-pill';
+    remove.textContent = '✕';
+    remove.title = 'Remove';
+    remove.addEventListener('click', e => {
+      e.stopPropagation();
+      removeAbsent(name);
     });
-    const text=typeof response==='string'?response:'';
-    if(text.startsWith('BLOCKED')){hideLoading();showToast(L.toastWeekend,'error');return;}
-    if(text==='DUPLICATE'){hideLoading();showToast(L.toastDuplicate,'error');autoAdvanceLecture();return;}
-    if(text.startsWith('ERROR')){
-      if(text.toLowerCase().includes('unauthorized')){hideLoading();showToast(L.toastUnauthorized,'error');setTimeout(doLogout,1200);return;}
-      throw new Error(text);
-    }
-    if(text!=='OK'&&text!=='UPDATED') throw new Error('unexpected');
 
-    if(pendingEditRow){
-      clearLocalDup(pendingEditRow.classGroup,pendingEditRow.subject,pendingEditRow.lectureNo);
-      pendingEditRow=null;
-    }
-    markLocalDup();
-    const absentCount=allPresent?0:selectedAbsent.size;
-    selectedAbsent.clear();
-    hideLoading();
-    showToast(absentCount===0?L.toastSaved:`${L.toastSaved} (${absentCount})`,'success');
-    showLastBanner(absentCount);
-    autoAdvanceLecture();
-    renderStudents();updateButtons();renderNowCard();
-    await loadTodayRows();
-  }catch(err){
-    hideLoading();
-    if(String(err.message).toLowerCase().includes('unauthorized')){
-      showToast(L.toastUnauthorized,'error');setTimeout(doLogout,1200);
-    }else showToast(L.toastError,'error');
-  }
-}
-function autoAdvanceLecture(){
-  const L=LANGS[currentLang];
-  const nums=(sel.lecture.match(/\d+/g)||['1']).map(Number);
-  let next=Math.max(...nums)+1;
-  if(next>6)next=1;
-  sel.lecture='Lecture '+next;
-  saveSessionState();renderLectureChips();renderNowCard();
-  showToast(`${L.nextLecture}: ${sel.lecture}`,'');
-}
-function showLastBanner(absentCount){
-  const L=LANGS[currentLang];
-  const b=document.getElementById('lastBanner');
-  document.getElementById('lastBannerText').textContent=
-    `${L.lastSubmitted}: ${sel.cls} • ${sel.subject} • ${sel.lecture} — ${absentCount} ${L.absentLabel}`;
-  b.style.display='flex';
-}
-
-// ── recent rows ────────────────────────────────────────
-async function loadTodayRows(){
-  try{
-    const data=await apiGet({action:'getTodayRows'});
-    if(!data||data.error) throw new Error(data&&data.error?data.error:'x');
-    todayRows=Array.isArray(data.rows)?data.rows:[];
-  }catch(err){
-    if(String(err.message).toLowerCase().includes('unauthorized')){
-      showToast(LANGS[currentLang].toastUnauthorized,'error');setTimeout(doLogout,1200);
-    }
-  }
-  renderRecentRows();
-}
-function renderRecentRows(){
-  const L=LANGS[currentLang];
-  const wrap=document.getElementById('recentWrap');
-  const body=document.getElementById('recentCardBody');
-  document.getElementById('recentCountBadge').textContent=todayRows.length;
-  if(!todayRows.length){wrap.style.display='none';return;}
-  wrap.style.display='block';
-  body.innerHTML=todayRows.map(r=>{
-    const names=String(r.absentStudents||'').split(',').map(n=>n.trim()).filter(Boolean);
-    const pills=names.length
-      ?names.map(n=>`<span class="rt-name-pill"></span>`).join('')
-      :`<span class="rt-none">${L.noneAbsent}</span>`;
-    const row=document.createElement('div');
-    return `<div class="recent-row">
-      <div class="rr-main">
-        <span class="rt-lecture"></span>
-        <span class="rr-info"><b class="rr-subj"></b> • <span class="rr-cls"></span></span>
-      </div>
-      <div class="rr-pills">${pills}</div>
-      <div class="rr-actions">
-        <button class="btn-rt-edit" onclick="askEdit(${r.rowNumber})">${L.btnEdit}</button>
-        <button class="btn-rt-delete" onclick="askDelete(${r.rowNumber})">${L.btnDelete}</button>
-      </div>
-    </div>`;
-  }).join('');
-  // Fill text safely
-  const rows=body.querySelectorAll('.recent-row');
-  todayRows.forEach((r,i)=>{
-    const names=String(r.absentStudents||'').split(',').map(n=>n.trim()).filter(Boolean);
-    rows[i].querySelector('.rt-lecture').textContent=r.lectureNo||'—';
-    rows[i].querySelector('.rr-subj').textContent=r.subject||'—';
-    rows[i].querySelector('.rr-cls').textContent=r.classGroup||'—';
-    rows[i].querySelectorAll('.rt-name-pill').forEach((p,j)=>p.textContent=names[j]);
+    pill.appendChild(text);
+    pill.appendChild(remove);
+    pills.appendChild(pill);
   });
 }
-function askDelete(rowNumber){
-  pendingDeleteRow=rowNumber;pendingEditRow=null;
-  document.getElementById('confirmOverlay').classList.add('show');
-}
-function closeConfirm(){document.getElementById('confirmOverlay').classList.remove('show');pendingDeleteRow=null;}
-async function executeDelete(){
-  if(!pendingDeleteRow)return;
-  const rowNumber=pendingDeleteRow;closeConfirm();
-  const L=LANGS[currentLang];
-  showLoading(L.loadingDel);
-  try{
-    const resp=await apiGet({action:'deleteRow',rowNumber:String(rowNumber)});
-    const text=typeof resp==='string'?resp:'';
-    if(text.startsWith('ERROR')){
-      if(text.toLowerCase().includes('unauthorized')) throw new Error('Unauthorized');
-      throw new Error(text);
+
+function removeAbsent(name) {
+  selectedAbsent.delete(name);
+
+  document.querySelectorAll('.student-check').forEach(label => {
+    const span = label.querySelector('.sname');
+    const cb = label.querySelector('input');
+    if (span && span.textContent === name) {
+      label.classList.remove('checked');
+      if (cb) cb.checked = false;
     }
-    const removed=todayRows.find(r=>r.rowNumber===rowNumber);
-    if(removed) clearLocalDup(removed.classGroup,removed.subject,removed.lectureNo);
-    todayRows=todayRows.filter(r=>r.rowNumber!==rowNumber);
-    hideLoading();showToast(L.toastDeleted,'success');renderRecentRows();
-  }catch(err){
-    hideLoading();
-    if(String(err.message).toLowerCase().includes('unauthorized')){
-      showToast(L.toastUnauthorized,'error');setTimeout(doLogout,1200);
-    }else showToast(L.toastDelFail,'error');
-  }
-}
-function askEdit(rowNumber){
-  const r=todayRows.find(x=>x.rowNumber===rowNumber);
-  if(!r)return;
-  const L=LANGS[currentLang];
-  sel.cls=r.classGroup||'';
-  sel.subject=r.subject||'';
-  sel.lecture=r.lectureNo||'';
-  selectedAbsent=new Set(String(r.absentStudents||'').split(',').map(n=>n.trim()).filter(Boolean));
-  pendingEditRow=r;
-  renderClassChips();renderSubjectChips();renderLectureChips();
-  renderStudents(selectedAbsent);renderNowCard();updateButtons();
-  saveSessionState();
-  showToast(L.editLoaded,'success');
-  window.scrollTo({top:0,behavior:'smooth'});
+  });
+
+  updateAbsentCount();
+  renderAbsentPreview();
 }
 
-// ── init ───────────────────────────────────────────────
-async function init(){
-  if(!checkAuth())return;
-  const L=LANGS[currentLang];
-  showLoading(L.loadingData);
-  try{
-    const data=await apiGet({action:'getTeacherData'});
-    if(!data||data.error) throw new Error(data&&data.error?data.error:'x');
-    if(data.teacher){currentTeacher=data.teacher;sessionStorage.setItem('aci_teacher',JSON.stringify(currentTeacher));}
-    STUDENTS=data.students||{};
-    CLASS_SUBJECT_MAP=data.classSubjectMap||{};
-    WORKING_DAYS=(Array.isArray(data.workingDays)&&data.workingDays.length)?data.workingDays:WORKING_DAYS;
-  }catch(err){
-    if(String(err.message).toLowerCase().includes('unauthorized')){
-      hideLoading();showToast(L.toastUnauthorized,'error');setTimeout(doLogout,1200);return;
-    }
-    showToast(L.toastError,'error');
+function resetStudents() {
+  selectedAbsent.clear();
+  const cls = document.getElementById('fClass').value;
+  if (cls) renderStudents(cls);
+  else {
+    const con = document.getElementById('studentsContainer');
+    con.innerHTML = `<div class="no-students"><span class="icon">🎓</span><span id="noStudentsText">${LANGS[currentLang].noStudents}</span></div>`;
+    document.getElementById('studentSearch').style.display = 'none';
   }
-  hideLoading();
-  restoreSessionState();
-  setLang(currentLang);
-  renderClassChips();renderSubjectChips();renderLectureChips();
-  document.getElementById('screenSubmit').style.display='';
-  document.getElementById('actionBar').style.display='flex';
-  await loadTodayRows();
+  updateAbsentCount();
+  renderAbsentPreview();
 }
-document.addEventListener('DOMContentLoaded',init);
+
+function filterStudentRows(query) {
+  const q = String(query || '').trim().toLowerCase();
+  const rows = document.querySelectorAll('#studentsContainer .student-check');
+  let visibleCount = 0;
+  rows.forEach(row => {
+    const match = !q || (row.dataset.name || '').includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visibleCount++;
+  });
+
+  const con = document.getElementById('studentsContainer');
+  let emptyMsg = con.querySelector('.search-empty');
+  if (q && visibleCount === 0) {
+    if (!emptyMsg) {
+      emptyMsg = document.createElement('div');
+      emptyMsg.className = 'no-students search-empty';
+      emptyMsg.innerHTML = `<span class="icon">🔍</span><span>${LANGS[currentLang].noSearchResults}</span>`;
+      con.appendChild(emptyMsg);
+    }
+  } else if (emptyMsg) {
+    emptyMsg.remove();
+  }
+}
+
+function saveFormState() {
+  if (!currentTeacher) return;
+
+  sessionStorage.setItem('formState', JSON.stringify({
+    username: currentTeacher.username,
+    date: document.getElementById('fDate').value,
+    subject: document.getElementById('fSubject').value,
+    lecture: document.getElementById('fLecture').value,
+    cls: document.getElementById('fClass').value
+  }));
+}
+
+function restoreFormState() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem('formState') || 'null');
+    if (!s || s.username !== currentTeacher?.username) return;
+
+    const today = todayISO();
+    if (s.date === today) document.getElementById('fDate').value = s.date;
+    if (s.cls) {
+      document.getElementById('fClass').value = s.cls;
+      filterSubjectsForClass();
+    }
+    if (s.subject) document.getElementById('fSubject').value = s.subject;
+    if (s.lecture) document.getElementById('fLecture').value = s.lecture;
+
+    if (s.cls) renderStudents(s.cls);
+  } catch (_) {}
+}
+
+function resetForm(keepClassSubject) {
+  pendingEditRow = null;
+  setText('btnSubmitText', LANGS[currentLang].btnSubmit);
+  document.getElementById('fDate').value = todayISO();
+  document.getElementById('fLecture').value = '';
+
+  if (keepClassSubject) {
+    // After a successful submit, teachers very often log the next
+    // lecture for the same class/subject — keep those two selections
+    // so only the lecture number and absentee list need re-entering.
+    const subj = document.getElementById('fSubject').value;
+    filterSubjectsForClass();
+    document.getElementById('fSubject').value = subj;
+    resetStudents();
+    saveFormState();
+  } else {
+    document.getElementById('fSubject').value = '';
+    document.getElementById('fClass').value = '';
+    sessionStorage.removeItem('formState');
+    populateTeacherFields();
+    resetStudents();
+  }
+}
+
+function localDuplicateKey(date, cls, subject, lecture) {
+  return `aci_dup_${currentTeacher.username}_${date}_${cls}_${subject}_${lecture}`;
+}
+
+function isLocallyDuplicate(date, cls, subject, lecture) {
+  return !!sessionStorage.getItem(localDuplicateKey(date, cls, subject, lecture));
+}
+
+function markLocalDuplicate(date, cls, subject, lecture) {
+  sessionStorage.setItem(localDuplicateKey(date, cls, subject, lecture), '1');
+}
+
+function clearLocalDuplicate(date, cls, subject, lecture) {
+  sessionStorage.removeItem(localDuplicateKey(date, cls, subject, lecture));
+}
+
+async function doSubmit() {
+  const L = LANGS[currentLang];
+  const date = document.getElementById('fDate').value;
+  const subject = document.getElementById('fSubject').value;
+  const lecture = document.getElementById('fLecture').value;
+  const cls = document.getElementById('fClass').value;
+
+  if (!date || !subject || !lecture || !cls) {
+    showToast(L.toastFill, 'error');
+    return;
+  }
+
+  if (date !== todayISO()) {
+    showToast(L.toastDate, 'error');
+    return;
+  }
+
+  if (isWeekend()) {
+    showToast(L.toastWeekend, 'error');
+    return;
+  }
+
+  if (!pendingEditRow && isLocallyDuplicate(date, cls, subject, lecture)) {
+    showToast(L.toastDuplicate, 'error');
+    return;
+  }
+
+  showLoading(L.loadingSubmit);
+
+  try {
+    const response = await apiGet({
+      action: pendingEditRow ? 'updateAbsence' : 'saveAbsence',
+      rowNumber: pendingEditRow ? String(pendingEditRow.rowNumber) : '',
+      date:formatDateForDisplay(date),
+      subject:subject,
+      lectureNo:lecture,
+      classGroup:cls,
+      absentStudents:[...selectedAbsent].join(', ')
+    });
+
+    const text = typeof response === 'string' ? response : '';
+
+    if (text.startsWith('BLOCKED')) {
+      hideLoading();
+      showToast(L.toastWeekend, 'error');
+      return;
+    }
+
+    if (text === 'DUPLICATE') {
+      hideLoading();
+      showToast(L.toastDuplicate, 'error');
+      return;
+    }
+
+    if (text.startsWith('ERROR')) {
+      if (text.toLowerCase().includes('unauthorized')) {
+        showToast(L.toastUnauthorized, 'error');
+        hideLoading();
+        setTimeout(doLogout, 1200);
+        return;
+      }
+      throw new Error(text);
+    }
+
+    if (text !== 'OK' && text !== 'UPDATED') {
+      throw new Error('Unexpected server response');
+    }
+
+    if (pendingEditRow) {
+      const oldDate = normalizeDateForInput(pendingEditRow.date);
+      clearLocalDuplicate(oldDate, pendingEditRow.classGroup, pendingEditRow.subject, pendingEditRow.lectureNo);
+    }
+    markLocalDuplicate(date, cls, subject, lecture);
+
+    const absentNames = [...selectedAbsent];
+    const details = {
+      date, subject, lecture, cls,
+      absent: absentNames.length
+    };
+
+    pendingEditRow = null;
+    sessionStorage.removeItem('formState');
+
+    resetForm(true);
+    hideLoading();
+
+    showSuccess(details);
+
+    await loadTodayRows();
+  } catch (err) {
+    hideLoading();
+    console.error('doSubmit:', err);
+
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(L.toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+    } else {
+      showToast(L.toastError, 'error');
+    }
+  }
+}
+
+function showSuccess(details) {
+  const L = LANGS[currentLang];
+  const tName = currentTeacher?.arabicName || currentTeacher?.displayName || currentTeacher?.username || '';
+
+  document.getElementById('successDetails').innerHTML = '';
+  addDetail(L.fDate, formatDateForDisplay(details.date));
+  addDetail(L.fTeacher, tName);
+  addDetail(L.fSubject, details.subject);
+  addDetail(L.fLecture, details.lecture);
+  addDetail(L.fClass, details.cls);
+  addDetail(L.fAbsent, `${details.absent} ${L.students}`);
+
+  document.getElementById('screenSubmit').style.display = 'none';
+  document.getElementById('screenSuccess').style.display = '';
+
+  // Auto-return to the form shortly after — teachers logging several
+  // lectures in a row don't need to tap "OK" every time. The button
+  // still works instantly if they want to move on right away.
+  clearTimeout(showSuccess._timer);
+  showSuccess._timer = setTimeout(() => {
+    if (document.getElementById('screenSuccess').style.display !== 'none') {
+      newSubmission();
+    }
+  }, 1600);
+}
+
+function addDetail(label, value) {
+  const row = document.createElement('div');
+  row.className = 'detail-row';
+
+  const l = document.createElement('span');
+  l.className = 'label';
+  l.textContent = label;
+
+  const v = document.createElement('span');
+  v.className = 'val';
+  v.textContent = value;
+
+  row.appendChild(l);
+  row.appendChild(v);
+  document.getElementById('successDetails').appendChild(row);
+}
+
+function newSubmission() {
+  clearTimeout(showSuccess._timer);
+  document.getElementById('screenSuccess').style.display = 'none';
+  document.getElementById('screenSubmit').style.display = '';
+}
+
+function todayKey() {
+  const t = currentTeacher ? currentTeacher.username : 'unknown';
+  return `aci_rows_${t}_${todayISO()}`;
+}
+
+function saveRowsToStorage() {
+  try {
+    localStorage.setItem(todayKey(), JSON.stringify(todayRows));
+  } catch (_) {}
+}
+
+function loadRowsFromStorage() {
+  try {
+    const raw = localStorage.getItem(todayKey());
+    if (raw) {
+      todayRows = JSON.parse(raw) || [];
+      renderRecentRows();
+    }
+  } catch (_) {}
+}
+
+async function loadTodayRows() {
+  try {
+    const data = await apiGet({action:'getTodayRows'});
+
+    if (!data || data.error) {
+      throw new Error(data?.error || 'Unable to load rows');
+    }
+
+    todayRows = Array.isArray(data.rows) ? data.rows : [];
+    saveRowsToStorage();
+    renderRecentRows();
+  } catch (err) {
+    console.warn('loadTodayRows:', err);
+
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(LANGS[currentLang].toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+    }
+  }
+}
+
+function renderRecentRows() {
+  const L = LANGS[currentLang];
+  const card = document.getElementById('recentCard');
+  const body = document.getElementById('recentCardBody');
+  const badge = document.getElementById('recentCountBadge');
+
+  if (!todayRows.length) {
+    card.style.display = 'none';
+    body.innerHTML = '';
+    return;
+  }
+
+  card.style.display = '';
+  badge.textContent = todayRows.length;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'recent-table-wrap';
+
+  const table = document.createElement('table');
+  table.className = 'recent-table';
+
+  const thead = document.createElement('thead');
+  const trh = document.createElement('tr');
+
+  [L.thLecture, L.thSubject, L.thClass, L.thAbsentStudents, L.thActions]
+    .forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      trh.appendChild(th);
+    });
+
+  thead.appendChild(trh);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+
+  todayRows.forEach(r => {
+    const tr = document.createElement('tr');
+
+    const lecture = document.createElement('td');
+    const lectureStrong = document.createElement('strong');
+    lectureStrong.className = 'rt-lecture';
+    lectureStrong.textContent = r.lectureNo || '—';
+    lecture.appendChild(lectureStrong);
+
+    const subject = document.createElement('td');
+    subject.textContent = r.subject || '—';
+
+    const cls = document.createElement('td');
+    const clsSpan = document.createElement('span');
+    clsSpan.className = 'rt-class';
+    clsSpan.textContent = r.classGroup || '—';
+    cls.appendChild(clsSpan);
+
+    const absent = document.createElement('td');
+    const pills = document.createElement('div');
+    pills.className = 'rt-pills';
+
+    const names = String(r.absentStudents || '')
+      .split(',')
+      .map(n => n.trim())
+      .filter(Boolean);
+
+    if (names.length) {
+      names.forEach(n => {
+        const pill = document.createElement('span');
+        pill.className = 'rt-name-pill';
+        pill.textContent = n.split(' ').slice(0,2).join(' ');
+        pills.appendChild(pill);
+      });
+    } else {
+      const none = document.createElement('span');
+      none.className = 'rt-none';
+      none.textContent = L.noneAbsent;
+      pills.appendChild(none);
+    }
+
+    absent.appendChild(pills);
+
+    const actions = document.createElement('td');
+    const actionWrap = document.createElement('div');
+    actionWrap.className = 'rt-actions';
+
+    const edit = document.createElement('button');
+    edit.className = 'btn-rt-edit';
+    edit.textContent = L.btnEdit;
+    edit.addEventListener('click', () => askEdit(r.rowNumber));
+
+    const del = document.createElement('button');
+    del.className = 'btn-rt-delete';
+    del.textContent = L.confirmDelete;
+    del.addEventListener('click', () => askDelete(r.rowNumber));
+
+    actionWrap.appendChild(edit);
+    actionWrap.appendChild(del);
+    actions.appendChild(actionWrap);
+
+    tr.appendChild(lecture);
+    tr.appendChild(subject);
+    tr.appendChild(cls);
+    tr.appendChild(absent);
+    tr.appendChild(actions);
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  wrap.appendChild(table);
+
+  body.innerHTML = '';
+  body.appendChild(wrap);
+}
+
+function askDelete(rowNumber) {
+  pendingDeleteRow = rowNumber;
+  pendingEditRow = null;
+  document.getElementById('confirmOverlay').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmOverlay').classList.remove('show');
+  pendingDeleteRow = null;
+}
+
+async function executeDelete() {
+  if (!pendingDeleteRow) return;
+
+  const rowNumber = pendingDeleteRow;
+  closeConfirm();
+
+  const L = LANGS[currentLang];
+  showLoading(L.loadingDel);
+
+  try {
+    const response = await apiGet({
+      action:'deleteRow',
+      rowNumber:String(rowNumber)
+    });
+
+    const text = typeof response === 'string' ? response : '';
+
+    if (text.startsWith('ERROR')) {
+      if (text.toLowerCase().includes('unauthorized')) {
+        throw new Error('Unauthorized');
+      }
+      throw new Error(text);
+    }
+
+    if (text !== 'DELETED') throw new Error('Unexpected delete response');
+
+    const removed = todayRows.find(r => r.rowNumber === rowNumber);
+    if (removed) {
+      const date = normalizeDateForInput(removed.date);
+      clearLocalDuplicate(date, removed.classGroup, removed.subject, removed.lectureNo);
+    }
+
+    todayRows = todayRows.filter(r => r.rowNumber !== rowNumber);
+    saveRowsToStorage();
+    renderRecentRows();
+
+    hideLoading();
+    showToast(L.toastDelOk, 'success');
+  } catch (err) {
+    hideLoading();
+
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast(L.toastUnauthorized, 'error');
+      setTimeout(doLogout, 1200);
+    } else {
+      showToast(L.toastDelFail, 'error');
+    }
+  }
+}
+
+async function askEdit(rowNumber) {
+  const r = todayRows.find(x => x.rowNumber === rowNumber);
+  if (!r) return;
+
+  const L = LANGS[currentLang];
+  const isoDate = normalizeDateForInput(r.date);
+
+  document.getElementById('fDate').value = isoDate || todayISO();
+  document.getElementById('fClass').value = r.classGroup || '';
+  filterSubjectsForClass();
+  document.getElementById('fSubject').value = r.subject || '';
+  document.getElementById('fLecture').value = r.lectureNo || '';
+
+  selectedAbsent = new Set(
+    String(r.absentStudents || '').split(',').map(n => n.trim()).filter(Boolean)
+  );
+  renderStudents(r.classGroup || '', selectedAbsent);
+  updateAbsentCount();
+  renderAbsentPreview();
+
+  pendingEditRow = r;
+  sessionStorage.removeItem('formState');
+
+  setText('btnSubmitText', L.btnUpdate || L.btnSubmit);
+  hideLoading();
+  showToast(L.toastEditReady, 'success');
+  document.getElementById('screenSubmit').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function normalizeDateForInput(value) {
+  if (!value) return '';
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return String(value);
+
+  const p = String(value).split('/');
+  if (p.length === 3) {
+    let a = parseInt(p[0],10);
+    let b = parseInt(p[1],10);
+    let y = parseInt(p[2],10);
+
+    if (String(p[0]).length === 4) {
+      y = parseInt(p[0],10);
+      a = parseInt(p[1],10);
+      b = parseInt(p[2],10);
+    }
+
+    if (y && a && b) {
+      return `${y}-${String(a).padStart(2,'0')}-${String(b).padStart(2,'0')}`;
+    }
+  }
+
+  return '';
+}
+
+function showLoading(msg) {
+  setText('loadingText', msg || '...');
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
