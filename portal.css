@@ -1145,3 +1145,27 @@ main{
     font-size:11px!important;
   }
 }
+
+/* =========================================================
+   FINAL HTML/CSS COMPATIBILITY FIXES
+   ========================================================= */
+/* The HTML/JS adds .show when absent students exist.
+   Do not permanently hide the preview container. */
+#absentPreview {
+  display: none !important;
+  height: auto !important;
+  margin: 0 0 8px !important;
+  padding: 0 !important;
+}
+#absentPreview.show {
+  display: block !important;
+  height: auto !important;
+  margin: 0 0 8px !important;
+  padding: 8px 10px !important;
+  border: 1px solid #efb9bc !important;
+  border-radius: 9px !important;
+  background: #fff5f5 !important;
+}
+#absentPreview.show .absent-preview h5 {
+  margin: 0 0 6px !important;
+}
