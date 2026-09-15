@@ -636,14 +636,10 @@
         <label id="tmLblPass">پاسۆرد</label>
         <input type="text" id="tmPassword" placeholder="••••••" autocomplete="off">
       </div>
-      <div class="mgmt-field">
-        <label id="tmLblClasses">🏫 پۆلان</label>
-        <div class="cb-group" id="tmClasses"></div>
-      </div>
-      <div class="mgmt-field">
-        <label id="tmLblSubjects">📚 بابەت</label>
-        <div class="cb-group" id="tmSubjects"></div>
-      </div>
+  <div class="mgmt-field">
+  <label id="tmLblClasses">🏫 پۆلان و بابەتان</label>
+  <div class="cb-group" id="tmClasses"></div>
+</div>
     </div>
     <div class="mgmt-modal-btns">
       <button class="btn-secondary" onclick="closeTeacherModal()">هەڵوەستان</button>
@@ -1063,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', function () {
   syncWorkingDays();
   setTimeout(syncWorkingDays, 100);
 });
-
+  
   const originalShowTab =
     window.showTab;
 
