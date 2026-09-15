@@ -638,11 +638,13 @@ function filterSubjectsForClass() {
   const current = subjectSel.value;
 
   const assigned = Array.isArray(currentTeacher?.subjects) ? currentTeacher.subjects : [];
+  // Code.gs returns classSubjectMap already filtered to this teacher's
+  // class→subject assignments. Keep the old E-column fallback for legacy
+  // teacher records / cached data.
   let allowed = assigned.slice();
 
   if (cls && Array.isArray(CLASS_SUBJECT_MAP[cls])) {
-    const classSubjects = CLASS_SUBJECT_MAP[cls].map(normalize);
-    allowed = assigned.filter(s => classSubjects.includes(normalize(s)));
+    allowed = CLASS_SUBJECT_MAP[cls].slice();
   }
 
   subjectSel.innerHTML = '';
