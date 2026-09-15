@@ -1840,9 +1840,16 @@ document.addEventListener('visibilitychange', ()=>{
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async ()=>{
   if(!checkAuth()) return;
+
   setLang(currentLang);
-  await loadSettings();
+
+  // Run independent startup requests at the same time.
+  await Promise.all([
+    loadSettings(),
+    fetchData()
+  ]);
+
   setLang(currentLang);
-  fetchData();
+  updateStats();
   scheduleRefresh();
 });
