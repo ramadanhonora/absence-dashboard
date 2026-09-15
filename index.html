@@ -489,15 +489,36 @@ async function init() {
   document.getElementById('screenSubmit').style.display = '';
   loadRowsFromStorage();
 
-  await Promise.all([loadTeacherData(), loadTodayRows()]);
+  // Render the cached teacher/roster immediately. The fresh server request
+  // runs in the background, so the portal is usable without waiting on Apps Script.
+  try {
+    const cachedStudents = JSON.parse(localStorage.getItem('aci_students') || '{}');
+    const cachedMap = JSON.parse(localStorage.getItem('aci_class_subject_map') || '{}');
+    if (cachedStudents && typeof cachedStudents === 'object') STUDENTS = cachedStudents;
+    if (cachedMap && typeof cachedMap === 'object') CLASS_SUBJECT_MAP = cachedMap;
+
+    const cachedDays = JSON.parse(localStorage.getItem('aci_working_days') || 'null');
+    if (Array.isArray(cachedDays) && cachedDays.length) {
+      WORKING_DAYS = cachedDays;
+      updateWorkingDayStatus();
+    }
+  } catch (_) {}
 
   populateTeacherFields();
+  updateTeacherHeader();
   restoreFormState();
+
+  // Code.gs now returns teacher data + today's rows in one request.
+  loadTeacherData();
 }
 
 async function loadTeacherData() {
   const L = LANGS[currentLang];
-  showLoading(L.loadingData);
+  const hasCachedData =
+    Object.keys(STUDENTS || {}).length > 0 &&
+    Object.keys(CLASS_SUBJECT_MAP || {}).length > 0;
+
+  if (!hasCachedData) showLoading(L.loadingData);
 
   try {
     const data = await apiGet({action:'getTeacherData'});
@@ -513,13 +534,24 @@ async function loadTeacherData() {
 
     STUDENTS = data.students || {};
     CLASS_SUBJECT_MAP = data.classSubjectMap || {};
-    WORKING_DAYS = Array.isArray(data.workingDays) && data.workingDays.length ? data.workingDays : WORKING_DAYS;
+    WORKING_DAYS = Array.isArray(data.workingDays) && data.workingDays.length
+      ? data.workingDays
+      : WORKING_DAYS;
     updateWorkingDayStatus();
 
     localStorage.setItem('aci_students', JSON.stringify(STUDENTS));
     localStorage.setItem('aci_class_subject_map', JSON.stringify(CLASS_SUBJECT_MAP));
+    localStorage.setItem('aci_working_days', JSON.stringify(WORKING_DAYS));
+
+    // Code.gs sends today's rows with the same bootstrap response.
+    if (Array.isArray(data.todayRows)) {
+      todayRows = data.todayRows;
+      saveRowsToStorage();
+      renderRecentRows();
+    }
 
     updateTeacherHeader();
+    populateTeacherFields();
   } catch (err) {
     console.error('loadTeacherData:', err);
     if (String(err.message).toLowerCase().includes('unauthorized')) {
@@ -528,14 +560,8 @@ async function loadTeacherData() {
       return;
     }
 
-    try {
-      const cached = JSON.parse(localStorage.getItem('aci_students') || '{}');
-      const cachedMap = JSON.parse(localStorage.getItem('aci_class_subject_map') || '{}');
-      STUDENTS = cached || {};
-      CLASS_SUBJECT_MAP = cachedMap || {};
-    } catch (_) {}
-
-    if (!Object.keys(STUDENTS).length) {
+    // Keep cached data and let the teacher continue if the network is slow.
+    if (!Object.keys(STUDENTS || {}).length) {
       showToast(L.toastError, 'error');
     }
   } finally {
