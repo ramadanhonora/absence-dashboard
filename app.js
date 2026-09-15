@@ -325,26 +325,25 @@ let instituteLogoUrl  = 'aci.jpg';            // fallback matches original hardc
 let ministryLogoUrl   = 'new-left-logo.jpg';  // fallback matches original hardcoded filename
 
 // ── Auth ──────────────────────────────────────────────
+// Uses localStorage so an admin's session persists across tab
+// close / browser restart the same way the teacher portal's does.
 function checkAuth() {
-  const token = sessionStorage.getItem('aci_token');
-  const role  = sessionStorage.getItem('aci_role');
+  const token = localStorage.getItem('aci_token');
+  const role  = localStorage.getItem('aci_role');
   if (!token || role !== 'admin') { window.location.href = LOGIN_URL; return false; }
   adminToken = token;
   return true;
 }
 function doLogout() {
-  sessionStorage.clear();
-  sessionStorage.setItem('explicit_logout','1');
+  localStorage.removeItem('aci_token');
+  localStorage.removeItem('aci_role');
+  localStorage.removeItem('aci_teacher');
+  localStorage.removeItem('aci_students');
+  localStorage.removeItem('aci_class_subject_map');
   window.location.href = LOGIN_URL;
 }
 
 // ── i18n ─────────────────────────────────────────────
-// Kurdistan Region school year runs mid-September through May, so the
-// "current year" flips to the new label at the start of September, not
-// on Jan 1 — e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
-// NOTE: this calculation is intentionally independent of SCHOOL_START —
-// it only asks "what academic year is it right now?", never the saved
-// enumeration start date. SCHOOL_START only feeds getWeeks()/getMonths().
 function getAcademicYear(){
   const now=new Date();
   const y=now.getFullYear();
@@ -432,8 +431,6 @@ function normalizeDate(s){
 function formatDate(d){ if(!d||isNaN(d.getTime())) return ''; return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
 function getLectureCount(lec){ const s=String(lec).toLowerCase(); return (s.includes('merged')||s.includes('and')||/\d\s*-\s*\d/.test(s))?2:1; }
 
-// Reads from persisted Settings (falls back to the original hardcoded
-// 8/15 if Settings hasn't loaded yet, so behavior is unchanged pre-load).
 function getSeverity(n){
   const high = appSettings ? (parseInt(appSettings.high_risk_threshold)||15) : 15;
   const at   = appSettings ? (parseInt(appSettings.at_risk_threshold)||8)   : 8;
@@ -455,13 +452,10 @@ function showToast(msg,type){
 function cleanPastedNames(raw) {
   return raw.split('\n')
     .map(line => {
-      // Remove leading numbers, tabs, extra spaces
       return line.replace(/^\d+[\.\)\-\s]+/, '').replace(/\t/g, ' ').trim();
     })
     .map(line => {
-      // If multiple columns separated by spaces, take only words that look like names (no numbers)
       const words = line.split(/\s{2,}|\t/).map(w => w.trim()).filter(Boolean);
-      // Pick the part that has no pure numbers and is longest
       const namePart = words.find(w => /[^\d\s]/.test(w) && w.split(' ').length >= 1) || line;
       return namePart.trim();
     })
@@ -549,23 +543,14 @@ async function fetchData(){
     document.getElementById('lastUpdate').innerHTML=`<span style="color:#4CAF50;">${L.lastUpdated} ${new Date().toLocaleTimeString()}</span>`;
   } catch(err){
     document.getElementById('lastUpdate').innerHTML=`<span style="color:#ff4444;">❌ ${err.message}</span>`;
+    // A failed admin data fetch due to an invalid/expired token should
+    // send the admin back to login instead of leaving a silently
+    // broken dashboard on screen.
+    if (String(err.message).toLowerCase().includes('unauthorized')) {
+      showToast('❌ Session expired — please log in again.', 'error');
+      setTimeout(doLogout, 1200);
+    }
   }
-}
-
-// Reads from persisted Settings (falls back to the original hardcoded
-// 8/15 thresholds so the stat cards never break if Settings hasn't
-// loaded yet). Single-sourced from getSeverity() so this count and the
-// per-student badge shown elsewhere never disagree with each other.
-function updateStats(){
-  let totalAbs=0; const students={};
-  allData.forEach(r=>{ totalAbs+=r.lectureCount*r.absences.length; r.absences.forEach(n=>{const k=n.toLowerCase();students[k]=(students[k]||0)+r.lectureCount;}); });
-  let high=0,medium=0;
-  Object.values(students).forEach(c=>{ const sev=getSeverity(c); if(sev==='high') high++; else if(sev==='medium') medium++; });
-  document.getElementById('totalAbsences').textContent=totalAbs;
-  document.getElementById('totalStudents').textContent=Object.keys(students).length;
-  document.getElementById('highRisk').textContent=high;
-  document.getElementById('atRisk').textContent=medium;
-  document.getElementById('totalClasses').textContent=classes.length;
 }
 
 // ── Week/Month builders ───────────────────────────────
@@ -684,13 +669,6 @@ function filterRoster(){
 }
 
 // ── ANALYTICS ─────────────────────────────────────────
-// Reads lecturesPerDay/expulsionDays from persisted Settings instead of
-// the page-local inputs. The two <input> elements in the Analytics tab
-// remain visible as a read-only reference and are snapped back to the
-// persisted value on every render (editing now happens in the ⚙️
-// Settings tab → Absence Policy). absentapi.html will mark them
-// `disabled` and drop their onchange in the next pass, but this snap-back
-// keeps behavior correct even before that HTML change lands.
 function loadAnalytics(){
   const L=LANGS[currentLang];
   const lpd  = appSettings ? (parseInt(appSettings.lectures_per_day)||3)  : 3;
@@ -864,7 +842,6 @@ function openAddTeacher(){
   document.getElementById('tmPassword').value='';
   document.getElementById('tmLblPass').textContent = (L.tmLblPass||'').replace('(بەتاڵ بهێلە بۆ نەگۆڕان)','').replace('(اتركها فارغة لعدم التغيير)','').replace('(leave blank to keep unchanged)','');
   buildStageCheckboxes('tmClasses', getStageList(), []);
-  // No stages selected → show all subjects
   updateSubjectCheckboxes([]);
   document.getElementById('teacherModal').classList.add('open');
 }
@@ -884,7 +861,6 @@ function openEditTeacher(t){
   document.getElementById('teacherModal').classList.add('open');
 }
 
-// Build stage checkboxes (1, 2, 3, 4pro, 4web...) for teacher modal
 function buildStageCheckboxes(containerId, stages, checkedStages){
   const el=document.getElementById(containerId);
   el.innerHTML=stages.map(stage=>`
@@ -892,7 +868,6 @@ function buildStageCheckboxes(containerId, stages, checkedStages){
       <input type="checkbox" value="${stage}" ${checkedStages.includes(stage)?'checked':''}>
       <label>${stage.toUpperCase()}</label>
     </label>`).join('');
-  // Watch changes to filter subjects
   el.querySelectorAll('input').forEach(cb=>{
     cb.addEventListener('change', ()=>{
       const selStages=getChecked(containerId);
@@ -902,7 +877,6 @@ function buildStageCheckboxes(containerId, stages, checkedStages){
   });
 }
 
-// Build class checkboxes and attach change listener for subject filtering
 function buildCheckboxes(containerId, items, checked){
   const el=document.getElementById(containerId);
   el.innerHTML=items.map(item=>`
@@ -910,7 +884,6 @@ function buildCheckboxes(containerId, items, checked){
       <input type="checkbox" value="${item}" ${checked.includes(item)?'checked':''}>
       <label>${item}</label>
     </label>`).join('');
-  // If this is the classes container, watch for changes to filter subjects
   if(containerId==='tmClasses'){
     el.querySelectorAll('input').forEach(cb=>{
       cb.addEventListener('change', ()=>{
@@ -922,29 +895,19 @@ function buildCheckboxes(containerId, items, checked){
   }
 }
 
-// Get stage key from class name — case insensitive
-// '1A','1B','1C','1D' → '1'  (single letter = group, strip it)
-// '4PRO','4pro'       → '4pro'  (multi-letter = department, keep lowercase)
-// '5NET','5WEB'       → '5net','5web'
 function getStageKey(className){
   const m = String(className).toLowerCase().match(/^(\d+)([a-z]*)$/);
   if(!m) return String(className).toLowerCase();
-  const num    = m[1]; // e.g. '1','4','5'
-  const suffix = m[2]; // e.g. 'a','b','pro','net','web' or ''
-  // No suffix → pure stage number
+  const num    = m[1];
+  const suffix = m[2];
   if(!suffix) return num;
-  // Single letter suffix (a,b,c,d) → group indicator, return just the number
   if(suffix.length === 1) return num;
-  // Multi-letter suffix (pro,net,web) → department, return number+suffix
   return num + suffix;
 }
 
-// Get unique stage keys from classSubjectMap (the display list for teacher modal)
-// Returns sorted array like ['1','2','3','4pro','4web','4net','5pro','5web','5net']
 function getStageList(){
   const csMap = mgmtData.classSubjectMap || {};
   const keys  = Object.keys(csMap);
-  // Sort: pure numbers first (1,2,3), then alphanumeric (4pro,4web,5pro)
   return keys.sort((a,b)=>{
     const ma=a.match(/^(\d+)([a-z]*)$/i), mb=b.match(/^(\d+)([a-z]*)$/i);
     if(!ma||!mb) return a.localeCompare(b);
@@ -954,17 +917,12 @@ function getStageList(){
   });
 }
 
-// Get all class groups that belong to a given stage key
-// e.g. stage '1' → ['1A','1B','1C','1D'] from mgmtData.classes
-// e.g. stage '4pro' → ['4PRO'] (exact match case-insensitive)
 function getGroupsForStage(stageKey){
   return (mgmtData.classes||[]).filter(cls=>
     getStageKey(cls) === stageKey.toLowerCase()
   );
 }
 
-// Convert teacher's stored groups to selected stage keys for display
-// e.g. ['1A','1B','1C'] → ['1']  |  ['4PRO','4WEB'] → ['4pro','4web']
 function groupsToStages(groups){
   return [...new Set((groups||[]).map(g=>getStageKey(g)))];
 }
@@ -979,10 +937,8 @@ function sortClasses(classes){
   });
 }
 
-// Update subject checkboxes based on selected classes (stage filtering)
 function updateSubjectCheckboxes(selectedClasses, currentChecked){
   if(!mgmtData) return;
-  // Normalize map keys to lowercase for case-insensitive matching
   const csMapRaw = mgmtData.classSubjectMap || {};
   const csMap = {};
   Object.entries(csMapRaw).forEach(([k,v])=>{ csMap[String(k).toLowerCase()]=v; });
@@ -990,13 +946,10 @@ function updateSubjectCheckboxes(selectedClasses, currentChecked){
   let availableSubjects = [];
 
   if(!selectedClasses.length){
-    // No class selected — show ALL subjects
     Object.values(csMap).forEach(subs=>{
       subs.forEach(s=>{ if(!availableSubjects.includes(s)) availableSubjects.push(s); });
     });
   } else {
-    // selectedClasses are already stage keys (from stage checkboxes)
-    // but also handle if full group names passed (e.g. from edit teacher)
     const stageKeys = [...new Set(selectedClasses.map(c=>getStageKey(c)))];
     stageKeys.forEach(key=>{
       const subs = csMap[key.toLowerCase()]||[];
@@ -1036,11 +989,9 @@ async function saveTeacher(){
   const name=document.getElementById('tmName').value.trim();
   const username=document.getElementById('tmUsername').value.trim().toLowerCase();
   const password=document.getElementById('tmPassword').value.trim();
-  const selStages  = getChecked('tmClasses'); // e.g. ['1','2','4pro']
+  const selStages  = getChecked('tmClasses');
   const selSubjects= getChecked('tmSubjects').join(',');
 
-  // Expand stages → actual class groups stored in sheet
-  // e.g. ['1','4pro'] → ['1A','1B','1C','1D','4PRO']
   const selClasses = selStages.flatMap(stage=>getGroupsForStage(stage)).join(',');
 
   if(!name||!username){showToast('❌ ناڤ و یوزەرناڤ پێویستە','error');return;}
@@ -1205,7 +1156,6 @@ async function saveBulkStudents(){
   const btn=document.getElementById('btnSaveBulk');
   btn.textContent='⏳'; btn.disabled=true;
   try {
-    // Use ||| as separator (safe for names)
     const text=await adminGet({action:'addStudent',className:cls,names:names.join('|||')});
     if(text.startsWith('ERROR')) throw new Error(text);
     const added=parseInt((text.split(':')[1])||'0')||names.length;
@@ -1404,7 +1354,7 @@ async function doDeleteClass(cls){
 }
 
 // ── Promote / Graduate class ──────────────────────────
-let promoteMode = 'move'; // 'move' | 'graduate'
+let promoteMode = 'move';
 
 function openPromoteClass(safeCls){
   const cls=decodeURIComponent(safeCls);
@@ -1432,9 +1382,6 @@ function openPromoteClass(safeCls){
     }).join('');
   }
 
-  // Stage 5 only ever graduates (nothing to promote "up" to); every other
-  // stage only ever promotes forward — so the mode is locked per class,
-  // not a choice the admin has to make each time.
   document.getElementById('promoteModeRow').style.display='none';
   setPromoteMode(isFinal ? 'graduate' : 'move');
   document.getElementById('promoteModal').classList.add('open');
@@ -1576,7 +1523,6 @@ async function saveSubjectRow(){
     mgmtData=null;
     await fetchManageData();
     renderSubjectTable();
-    // Also refresh subject checkboxes if teacher modal is open
     const selClasses=getChecked('tmClasses');
     const selSubjects=getChecked('tmSubjects');
     updateSubjectCheckboxes(selClasses,selSubjects);
@@ -1607,11 +1553,6 @@ async function doDeleteSubject(rowIndex){
 // ══════════════════════════════════════════════════════
 // ── SETTINGS TAB ──────────────────────────────────────
 // ══════════════════════════════════════════════════════
-
-// Applies a freshly-fetched settings map to every runtime location that
-// needs it: LANGS name overrides, SCHOOL_START (feeds getWeeks()/
-// getMonths() only — see design discussion), header text, and the
-// dashboard's own logo <img> tags + reports.js's globals.
 function applySettings(s){
   appSettings = s;
 
@@ -1624,10 +1565,6 @@ function applySettings(s){
   if(s.institute_logo_url) instituteLogoUrl = s.institute_logo_url;
   if(s.ministry_logo_url)  ministryLogoUrl  = s.ministry_logo_url;
 
-  // NOTE: #dashInstituteLogo / #dashMinistryLogo are new ids that must be
-  // added to the <img class="logo-right">/<img class="logo-left"> tags in
-  // absentapi.html (next file in the build order) — guarded with `if(el)`
-  // so this is a silent no-op, not a crash, until that HTML change lands.
   const instLogoEl = document.getElementById('dashInstituteLogo');
   const minLogoEl  = document.getElementById('dashMinistryLogo');
   if(instLogoEl) instLogoEl.src = instituteLogoUrl;
@@ -1637,9 +1574,6 @@ function applySettings(s){
   if(nameEl) nameEl.textContent = LANGS[currentLang].dInstName;
 }
 
-// Fetches Settings from the backend and applies them. Any read failure is
-// non-fatal — the dashboard keeps working with the built-in fallback
-// defaults (matches pre-Settings hardcoded behavior exactly).
 async function loadSettings(){
   try {
     const url  = SCRIPT_URL+'?action=getSettings&token='+encodeURIComponent(adminToken);
@@ -1661,9 +1595,6 @@ function setVal(id, val){
   if(el && val!==undefined && val!==null) el.value=val;
 }
 
-// school_year_start is stored/consumed as 'M/D/YYYY' (matches the
-// original hardcoded SCHOOL_START format exactly), but <input
-// type="date"> needs 'YYYY-MM-DD'.
 function normalizeDateForInput(mdy){
   if(!mdy) return '';
   const d=new Date(mdy);
@@ -1681,23 +1612,19 @@ function renderSettingsForm(){
   if(!appSettings) return;
   const L=LANGS[currentLang];
 
-  // Absence Policy
   setVal('setLecturesPerDay',    appSettings.lectures_per_day);
   setVal('setExpulsionDays',     appSettings.expulsion_days);
   setVal('setAtRiskThreshold',   appSettings.at_risk_threshold);
   setVal('setHighRiskThreshold', appSettings.high_risk_threshold);
 
-  // Academic Year
   setVal('setSchoolYearStart', normalizeDateForInput(appSettings.school_year_start));
   const ayEl = document.getElementById('setAcademicYearDisplay');
   if(ayEl) ayEl.textContent = (L.academicYearLabel||'Academic Year')+': '+getAcademicYear();
 
-  // Institute Branding — names
   setVal('setInstNameKu', appSettings.institute_name_ku);
   setVal('setInstNameAr', appSettings.institute_name_ar);
   setVal('setInstNameEn', appSettings.institute_name_en);
 
-  // Institute Branding — logo previews (current saved logo)
   const instPrev = document.getElementById('instituteLogoPreview');
   const minPrev  = document.getElementById('ministryLogoPreview');
   if(instPrev) instPrev.src = instituteLogoUrl;
@@ -1738,10 +1665,6 @@ async function saveAcademicYearSettings(){
     if(text.startsWith('ERROR')) throw new Error(text);
     appSettings.school_year_start = school_year_start;
     SCHOOL_START = school_year_start;
-    // Weeks/months are enumerated FROM SCHOOL_START — recompute and
-    // refresh whichever of those two tabs is currently open. Note:
-    // getAcademicYear()'s displayed value is untouched by this save,
-    // by design (see design discussion).
     weeks=getWeeks(); months=getMonths();
     if(document.getElementById('weekly').classList.contains('active'))  loadWeeklyDropdown();
     if(document.getElementById('monthly').classList.contains('active')) loadMonthlyDropdown();
@@ -1772,14 +1695,10 @@ async function saveNamesSettings(){
   finally { if(btn){ btn.textContent=L.btnSaveNames||'Save Names'; btn.disabled=false; } }
 }
 
-// ── Logo upload (POST — the one deliberate exception to the GET-only
-//    convention, since Apps Script doGet cannot receive file bytes) ──
 function readFileAsBase64(file){
   return new Promise((resolve,reject)=>{
     const reader=new FileReader();
     reader.onload = ()=> {
-      // reader.result is a data: URL ("data:image/png;base64,AAAA...") —
-      // strip everything before the comma to get raw base64.
       const b64 = String(reader.result).split(',')[1] || '';
       resolve(b64);
     };
@@ -1798,8 +1717,6 @@ async function doUploadLogo(logoType){
   const file  = input && input.files && input.files[0];
   if(!file){ showToast(L.toastSaveFail,'error'); return; }
 
-  // Client-side checks mirror the backend's — a friendlier failure than
-  // waiting on a round-trip, but the backend re-validates regardless.
   if(!file.type.startsWith('image/')){ showToast(L.toastSaveFail,'error'); return; }
   if(file.size > 2*1024*1024){ showToast(L.toastSaveFail+' (>2MB)','error'); return; }
 
@@ -1811,8 +1728,6 @@ async function doUploadLogo(logoType){
     const base64Data = await readFileAsBase64(file);
     const resp = await fetch(SCRIPT_URL, {
       method: 'POST',
-      // text/plain avoids a CORS preflight against the Apps Script Web
-      // App deployment — see design notes from the earlier code.txt pass.
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         action: 'uploadLogo', logoType,
@@ -1822,7 +1737,7 @@ async function doUploadLogo(logoType){
     });
     const text = (await resp.text()).trim();
     if(text.startsWith('ERROR')) throw new Error(text);
-    const newUrl = text.slice(3); // strip leading "OK:"
+    const newUrl = text.slice(3);
 
     if(logoType==='institute'){ instituteLogoUrl=newUrl; if(appSettings) appSettings.institute_logo_url=newUrl; }
     else { ministryLogoUrl=newUrl; if(appSettings) appSettings.ministry_logo_url=newUrl; }
@@ -1871,9 +1786,9 @@ document.addEventListener('visibilitychange', ()=>{
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async ()=>{
   if(!checkAuth()) return;
-  setLang(currentLang);   // paint immediately with fallback/hardcoded text — avoids a blank flash
-  await loadSettings();   // fetch persisted name/logos/SCHOOL_START and apply them
-  setLang(currentLang);   // repaint so translated static text reflects the real institute name
+  setLang(currentLang);
+  await loadSettings();
+  setLang(currentLang);
   fetchData();
   scheduleRefresh();
 });
