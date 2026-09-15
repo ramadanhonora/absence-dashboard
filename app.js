@@ -863,6 +863,126 @@ async function loadTeachersTab(){
   renderTeacherTable();
 }
 
+// ══════════════════════════════════════════════════════
+// TEACHER / CLASS ASSIGNMENT HELPERS
+// ══════════════════════════════════════════════════════
+
+function normalize(value){
+  return String(value == null ? '' : value)
+    .trim()
+    .toLowerCase();
+}
+
+function sortClasses(classes){
+  return [...(classes || [])].sort((a,b)=>{
+    const sa = String(a || '');
+    const sb = String(b || '');
+
+    const ma = sa.match(/^(\d+)(.*)$/);
+    const mb = sb.match(/^(\d+)(.*)$/);
+
+    if(!ma || !mb){
+      return sa.localeCompare(sb, undefined, {
+        numeric:true,
+        sensitivity:'base'
+      });
+    }
+
+    const numberDiff =
+      parseInt(ma[1],10) - parseInt(mb[1],10);
+
+    if(numberDiff !== 0) return numberDiff;
+
+    return ma[2].localeCompare(mb[2], undefined, {
+      numeric:true,
+      sensitivity:'base'
+    });
+  });
+}
+
+/*
+ * Convert a real class/group name to the stage key used
+ * by classSubjectMap.
+ *
+ * Examples:
+ *   1A   -> 1
+ *   1B   -> 1
+ *   2C   -> 2
+ *
+ * If the exact value already exists in classSubjectMap,
+ * preserve it:
+ *   4PRO -> 4PRO
+ *   5WEB -> 5WEB
+ */
+function getStageKey(value){
+  const raw = String(value == null ? '' : value).trim();
+  if(!raw) return '';
+
+  const map = mgmtData?.classSubjectMap || {};
+  const exactKey = Object.keys(map).find(
+    key => normalize(key) === normalize(raw)
+  );
+
+  if(exactKey) return exactKey;
+
+  const match = raw.match(/^(\d+)/);
+  return match ? match[1] : raw;
+}
+
+/*
+ * Return all real classes/groups belonging to a stage.
+ *
+ * Examples:
+ *   stage "1"    -> ["1A","1B","1C"]
+ *   stage "4PRO" -> ["4PRO"]
+ */
+function getGroupsForStage(stage){
+  const classes = Array.isArray(mgmtData?.classes)
+    ? mgmtData.classes
+    : [];
+
+  const stageKey = getStageKey(stage);
+
+  return classes.filter(cls =>
+    getStageKey(cls) === stageKey
+  );
+}
+
+/*
+ * Convert a teacher's real F-column classes into
+ * unique stage keys.
+ *
+ * Example:
+ *   ["1A","1B","1C","4PRO"]
+ * becomes:
+ *   ["1","4PRO"]
+ */
+function groupsToStages(classes){
+  return uniqueValues(
+    (classes || []).map(getStageKey)
+  );
+}
+
+/*
+ * Return all stages available in the master
+ * class-subject map.
+ *
+ * Example:
+ *   {
+ *     "1": [...],
+ *     "4PRO": [...],
+ *     "5WEB": [...]
+ *   }
+ *
+ * becomes:
+ *   ["1","4PRO","5WEB"]
+ */
+function getStageList(){
+  const map = mgmtData?.classSubjectMap || {};
+  return sortClasses(Object.keys(map));
+}
+
+
 function renderTeacherTable(){
   if(!mgmtData) return;
   const L=LANGS[currentLang];
@@ -1007,7 +1127,7 @@ function getStageSubjects(stage){
   const map=mgmtData?.classSubjectMap||{};
 
   const key=Object.keys(map).find(
-    k=>assignmentNorm(k)===assignmentNorm(stage)
+    k=>normalize(k)===normalize(stage)
   );
 
   return key && Array.isArray(map[key])
@@ -1057,7 +1177,7 @@ function teacherAssignments(teacher){
     ? teacher.subjects
     : [];
 
-  const subjectKeys=subjects.map(normalize);
+  const subjectKeys=subjects.map(assignmentNorm);
 
   groupsToStages(classes).forEach(stage=>{
     result[stage]=getStageSubjects(stage)
@@ -1230,7 +1350,7 @@ function renderTeacherAssignmentRows(teacher){
   container.innerHTML=stages.map(stage=>{
     const subjects=getStageSubjects(stage);
     const selected=assignments[stage]||[];
-    const selectedKeys=selected.map(normalize);
+    const selectedKeys=selected.map(assignmentNorm);
 
     const checked=
       selectedStages.has(getStageKey(stage));
