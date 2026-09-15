@@ -45,8 +45,6 @@ select.form-control{appearance:auto!important;-webkit-appearance:auto!important;
 <style id="compact-portal-overrides">
 /* =========================================================
    ACI TEACHER PORTAL — COMPACT ATTENDANCE UI
-   Target: much less vertical space, fewer visual containers,
-   while preserving every existing JS ID/function.
    ========================================================= */
 :root{
   --compact-ink:#17202b;
@@ -94,7 +92,6 @@ main{
 .form-wrap{max-width:820px!important;margin:0 auto!important;}
 .compact-portal{animation:none!important;}
 
-/* One compact status row instead of the large welcome banner. */
 .portal-status{
   min-height:58px;
   margin:0 0 10px;
@@ -164,7 +161,6 @@ main{
 }
 .form-control:focus{border-color:#667eea!important;box-shadow:0 0 0 2px rgba(102,126,234,.10)!important;}
 
-/* Students section */
 .students-title-row{justify-content:space-between;}
 .students-title-left{display:flex;align-items:center;gap:8px;min-width:0;}
 .students-title-left h3{margin:0!important;}
@@ -230,10 +226,8 @@ main{
 .no-students{padding:22px 10px!important;font-size:11px!important;}
 .no-students .icon{font-size:1.8rem!important;margin-bottom:5px!important;}
 
-/* Existing preview remains in DOM for JS compatibility, but no longer consumes space. */
 #absentPreview{display:none!important;height:0!important;margin:0!important;padding:0!important;}
 
-/* Compact sticky actions */
 .action-row.compact-actions{
   position:sticky!important;bottom:0!important;z-index:80!important;
   margin:0 0 10px!important;
@@ -256,7 +250,6 @@ main{
 .btn-submit{flex:1!important;background:var(--compact-green)!important;box-shadow:none!important;justify-content:center!important;}
 .btn-submit:hover{transform:none!important;box-shadow:none!important;background:#246d49!important;}
 
-/* Recent records: compact, secondary visual weight. */
 .compact-recent{margin-top:0!important;}
 .compact-recent .compact-section-title{min-height:40px;}
 .recent-title-row .recent-count-badge{margin-inline-start:auto!important;padding:3px 8px!important;font-size:10px!important;}
@@ -269,7 +262,6 @@ main{
 .rt-name-pill{padding:2px 6px!important;font-size:10px!important;}
 .btn-rt-edit,.btn-rt-delete{padding:4px 7px!important;font-size:10px!important;min-height:30px!important;}
 
-/* Success and dialogs remain functional, but slightly tighter. */
 .success-card{padding:30px 24px!important;border-radius:14px!important;}
 .success-icon{width:64px!important;height:64px!important;font-size:30px!important;margin-bottom:16px!important;}
 .success-card h2{font-size:1.2rem!important;margin-bottom:8px!important;}
@@ -324,6 +316,42 @@ main{
   .portal-status{position:relative;}
   .students-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
 }
+
+/* ── DESKTOP (≥851px) ──────────────────────────────────
+   The old ≥701px rule only made the grid 2 columns; it never told
+   the grid how to fill the row height, so "Lesson Details" (short)
+   left a big empty gap while "Absent Students" (tall) sat beside it.
+   Fix: stack Lesson Details + Recent Submissions in the left column,
+   let Absent Students span both rows in the right column, and
+   restore normal (non-phone) type/spacing sizes for a mouse+keyboard
+   screen. Phone layout above is completely untouched. ── */
+@media(min-width:851px){
+  main{max-width:1040px!important;padding:24px 20px 60px!important;}
+
+  .form-wrap.compact-portal{
+    display:grid!important;
+    grid-template-columns:1fr 1.15fr!important;
+    grid-template-rows:auto auto!important;
+    gap:16px!important;
+    align-items:start!important;
+  }
+  .portal-status{grid-column:1/-1;}
+  .lesson-card{grid-column:1;grid-row:1;}
+  .students-card{grid-column:2;grid-row:1/span 2;}
+  .compact-recent{grid-column:1;grid-row:2;margin:0!important;}
+  .action-row.compact-actions{grid-column:1/-1;}
+
+  .compact-section-title h3{font-size:15px!important;}
+  .compact-card-body{padding:16px 18px!important;}
+  .form-control{height:46px!important;min-height:46px!important;line-height:46px!important;font-size:14px!important;}
+  .form-group label{font-size:12px!important;}
+  .students-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px 10px!important;}
+  .student-check{min-height:48px!important;height:48px!important;}
+  .student-check .sname{font-size:13px!important;}
+  .btn-secondary,.btn-submit{height:46px!important;font-size:13px!important;}
+  .recent-table th{padding:9px 12px!important;font-size:11px!important;}
+  .recent-table td{padding:9px 12px!important;font-size:12px!important;}
+}
 </style>
 
 </head>
@@ -361,7 +389,6 @@ main{
 <main>
   <div class="form-wrap compact-portal" id="screenSubmit" style="display:none">
 
-    <!-- Compact teacher/date status bar. Existing IDs are preserved for JS. -->
     <section class="portal-status" aria-label="Teacher and date status">
       <div class="portal-status-main">
         <div class="status-avatar" id="welcomeAvatar">م</div>
@@ -388,7 +415,6 @@ main{
       </div>
     </div>
 
-    <!-- Lesson details: Class + Subject + Lecture in one compact row. -->
     <section class="card compact-card lesson-card">
       <div class="compact-section-title">
         <span class="section-icon">١</span>
@@ -419,7 +445,6 @@ main{
       </div>
     </section>
 
-    <!-- Students: count + search + compact rows. -->
     <section class="card compact-card students-card">
       <div class="compact-section-title students-title-row">
         <div class="students-title-left">
@@ -451,7 +476,6 @@ main{
       </div>
     </section>
 
-    <!-- Kept for existing JS compatibility; hidden visually to save space. -->
     <div class="absent-preview" id="absentPreview" aria-hidden="true">
       <h5 id="absentPreviewTitle">✗ قوتابیێن نەهاتی:</h5>
       <div class="absent-pills" id="absentPills"></div>
@@ -593,9 +617,6 @@ const LANGS = {
   }
 };
 
-// Canonical values sent to the server (must stay stable so duplicate
-// checks and historical spreadsheet rows keep matching) vs. the label
-// shown to the teacher, which is localized per language.
 const LECTURE_VALUES = ['Lecture 1','Lecture 2','Lecture 3','Lecture 4','Lecture 5','Lecture 6',
   'Lectures 1-2 (Merged)','Lectures 3-4 (Merged)','Lectures 5-6 (Merged)'];
 const LECTURE_LABELS = {
@@ -641,20 +662,25 @@ function getAcademicYear() {
   return now.getMonth() >= 8 ? `${y}-${y+1}` : `${y-1}-${y}`;
 }
 
+// ── Auth / storage ──────────────────────────────────────
+// Uses localStorage (persists across tab close, phone app-switching,
+// browser restarts) instead of sessionStorage, so a teacher who logs
+// in for one class stays logged in for the next class without having
+// to sign in again.
 function token() {
-  return sessionStorage.getItem('aci_token') || '';
+  return localStorage.getItem('aci_token') || '';
 }
 
 function checkAuth() {
   const t = token();
-  const role = sessionStorage.getItem('aci_role');
+  const role = localStorage.getItem('aci_role');
   if (!t || role !== 'teacher') {
     window.location.href = LOGIN_URL;
     return false;
   }
 
   try {
-    const raw = sessionStorage.getItem('aci_teacher');
+    const raw = localStorage.getItem('aci_teacher');
     currentTeacher = raw ? JSON.parse(raw) : null;
   } catch (e) {
     currentTeacher = null;
@@ -668,8 +694,12 @@ function checkAuth() {
 }
 
 function doLogout() {
-  sessionStorage.clear();
-  sessionStorage.setItem('explicit_logout', '1');
+  localStorage.removeItem('aci_token');
+  localStorage.removeItem('aci_role');
+  localStorage.removeItem('aci_teacher');
+  localStorage.removeItem('aci_students');
+  localStorage.removeItem('aci_class_subject_map');
+  sessionStorage.removeItem('formState');
   window.location.href = LOGIN_URL;
 }
 
@@ -807,9 +837,6 @@ async function init() {
   document.getElementById('screenSubmit').style.display = '';
   loadRowsFromStorage();
 
-  // Both calls only read data and don't depend on each other, so fire
-  // them together instead of one after another — roughly halves the
-  // wait on a slow connection / cold Apps Script start.
   await Promise.all([loadTeacherData(), loadTodayRows()]);
 
   populateTeacherFields();
@@ -829,7 +856,7 @@ async function loadTeacherData() {
 
     if (data.teacher) {
       currentTeacher = data.teacher;
-      sessionStorage.setItem('aci_teacher', JSON.stringify(currentTeacher));
+      localStorage.setItem('aci_teacher', JSON.stringify(currentTeacher));
     }
 
     STUDENTS = data.students || {};
@@ -837,8 +864,8 @@ async function loadTeacherData() {
     WORKING_DAYS = Array.isArray(data.workingDays) && data.workingDays.length ? data.workingDays : WORKING_DAYS;
     updateWorkingDayStatus();
 
-    sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
-    sessionStorage.setItem('aci_class_subject_map', JSON.stringify(CLASS_SUBJECT_MAP));
+    localStorage.setItem('aci_students', JSON.stringify(STUDENTS));
+    localStorage.setItem('aci_class_subject_map', JSON.stringify(CLASS_SUBJECT_MAP));
 
     updateTeacherHeader();
   } catch (err) {
@@ -849,10 +876,9 @@ async function loadTeacherData() {
       return;
     }
 
-    // Do not use the old public roster endpoint.
     try {
-      const cached = JSON.parse(sessionStorage.getItem('aci_students') || '{}');
-      const cachedMap = JSON.parse(sessionStorage.getItem('aci_class_subject_map') || '{}');
+      const cached = JSON.parse(localStorage.getItem('aci_students') || '{}');
+      const cachedMap = JSON.parse(localStorage.getItem('aci_class_subject_map') || '{}');
       STUDENTS = cached || {};
       CLASS_SUBJECT_MAP = cachedMap || {};
     } catch (_) {}
@@ -1164,9 +1190,6 @@ function resetForm(keepClassSubject) {
   document.getElementById('fLecture').value = '';
 
   if (keepClassSubject) {
-    // After a successful submit, teachers very often log the next
-    // lecture for the same class/subject — keep those two selections
-    // so only the lecture number and absentee list need re-entering.
     const subj = document.getElementById('fSubject').value;
     filterSubjectsForClass();
     document.getElementById('fSubject').value = subj;
@@ -1314,9 +1337,6 @@ function showSuccess(details) {
   document.getElementById('screenSubmit').style.display = 'none';
   document.getElementById('screenSuccess').style.display = '';
 
-  // Auto-return to the form shortly after — teachers logging several
-  // lectures in a row don't need to tap "OK" every time. The button
-  // still works instantly if they want to move on right away.
   clearTimeout(showSuccess._timer);
   showSuccess._timer = setTimeout(() => {
     if (document.getElementById('screenSuccess').style.display !== 'none') {
