@@ -984,7 +984,7 @@ function assignmentEscapeHtml(value){
 
 
 function assignmentNorm(value){
-  return String(value==null?'').trim().toLowerCase();
+  return String(value==null?'':value).trim().toLowerCase();
 }
 
 
