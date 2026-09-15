@@ -52,7 +52,7 @@
         <input class="form-control" type="password" id="loginPassword"
                placeholder="••••••••" autocomplete="current-password" />
       </div>
-      <button class="btn-primary" id="btnLogin" onclick="doLogin()" disabled>
+      <button class="btn-primary" id="btnLogin" onclick="doLogin()">
         <span id="btnLoginText">چوونا ژوورێ ←</span>
       </button>
     </div>
@@ -63,14 +63,6 @@
 const SCRIPT_URL    = 'https://script.google.com/macros/s/AKfycbzTSL4dnBTCvc19HhJ4ELEO8vN-UHD1fjDzy8nUpd5MVHacEiQOvM061jzUAwHjKV6f/exec';
 const PORTAL_URL    = 'index.html';
 const DASHBOARD_URL = 'absentapi.html';
-
-// Simple token: base64 of username|role|date
-// Generated client-side after validating credentials from fetched data
-function makeToken(username, role) {
-  const date = new Date();
-  const dateStr = date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
-  return btoa(username + '|' + role + '|' + dateStr);
-}
 
 // ── i18n ─────────────────────────────────────────────
 const LANGS = {
@@ -124,9 +116,6 @@ const LANGS = {
 let currentLang = localStorage.getItem('aci_lang') || 'ku';
 let STUDENTS = {};
 
-// Kurdistan Region school year runs mid-September through May, so the
-// "current year" flips to the new label at the start of September —
-// e.g. Oct 2026 and Mar 2027 are both the "2026-2027" year.
 function getAcademicYear(){
   const now=new Date();
   const y=now.getFullYear();
@@ -155,11 +144,7 @@ function setLang(lang) {
 }
 
 // ── Apply public branding fetched from the backend (institute name in
-//    all 3 languages + institute logo URL). Overrides the hardcoded
-//    LANGS.xx.hInstName values in place, then repaints via setLang() so
-//    whichever language is currently active shows the saved name
-//    immediately. Silently a no-op if `settings` is missing/incomplete —
-//    the hardcoded fallback text above stays exactly as it was pre-Settings. ──
+//    all 3 languages + institute logo URL). ──
 function applyPublicBranding(settings) {
   if (!settings) return;
   if (settings.institute_name_ku) LANGS.ku.hInstName = settings.institute_name_ku;
@@ -173,35 +158,29 @@ function applyPublicBranding(settings) {
 }
 
 // ── Auto-login check ──────────────────────────────────
+// Uses localStorage (persists across tab close / app switch on mobile,
+// unlike sessionStorage) and runs immediately on page load — not gated
+// behind the branding fetch, so an already-logged-in teacher is
+// redirected instantly instead of waiting on a network round-trip.
 function checkAutoLogin() {
-  if (sessionStorage.getItem('explicit_logout') === '1') return;
-  const token = sessionStorage.getItem('aci_token');
-  const role  = sessionStorage.getItem('aci_role');
+  const token = localStorage.getItem('aci_token');
+  const role  = localStorage.getItem('aci_role');
   if (token && role === 'admin')   { window.location.href = DASHBOARD_URL; return; }
   if (token && role === 'teacher') { window.location.href = PORTAL_URL; return; }
 }
 
 // ── Load system data via GET — students + public branding ─────
+// Background/best-effort only. Does NOT block or enable the login
+// button — login only needs username/password, validated server-side.
 function loadSystemData() {
-  const L = LANGS[currentLang];
-  showLoading(L.loading);
   fetch(SCRIPT_URL)
     .then(r => r.json())
     .then(data => {
-      hideLoading();
       STUDENTS = data.students || {};
       applyPublicBranding(data.settings);
-      document.getElementById('btnLogin').disabled = false;
-      checkAutoLogin();
+      try { localStorage.setItem('aci_students', JSON.stringify(STUDENTS)); } catch(e) {}
     })
-    .catch(() => {
-      hideLoading();
-      // Still enable login even if student data (and branding) fails —
-      // the page falls back to the hardcoded name/logo above, exactly
-      // like it always did before Settings existed.
-      document.getElementById('btnLogin').disabled = false;
-      checkAutoLogin();
-    });
+    .catch(() => { /* silent — branding/logo just stays at fallback */ });
 }
 
 // ── Login — validated server-side via GET (CORS-safe) ──
@@ -243,18 +222,19 @@ async function doLogin() {
       return;
     }
 
-    // Success — store session
-    sessionStorage.setItem('aci_token', data.token);
-    sessionStorage.setItem('aci_role',  data.role);
-    sessionStorage.setItem('aci_teacher', JSON.stringify({
+    // Success — store session persistently (localStorage) so leaving
+    // the page / switching apps on a phone doesn't force a re-login
+    // before the next class.
+    localStorage.setItem('aci_token', data.token);
+    localStorage.setItem('aci_role',  data.role);
+    localStorage.setItem('aci_teacher', JSON.stringify({
       arabicName:  data.teacher.arabicName,
       username:    data.teacher.username,
       displayName: data.teacher.displayName,
       subjects:    data.teacher.subjects || [],
       classes:     data.teacher.classes  || []
     }));
-    sessionStorage.setItem('aci_students', JSON.stringify(STUDENTS));
-    sessionStorage.removeItem('explicit_logout');
+    localStorage.setItem('aci_students', JSON.stringify(STUDENTS));
 
     if (data.role === 'admin') {
       window.location.href = DASHBOARD_URL;
@@ -282,7 +262,8 @@ function hideLoading() {
 // ── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   setLang(currentLang);
-  loadSystemData();
+  checkAutoLogin();     // instant redirect if already logged in
+  loadSystemData();     // branding/logo — background, non-blocking
   document.getElementById('loginPassword').addEventListener('keydown', e => {
     if (e.key === 'Enter') doLogin();
   });
