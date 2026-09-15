@@ -441,6 +441,60 @@ function getBadge(n){
   const t=s==='high'?L.badgeHigh:s==='medium'?L.badgeMedium:L.badgeLow;
   return `<span class="badge badge-${s}">${t}</span>`;
 }
+// ── STAT CARDS (top of dashboard) ─────────────────────
+// Was being called from fetchData()/savePolicySettings() but was
+// never defined — that threw "updateStats is not defined", which
+// fetchData()'s own try/catch swallowed silently, aborting the load
+// before loadDaily()/loadWeeklyDropdown()/etc ever ran.
+function updateStats(){
+  const totalAbsEl   = document.getElementById('totalAbsences');
+  const totalClsEl   = document.getElementById('totalClasses');
+  const highRiskEl   = document.getElementById('highRisk');
+  const atRiskEl     = document.getElementById('atRisk');
+  const totalStudEl  = document.getElementById('totalStudents');
+
+  // Total absences (lecture-weighted, same unit used everywhere else)
+  const totalAbs = allData.reduce((sum, r) =>
+    sum + ((r.absences ? r.absences.length : 0) * (r.lectureCount || 1)), 0);
+  if (totalAbsEl) totalAbsEl.textContent = totalAbs;
+
+  // Classes
+  if (totalClsEl) totalClsEl.textContent = classes.length;
+
+  // Risk buckets — same per-student total logic as loadAnalytics()/search
+  const perStudent = {};
+  allData.forEach(entry => {
+    (entry.absences || []).forEach(name => {
+      perStudent[name] = (perStudent[name] || 0) + (entry.lectureCount || 1);
+    });
+  });
+  let high = 0, at = 0;
+  Object.values(perStudent).forEach(total => {
+    const sev = getSeverity(total);
+    if (sev === 'high') high++;
+    else if (sev === 'medium') at++;
+  });
+  if (highRiskEl) highRiskEl.textContent = high;
+  if (atRiskEl)   atRiskEl.textContent   = at;
+
+  // Total students — comes from management data, which may not be
+  // fetched yet on first load, so show '-' and fill in once it lands.
+  if (totalStudEl) {
+    if (mgmtData && mgmtData.students) {
+      totalStudEl.textContent = Object.values(mgmtData.students)
+        .reduce((sum, arr) => sum + (arr ? arr.length : 0), 0);
+    } else {
+      totalStudEl.textContent = '-';
+      fetchManageData().then(() => {
+        if (mgmtData && mgmtData.students && document.getElementById('totalStudents')) {
+          document.getElementById('totalStudents').textContent =
+            Object.values(mgmtData.students).reduce((sum, arr) => sum + (arr ? arr.length : 0), 0);
+        }
+      });
+    }
+  }
+}
+
 function showToast(msg,type){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast'+(type?' '+type:'');
