@@ -1174,3 +1174,6 @@ main{
 #absentPreview.show .absent-preview h5 {
   margin: 0 0 6px !important;
 }
+body {
+  outline: 5px solid red !important;
+}
